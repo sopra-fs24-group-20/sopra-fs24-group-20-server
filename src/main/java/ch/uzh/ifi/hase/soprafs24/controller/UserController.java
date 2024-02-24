@@ -54,4 +54,24 @@ public class UserController {
     // convert internal representation of user back to API
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
+
+
+
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public UserGetDTO login(@RequestBody UserPostDTO userPostDTO) {
+        // Retrieve user from database based on the username
+        User user = userService.checkforUser(userPostDTO.getUsername());
+
+        // Check if user exists and password matches
+        if (user != null && user.getPassword().equals(userPostDTO.getPassword())) {
+            // Return user details if login successful
+            return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        } else {
+            // Return null or throw exception indicating login failure
+            // You might want to handle this based on your application logic
+            return null;
+        }
+    }
 }
