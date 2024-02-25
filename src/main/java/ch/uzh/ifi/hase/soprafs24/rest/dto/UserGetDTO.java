@@ -12,6 +12,7 @@ public class UserGetDTO {
   private UserStatus status;
   private String password;
   private LocalDate creationDate;
+  private LocalDate birthdate;
 
   public Long getId() {
     return id;
@@ -60,5 +61,13 @@ public class UserGetDTO {
 
     public void setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
     }
 }

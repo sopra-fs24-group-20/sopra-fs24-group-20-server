@@ -11,6 +11,7 @@ public class UserPostDTO {
   private String username;
   private String password;
   private LocalDate creationDate;
+  private LocalDate birthdate;
 
   public String getName() {
     return name;
@@ -43,5 +44,13 @@ public class UserPostDTO {
 
     public void setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
     }
 }

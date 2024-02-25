@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
@@ -25,6 +26,8 @@ public interface DTOMapper {
   @Mapping(source = "name", target = "name")
   @Mapping(source = "username", target = "username")
   @Mapping(source = "password", target = "password")
+  @Mapping(source = "creationDate", target = "creationDate")
+  @Mapping(source = "birthdate", target = "birthdate")
   User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
   @Mapping(source = "id", target = "id")
@@ -33,5 +36,17 @@ public interface DTOMapper {
   @Mapping(source = "status", target = "status")
   @Mapping(source = "password", target = "password")
   @Mapping(source = "creationDate", target = "creationDate")
+  @Mapping(source = "birthdate", target = "birthdate")
   UserGetDTO convertEntityToUserGetDTO(User user);
+
+
+    // Mapping for updating user profile
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "username", target = "username")
+    @Mapping(source = "password", target = "password")
+    @Mapping(source = "birthdate", target = "birthdate")
+    void updateUserFromPutDTO(UserPutDTO userPutDTO, @MappingTarget User user);
+
+
+
 }

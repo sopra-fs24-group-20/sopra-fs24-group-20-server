@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,23 @@ public class UserController {
   }
 
 
+    @GetMapping("/users/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public UserGetDTO getUserbyUsername(@PathVariable String username) {
+        // fetch user by username
+        User user = userService.checkforUser(username);
+
+        // convert user to the API representation
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+    }
+
+    @PutMapping("/users/{username}/birthdate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateUserBirthdate(@PathVariable String username, @RequestBody LocalDate birthdate){
+      userService.updateUserBirthdate(username, birthdate);
+    }
+
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
@@ -69,8 +87,6 @@ public class UserController {
             // Return user details if login successful
             return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
         } else {
-            // Return null or throw exception indicating login failure
-            // You might want to handle this based on your application logic
             return null;
         }
     }

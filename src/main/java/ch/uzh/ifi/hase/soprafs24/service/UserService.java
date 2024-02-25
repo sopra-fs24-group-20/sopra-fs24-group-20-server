@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.spi.LocaleServiceProvider;
 
 /**
  * User Service
@@ -84,5 +85,13 @@ public class UserService {
 
         else{
             return null;}
+    }
+
+    public void updateUserBirthdate(String username, LocalDate birthdate){
+      User userToUpdate = userRepository.findByUsername(username);
+      userToUpdate.setBirthdate(birthdate);
+      userRepository.save(userToUpdate);
+      userRepository.flush();
+
     }
 }
