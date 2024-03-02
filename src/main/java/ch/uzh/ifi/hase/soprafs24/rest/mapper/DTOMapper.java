@@ -23,11 +23,14 @@ public interface DTOMapper {
 
   DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
 
+  @Mapping(source = "id", target = "id")
   @Mapping(source = "name", target = "name")
   @Mapping(source = "username", target = "username")
   @Mapping(source = "password", target = "password")
   @Mapping(source = "creationDate", target = "creationDate")
   @Mapping(source = "birthdate", target = "birthdate")
+  @Mapping(source = "token", target = "token")
+  @Mapping(source = "status", target = "status")
   User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
   @Mapping(source = "id", target = "id")
@@ -37,15 +40,16 @@ public interface DTOMapper {
   @Mapping(source = "password", target = "password")
   @Mapping(source = "creationDate", target = "creationDate")
   @Mapping(source = "birthdate", target = "birthdate")
+  @Mapping(source = "token", target = "token")
   UserGetDTO convertEntityToUserGetDTO(User user);
 
 
     // Mapping for updating user profile
-    @Mapping(source = "name", target = "name")
     @Mapping(source = "username", target = "username")
-    @Mapping(source = "password", target = "password")
     @Mapping(source = "birthdate", target = "birthdate")
-    void updateUserFromPutDTO(UserPutDTO userPutDTO, @MappingTarget User user);
+    @Mapping(source = "status", target = "status")
+    @Mapping(source = "id", target = "id") // unique identifier, that never changes
+    User convertUserPutDTOtoEntity(UserPutDTO userPutDTO);
 
 
 

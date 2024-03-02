@@ -6,18 +6,12 @@ import java.time.LocalDate;
 
 public class UserPutDTO {
 
-    private String name;
     private String username;
-    private String password;
     private LocalDate birthdate;
+    private Long id;
 
-    public String getName() {
-        return name;
-    }
+    private UserStatus status;
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getUsername() {
         return username;
@@ -28,14 +22,6 @@ public class UserPutDTO {
     }
 
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public LocalDate getBirthdate() {
         return birthdate;
     }
@@ -43,4 +29,22 @@ public class UserPutDTO {
     public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+    }
+
+
 }

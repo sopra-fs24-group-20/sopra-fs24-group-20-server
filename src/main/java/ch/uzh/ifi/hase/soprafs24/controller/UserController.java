@@ -7,8 +7,8 @@ import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,21 +57,15 @@ public class UserController {
   }
 
 
-    @GetMapping("/users/{username}")
+    @GetMapping("/users/{id}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public UserGetDTO getUserbyUsername(@PathVariable String username) {
+    public UserGetDTO getUserById(@PathVariable Long id) {
         // fetch user by username
-        User user = userService.checkforUser(username);
+        User user = userService.getUserById(id);
 
         // convert user to the API representation
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
-    }
-
-    @PutMapping("/users/{username}/birthdate")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateUserBirthdate(@PathVariable String username, @RequestBody LocalDate birthdate){
-      userService.updateUserBirthdate(username, birthdate);
     }
 
 
@@ -80,14 +74,17 @@ public class UserController {
     @ResponseBody
     public UserGetDTO login(@RequestBody UserPostDTO userPostDTO) {
         // Retrieve user from database based on the username
-        User user = userService.checkforUser(userPostDTO.getUsername());
-
-        // Check if user exists and password matches
-        if (user != null && user.getPassword().equals(userPostDTO.getPassword())) {
-            // Return user details if login successful
-            return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
-        } else {
-            return null;
-        }
+        User user = userService.authenticate(userPostDTO.getUsername(), userPostDTO.getPassword());
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
     }
+
+  @PutMapping("/logout")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+    public void logout(@RequestBody Long id){
+      userService.updateUserStatus(id, UserStatus.OFFLINE);
+
+  }
+
+
 }

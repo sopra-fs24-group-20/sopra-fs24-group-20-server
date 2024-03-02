@@ -29,21 +29,21 @@ public class User implements Serializable {
   @Column(nullable = false)
   private String name;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, updatable=true)
   private String username;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, updatable=false)
   private String token;
 
-  @Column(nullable = false)
+  @Column(nullable = false, updatable = true)
   private UserStatus status;
 
-  @Column(nullable = false)
+  @Column(nullable = false, updatable = true)
   private String password;
 
   @Column(nullable = false, updatable = false)
   private LocalDate creationDate;
-  @Column (nullable = true)
+  @Column (nullable = true, updatable = true)
   private LocalDate birthdate;
 
 

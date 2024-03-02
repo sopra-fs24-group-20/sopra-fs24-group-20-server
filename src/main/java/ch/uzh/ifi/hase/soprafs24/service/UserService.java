@@ -14,8 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.spi.LocaleServiceProvider;
 
 /**
  * User Service
@@ -43,7 +43,7 @@ public class UserService {
 
   public User createUser(User newUser) {
     newUser.setToken(UUID.randomUUID().toString());
-    newUser.setStatus(UserStatus.OFFLINE);
+    newUser.setStatus(UserStatus.ONLINE);
     newUser.setCreationDate(LocalDate.now());
     checkIfUserExists(newUser);
     // saves the given entity but data is only persisted in the database once
@@ -54,6 +54,8 @@ public class UserService {
     log.debug("Created Information for User: {}", newUser);
     return newUser;
   }
+
+
 
   /**
    * This is a helper method that will check the uniqueness criteria of the
@@ -87,11 +89,36 @@ public class UserService {
             return null;}
     }
 
-    public void updateUserBirthdate(String username, LocalDate birthdate){
-      User userToUpdate = userRepository.findByUsername(username);
-      userToUpdate.setBirthdate(birthdate);
-      userRepository.save(userToUpdate);
-      userRepository.flush();
+    public User authenticate(String username, String password){
+        List<User> allUsers = getUsers();
+        for (User user : allUsers){
+            if (Objects.equals(username, user.getUsername()) && Objects.equals(password, user.getPassword())){
+                user.setStatus(UserStatus.ONLINE);
+                return user;
+            }
 
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "not registered user");
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "user with "+id+" was not found"));
+    }
+
+
+    public User updateUserStatus(Long id, UserStatus status) {
+        // Find user by username
+        User user = getUserById(id);
+        if (user == null) {
+            // Handle case where user is not found
+            throw new IllegalArgumentException("User not found with username: " + id);
+        }
+
+        // Update user's status
+        user.setStatus(status);
+
+        // Save the updated user
+        return user;
     }
 }
