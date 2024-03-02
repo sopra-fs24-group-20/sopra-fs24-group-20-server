@@ -9,8 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User Controller
@@ -61,7 +63,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public UserGetDTO getUserById(@PathVariable Long id) {
-        // fetch user by username
+        // fetch user by id
         User user = userService.getUserById(id);
 
         // convert user to the API representation
@@ -78,13 +80,32 @@ public class UserController {
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
     }
 
-  @PutMapping("/logout")
+  @PutMapping("/logout/{id}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-    public void logout(@RequestBody Long id){
+    public void logout(@PathVariable Long id){
       userService.updateUserStatus(id, UserStatus.OFFLINE);
 
   }
+
+  @PutMapping("/users/{id}/birthdate")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+    public User setBirthdate(@PathVariable Long id, @RequestBody LocalDate birthdate){
+      User user = userService.updateBirthdate(id, birthdate);
+      return user;
+  }
+
+    @PutMapping("/users/{id}/username")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public User setUsername(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+        String username = requestBody.get("username");
+        User user = userService.updateUsername(id, username);
+        return user;
+    }
+
+
 
 
 }

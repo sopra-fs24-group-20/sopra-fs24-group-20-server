@@ -112,7 +112,7 @@ public class UserService {
         User user = getUserById(id);
         if (user == null) {
             // Handle case where user is not found
-            throw new IllegalArgumentException("User not found with username: " + id);
+            throw new IllegalArgumentException("User not found with id: " + id);
         }
 
         // Update user's status
@@ -120,5 +120,38 @@ public class UserService {
 
         // Save the updated user
         return user;
+    }
+
+    public User updateUsername(Long id, String username){
+        User user = getUserById(id);
+        if (user == null) {
+            // Handle case where user is not found
+            throw new IllegalArgumentException("User not found with id: " + id);
+        }
+        if (checkforUser(username) != null){
+            throw new IllegalArgumentException("Username already in use");
+        }
+
+        // Update user's status
+        user.setUsername(username);
+
+        // Save the updated user
+        return user;
+
+    }
+
+    public User updateBirthdate(Long id, LocalDate birthdate){
+      User user = getUserById(id);
+        if (user == null) {
+            // Handle case where user is not found
+            throw new IllegalArgumentException("User not found with id: " + id);
+        }
+
+        // Update user's status
+        user.setBirthdate(birthdate);
+
+        // Save the updated user
+        return user;
+
     }
 }
