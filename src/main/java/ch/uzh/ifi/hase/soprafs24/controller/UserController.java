@@ -89,14 +89,20 @@ public class UserController {
   }
 
 
-  @PutMapping("/users/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public void setUsernameBirthdate(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
-      String username = (String) requestBody.get("username");
-      LocalDate birthdate = LocalDate.parse((String) requestBody.get("birthdate"));
-      userService.updateUsernameBirthdate(id, username, birthdate);
-  }
+    @PutMapping("/users/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void setUsernameBirthdate(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
+        String username = (String) requestBody.get("username");
+        String birthdateString = (String) requestBody.get("birthdate");
+
+        LocalDate birthdate = null;
+        if (birthdateString != null && !birthdateString.isEmpty()) {
+            birthdate = LocalDate.parse(birthdateString);
+        }
+
+        userService.updateUsernameBirthdate(id, username, birthdate);
+    }
 
 
   @PutMapping("/users/{id}/birthdate")

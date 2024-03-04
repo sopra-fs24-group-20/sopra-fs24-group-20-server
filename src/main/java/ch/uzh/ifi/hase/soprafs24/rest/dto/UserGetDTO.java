@@ -7,13 +7,10 @@ import java.time.LocalDate;
 public class UserGetDTO {
 
   private Long id;
-  private String name;
   private String username;
   private UserStatus status;
-  private String password;
   private LocalDate creationDate;
   private LocalDate birthdate;
-  private String token;
 
   public Long getId() {
     return id;
@@ -23,13 +20,7 @@ public class UserGetDTO {
     this.id = id;
   }
 
-  public String getName() {
-    return name;
-  }
 
-  public void setName(String name) {
-    this.name = name;
-  }
 
   public String getUsername() {
     return username;
@@ -48,14 +39,6 @@ public class UserGetDTO {
   }
 
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public LocalDate getCreationDate() {
         return creationDate;
     }
@@ -72,11 +55,5 @@ public class UserGetDTO {
         this.birthdate = birthdate;
     }
 
-    public String getToken() {
-        return token;
-    }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
 }
