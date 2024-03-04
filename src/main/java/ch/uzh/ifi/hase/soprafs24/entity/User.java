@@ -38,10 +38,10 @@ public class User implements Serializable {
   @Column(nullable = false, updatable = true)
   private UserStatus status;
 
-  @Column(nullable = false, updatable = true)
+  @Column
   private String password;
 
-  @Column(nullable = false, updatable = false)
+  @Column(updatable = false)
   private LocalDate creationDate;
   @Column (nullable = true, updatable = true)
   private LocalDate birthdate;

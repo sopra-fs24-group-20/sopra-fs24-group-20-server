@@ -43,7 +43,7 @@ public class UserService {
 
   public User createUser(User newUser) {
     newUser.setToken(UUID.randomUUID().toString());
-    newUser.setStatus(UserStatus.ONLINE);
+    newUser.setStatus(UserStatus.OFFLINE);
     newUser.setCreationDate(LocalDate.now());
     checkIfUserExists(newUser);
     // saves the given entity but data is only persisted in the database once
@@ -120,6 +120,22 @@ public class UserService {
 
         // Save the updated user
         return user;
+    }
+
+
+    public void updateUsernameBirthdate (Long id, String username, LocalDate birthdate){
+      User user = getUserById(id);
+      if (user == null){
+          throw new IllegalArgumentException("user not found with id: " + id);
+      }
+      User otherUserwithUsername = checkforUser(username);
+      if (otherUserwithUsername != null && !otherUserwithUsername.getId().equals(id)){
+          throw new IllegalArgumentException("username already in use");
+      }
+      user.setUsername(username);
+      user.setBirthdate(birthdate);
+       userRepository.save(user);
+
     }
 
     public User updateUsername(Long id, String username){

@@ -88,6 +88,17 @@ public class UserController {
 
   }
 
+
+  @PutMapping("/users/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public void setUsernameBirthdate(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
+      String username = (String) requestBody.get("username");
+      LocalDate birthdate = LocalDate.parse((String) requestBody.get("birthdate"));
+      userService.updateUsernameBirthdate(id, username, birthdate);
+  }
+
+
   @PutMapping("/users/{id}/birthdate")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody

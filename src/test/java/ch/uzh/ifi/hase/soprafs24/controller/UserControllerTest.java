@@ -98,6 +98,8 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
   }
 
+
+
   /**
    * Helper Method to convert userPostDTO into a JSON string such that the input
    * can be processed
