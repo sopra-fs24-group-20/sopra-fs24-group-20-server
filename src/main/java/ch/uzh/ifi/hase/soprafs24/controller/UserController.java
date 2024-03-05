@@ -90,7 +90,7 @@ public class UserController {
 
 
     @PutMapping("/users/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void setUsernameBirthdate(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
         String username = (String) requestBody.get("username");

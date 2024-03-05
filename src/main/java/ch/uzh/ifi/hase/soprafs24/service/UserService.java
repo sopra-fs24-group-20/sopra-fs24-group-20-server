@@ -116,11 +116,11 @@ public class UserService {
     public void updateUsernameBirthdate (Long id, String username, LocalDate birthdate){
       User user = getUserById(id);
       if (user == null){
-          throw new IllegalArgumentException("user not found with id: " + id);
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + id);
       }
       User otherUserwithUsername = checkforUser(username);
       if (otherUserwithUsername != null && !otherUserwithUsername.getId().equals(id)){
-          throw new IllegalArgumentException("username already in use");
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already in use");
       }
       if (birthdate != null){
           user.setBirthdate(birthdate);
