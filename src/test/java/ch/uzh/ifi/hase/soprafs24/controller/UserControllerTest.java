@@ -25,9 +25,10 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -86,7 +87,7 @@ public class UserControllerTest {
     userPostDTO.setName("Test User");
     userPostDTO.setUsername("testUsername");
 
-    given(userService.createUser(Mockito.any())).willReturn(user);
+    given(userService.createUser(any())).willReturn(user);
 
     // when/then -> do the request + validate the result
     MockHttpServletRequestBuilder postRequest = post("/users")
@@ -108,7 +109,7 @@ public class UserControllerTest {
         userPostDTO.setPassword("Test User");
         userPostDTO.setUsername("testUsername");
 
-        given(userService.createUser(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
+        given(userService.createUser(any())).willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
 
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder postRequest = post("/users")
@@ -161,56 +162,58 @@ public class UserControllerTest {
 
         // then
         mockMvc.perform(getRequest)
-                .andExpect(status().isNotFound());;
-    }
-
-
-    @Test
-    public void givenUser_whenUpdateUser_noContent() throws Exception {
-        // given
-        User user = new User();
-        user.setId(1L);
-        user.setPassword("Test User");
-        user.setUsername("testUsername");
-        user.setStatus(UserStatus.ONLINE);
-
-        UserPutDTO userPutDTO = new UserPutDTO();
-        userPutDTO.setUsername("testUsername");
-
-        // updated user data
-        doNothing().when(userService).updateUsernameBirthdate(Mockito.eq(user.getId()), Mockito.eq("testUsername"), Mockito.any(LocalDate.class));
-
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder putRequest = put("/users/{userId}", user.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
-
-        // then
-        mockMvc.perform(putRequest)
-                .andExpect(status().isNoContent());
-    }
-
-
-    @Test
-    @Disabled
-    public void notGivenUser_whenUpdateUser_error() throws Exception {
-
-        UserPutDTO userPutDTO = new UserPutDTO();
-        userPutDTO.setUsername("testUsername");
-
-
-        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-                .when(userService).updateUsernameBirthdate(Mockito.eq(5L), Mockito.any(String.class), Mockito.any(LocalDate.class));
-
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder putRequest = put("/users/{userId}", 5L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
-
-        // then
-        mockMvc.perform(putRequest)
                 .andExpect(status().isNotFound());
     }
+
+
+
+
+    @Test
+    public void setUsernameBirthdate_UserUpdated_Returns204() throws Exception {
+        Long userId = 1L;
+        String username = "testUser";
+        String birthdate = "1990-01-01";
+
+        // Mock userService behavior
+        when(userService.getUserById(userId)).thenReturn(new User()); // Assume user exists
+        doNothing().when(userService).updateUsernameBirthdate(userId, username, LocalDate.parse(birthdate));
+
+        // Create a request body string with username and birthdate
+        String requestBody = "{\"username\": \"" + username + "\", \"birthdate\": \"" + birthdate + "\"}";
+
+        // Perform PUT request to /users/{id}
+        mockMvc.perform(put("/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNoContent());
+
+        // Verify that the userService's updateUsernameBirthdate method is called with the correct arguments
+        verify(userService).updateUsernameBirthdate(userId, username, LocalDate.parse(birthdate));
+    }
+
+    @Test
+    public void setUsernameBirthdate_UserNotFound_Returns404() throws Exception {
+        Long userId = 1L;
+        String username = "testUser";
+        String birthdate = "1990-01-01";
+
+        // Mock userService behavior to return null when findUserById is called with userId
+        when(userService.getUserById(userId)).thenReturn(null);
+
+        // Create a request body string with username and birthdate
+        String requestBody = "{\"username\": \"" + username + "\", \"birthdate\": \"" + birthdate + "\"}";
+
+        // Perform PUT request to /users/{id} with the mocked userId
+        mockMvc.perform(put("/users/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNotFound());
+    }
+
+
+
+
+
 
 
 

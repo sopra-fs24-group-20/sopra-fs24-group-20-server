@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -65,7 +66,9 @@ public class UserController {
     public UserGetDTO getUserById(@PathVariable Long id) {
         // fetch user by id
         User user = userService.getUserById(id);
-
+        if (user == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + id);
+        }
         // convert user to the API representation
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
     }
@@ -93,36 +96,19 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void setUsernameBirthdate(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
-        String username = (String) requestBody.get("username");
+
+      String username = (String) requestBody.get("username");
         String birthdateString = (String) requestBody.get("birthdate");
 
         LocalDate birthdate = null;
         if (birthdateString != null && !birthdateString.isEmpty()) {
             birthdate = LocalDate.parse(birthdateString);
         }
+        User user = userService.getUserById(id);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + id);}
 
         userService.updateUsernameBirthdate(id, username, birthdate);
     }
-
-
-  @PutMapping("/users/{id}/birthdate")
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-    public User setBirthdate(@PathVariable Long id, @RequestBody LocalDate birthdate){
-      User user = userService.updateBirthdate(id, birthdate);
-      return user;
-  }
-
-    @PutMapping("/users/{id}/username")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public User setUsername(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
-        String username = requestBody.get("username");
-        User user = userService.updateUsername(id, username);
-        return user;
-    }
-
-
-
 
 }

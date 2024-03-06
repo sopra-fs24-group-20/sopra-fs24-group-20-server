@@ -92,14 +92,13 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "user with "+id+" was not found"));
+        return userRepository.findUserById(id);
     }
 
 
     public User updateUserStatus(Long id, UserStatus status) {
         // Find user by username
-        User user = getUserById(id);
+        User user = userRepository.findUserById(id);
         if (user == null) {
             // Handle case where user is not found
             throw new IllegalArgumentException("User not found with id: " + id);
@@ -114,7 +113,7 @@ public class UserService {
 
 
     public void updateUsernameBirthdate (Long id, String username, LocalDate birthdate){
-      User user = getUserById(id);
+      User user = userRepository.findUserById(id);
       if (user == null){
           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + id);
       }
@@ -130,36 +129,5 @@ public class UserService {
 
     }
 
-    public User updateUsername(Long id, String username){
-        User user = getUserById(id);
-        if (user == null) {
-            // Handle case where user is not found
-            throw new IllegalArgumentException("User not found with id: " + id);
-        }
-        if (checkforUser(username) != null){
-            throw new IllegalArgumentException("Username already in use");
-        }
 
-        // Update user's status
-        user.setUsername(username);
-
-        // Save the updated user
-        return user;
-
-    }
-
-    public User updateBirthdate(Long id, LocalDate birthdate){
-      User user = getUserById(id);
-        if (user == null) {
-            // Handle case where user is not found
-            throw new IllegalArgumentException("User not found with id: " + id);
-        }
-
-        // Update user's status
-        user.setBirthdate(birthdate);
-
-        // Save the updated user
-        return user;
-
-    }
 }
