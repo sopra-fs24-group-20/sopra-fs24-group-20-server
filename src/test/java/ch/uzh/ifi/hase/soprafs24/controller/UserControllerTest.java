@@ -172,7 +172,7 @@ public class UserControllerTest {
     public void setUsernameBirthdate_UserUpdated_Returns204() throws Exception {
         Long userId = 1L;
         String username = "testUser";
-        String birthdate = "1990-01-01";
+        String birthdate = "2024-03-24";
 
         // Mock userService behavior
         when(userService.getUserById(userId)).thenReturn(new User()); // Assume user exists
@@ -195,7 +195,7 @@ public class UserControllerTest {
     public void setUsernameBirthdate_UserNotFound_Returns404() throws Exception {
         Long userId = 1L;
         String username = "testUser";
-        String birthdate = "1990-01-01";
+        String birthdate = "2024-03-24";
 
         // Mock userService behavior to return null when findUserById is called with userId
         when(userService.getUserById(userId)).thenReturn(null);
