@@ -7,7 +7,7 @@ on:
 
   # run the workflow manually from the Actions tab
   workflow_dispatch:
-
+#changes for sonarcloud
 jobs:
   test:
     name: Test and Sonarqube
