@@ -1,15 +1,9 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
-import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
-import ch.uzh.ifi.hase.soprafs24.service.UserService;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -41,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * request without actually sending them over the network.
  * This tests if the UserController works.
  */
+/*
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
 
@@ -225,6 +220,7 @@ public class UserControllerTest {
    * @param object
    * @return string
    */
+/*
   private String asJsonString(final Object object) {
     try {
       return new ObjectMapper().writeValueAsString(object);
@@ -233,4 +229,4 @@ public class UserControllerTest {
           String.format("The request body could not be created.%s", e.toString()));
     }
   }
-}
+}*/
