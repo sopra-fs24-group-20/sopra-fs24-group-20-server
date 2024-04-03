@@ -32,17 +32,14 @@ public class PlayerService {
                 .sum();
     }
 
-    public void readyUp(String username) {
-        Player player = playerRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
-        player.setReady(true);
-        playerRepository.save(player);
-    }
     private static final Logger log = LoggerFactory.getLogger(PlayerService.class);
 
     public Player createPlayer(String username, String password) {
-        if (username == null || playerRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("Username must be unique and not null");
+        if (username == null || username.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be null or empty");
+        }
+        if (playerRepository.findByUsername(username).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username must be unique");
         }
         Player player = new Player();
         player.setUsername(username);
@@ -50,7 +47,7 @@ public class PlayerService {
         player.setToken("1234"); // Example token setting
         player.setReady(false);
 
-        return playerRepository.save(player); // 'username' must be set because it's the ID
+        return playerRepository.save(player);
     }
     public List<Player> getPlayers() {
         return playerRepository.findAll();
@@ -68,11 +65,15 @@ public class PlayerService {
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found with username: " + username));
     }
 
-
     public Player getPlayerByUsername(String username) {
         return playerRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Player with username " + username + " not found"));
+                .orElseThrow(() ->  new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found with username: " + username));
+    }
+    public Player LogInPlayer(String username, String password) {
+        return playerRepository.findByUsername(username)
+                .filter(player -> password.equals(player.getPassword()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password Incorrect"));
     }
 
-    // Additional methods to interact with player data...
+
 }

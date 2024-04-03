@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
-import ch.uzh.ifi.hase.soprafs24.constant.DebugWindow;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPutDTO;
 import ch.uzh.ifi.hase.soprafs24.service.PlayerService;
@@ -8,13 +7,12 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Player Controller
@@ -47,7 +45,7 @@ public class PlayerController {
         return playerGetDTOs;
     }
     @PutMapping("/players/{username}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public PlayerGetDTO updatePlayer(@PathVariable String username, @RequestBody PlayerPutDTO playerPutDTO) {
         // Convert DTO to entity
@@ -87,16 +85,16 @@ public class PlayerController {
         return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(Player);
     }
 
-    {/*
-    @PostMapping("/login")
-    @ResponseStatus(HttpStatus.OK)
+
+    @PostMapping("/players/login")
     @ResponseBody
-    public PlayerGetDTO login(@RequestBody PlayerPostDTO PlayerPostDTO) {
-        // Retrieve Player from database based on the Playername
-        Player Player = PlayerService.authenticate(PlayerPostDTO.getPlayername(), PlayerPostDTO.getPassword());
-        return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(Player);
+    public ResponseEntity<PlayerGetDTO> login(@RequestBody PlayerPostDTO loginDTO) {
+        Player player = PlayerService.LogInPlayer(loginDTO.getUsername(), loginDTO.getPassword());
+        PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
+        return ResponseEntity.ok(playerGetDTO);
     }
 
+    {/*
   @PutMapping("/logout/{id}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
