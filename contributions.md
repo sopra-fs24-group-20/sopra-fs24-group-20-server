@@ -7,9 +7,9 @@ This markdown file logs the individual contributions of each team member through
 ## Week 1 
 
 ### Giuliano Bernasconi
-- GitHub Issue Links: [Issue #](link)
-- Task 1:
-- Task 2:
+- GitHub Issue Links: [Issue 29](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/29), [Issue 32](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/32)
+- Task 1: Safe the newly created lobby data 
+- Task 2: Checking if the login input is correct, if lobby does not exist or the password is wrong or the username is not unique in the lobby throw an error
 
 ### Joshua Stebler
 - GitHub Issue Links: [Issue 72](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/72),[Issue 71](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/71),[Issue 41](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/41),[Issue 38](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/38),[Issue 37](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/37),
