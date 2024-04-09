@@ -12,9 +12,12 @@ This markdown file logs the individual contributions of each team member through
 - Task 2:
 
 ### Joshua Stebler
-- GitHub Issue Links: [Issue #](link)
-- Task 1:
-- Task 2:
+- GitHub Issue Links: [Issue 72](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/72),[Issue 71](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/71),[Issue 41](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/41),[Issue 38](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/38),[Issue 37](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/37),
+- Task 1:For registering, check if the username is correct.
+- Task 2:For login, check if the username and password are correct
+- Task 3:Generate and save a random letter which will be used to play the current round
+- Task 4:As soon as all players' "ready" parameter == true in the lobby the game begins
+- Task 5:Each user has a parameter "ready", default false, when they press the "ready" button -> set to true
 
 ### Joshua Weder
 - GitHub Issue Links: [Issue #](link)
