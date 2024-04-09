@@ -32,6 +32,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 2: Made CSS, HTML additions and adjustments (Colors, Buttons, Background)
 
 ### Mirjam Alexandra Weibel
-- GitHub Issue Links: [Issue #](link)
-- Task 1: 
-- Task 2:
+- GitHub Issue Links: [Issue 5](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/5), [Issue 4](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/4), [Issue 8](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/8), [Issue 9](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/9), [Issue 10](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/10), [Issue 11](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/11), [Issue 12](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/12)
+- Task 1: Create lobby screen
+- Task 2: Join lobby screen
+- Task 3: adjust frontend to take username as parameter to verify if logged in or not
