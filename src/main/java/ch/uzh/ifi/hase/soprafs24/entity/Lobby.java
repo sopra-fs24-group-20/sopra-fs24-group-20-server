@@ -23,6 +23,15 @@ public class Lobby {
     @Column(nullable = false)
     private int roundDuration;
 
+    @Column(nullable = false)
+    private int rounds;
+
+    @Column(nullable = false)
+    private int gameMode;
+
+    @Column(nullable = false)
+    private Boolean autoCorrectMode;
+
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> categories = new ArrayList<>();
 
@@ -58,6 +67,14 @@ public class Lobby {
         this.lobbyName = lobbyName;
     }
 
+    public Boolean getautoCorrectMode() {
+        return autoCorrectMode;
+    }
+
+    public void setautoCorrectMode(Boolean autoCorrectMode) {
+        this.autoCorrectMode = autoCorrectMode;
+    }
+
     public String getLobbyPassword() {
         return lobbyPassword;
     }
@@ -72,6 +89,22 @@ public class Lobby {
 
     public void setRoundDuration(int roundDuration) {
         this.roundDuration = roundDuration;
+    }
+
+    public int getgameMode() {
+        return gameMode;
+    }
+
+    public void setgameMode(int gameMode) {
+        this.gameMode = gameMode;
+    }
+
+    public int getrounds() {
+        return rounds;
+    }
+
+    public void rounds(int rounds) {
+        this.rounds = rounds;
     }
 
     public List<String> getCategories() {

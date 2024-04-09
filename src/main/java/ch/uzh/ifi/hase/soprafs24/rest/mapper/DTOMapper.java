@@ -23,7 +23,12 @@ public interface DTOMapper {
 
     DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
 
-    @Mapping(target = "players", ignore = true) // Ignore players list in the lobby DTO
+    @Mapping(source = "lobbyName",target = "lobbyName") // Ignore players list in the lobby DTO
+    @Mapping(source = "roundDuration",target = "roundDuration")
+    @Mapping(source = "categories",target = "categories")
+    @Mapping(source = "rounds",target = "rounds")
+    @Mapping(source = "gameMode",target = "gameMode")
+    @Mapping(source = "autoCorrectMode",target = "autoCorrectMode")
     LobbyGetDTO convertEntityToLobbyGetDTO(Lobby lobby);
     Lobby convertLobbyPostDTOtoEntity(LobbyPostDTO lobbyPostDTO); // New method for conversion
     @Mapping(target = "ready", ignore = true)

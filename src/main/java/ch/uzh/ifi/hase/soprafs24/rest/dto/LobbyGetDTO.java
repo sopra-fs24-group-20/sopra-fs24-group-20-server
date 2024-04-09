@@ -15,6 +15,7 @@ public class LobbyGetDTO {
         return lobbyName;
     }
 
+
     public int getRoundDuration() {
         return roundDuration;
     }
@@ -33,6 +34,29 @@ public class LobbyGetDTO {
 
     public boolean isAutoCorrectMode() {
         return autoCorrectMode;
+    }
+    public void setLobbyName(String lobbyName) {
+        this.lobbyName = lobbyName;
+    }
+
+    public void setRoundDuration(int roundDuration) {
+        this.roundDuration = roundDuration;
+    }
+
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
+    }
+
+    public void setRounds(int rounds) {
+        this.rounds = rounds;
+    }
+
+    public void setGameMode(String gameMode) {
+        this.gameMode = gameMode;
+    }
+
+    public void setAutoCorrectMode(boolean autoCorrectMode) {
+        this.autoCorrectMode = autoCorrectMode;
     }
 }
 
