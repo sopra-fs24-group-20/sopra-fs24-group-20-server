@@ -1,9 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPutDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -23,6 +22,10 @@ import org.mapstruct.factory.Mappers;
 public interface DTOMapper {
 
     DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
+
+    @Mapping(target = "players", ignore = true) // Ignore players list in the lobby DTO
+    LobbyGetDTO convertEntityToLobbyGetDTO(Lobby lobby);
+    Lobby convertLobbyPostDTOtoEntity(LobbyPostDTO lobbyPostDTO); // New method for conversion
     @Mapping(target = "ready", ignore = true)
     @Mapping(target = "stats", ignore = true)
     @Mapping(target = "token", ignore = true)
