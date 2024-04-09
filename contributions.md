@@ -20,9 +20,11 @@ This markdown file logs the individual contributions of each team member through
 - Task 5:Each user has a parameter "ready", default false, when they press the "ready" button -> set to true
 
 ### Joshua Weder
-- GitHub Issue Links: [Issue #](link)
-- Task 1:
-- Task 2:
+- GitHub Issue Links: [Issue 1](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/1),
+[Issue 2](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/2)
+[Issue 3](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/3)
+- Task 1: Modified basic functionality of the profile screen
+- Task 2: Made further structural CSS additions and adjustments to set up the structure of the profile screen
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 30](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/30),
