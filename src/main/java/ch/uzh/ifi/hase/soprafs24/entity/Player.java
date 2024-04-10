@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 /**
  * Internal Player Representation
  * This class composes the internal representation of the player and defines how
@@ -18,8 +20,9 @@ public class Player implements Serializable {
     @Column(nullable = false, unique = true)
     private String username;
     @ManyToOne
-    @JoinColumn(name = "lobbyId") // This column in the player table will refer to the lobby's id.
-    private long lobbyId;
+    @JoinColumn(name = "lobby_id")
+    @JsonBackReference
+    private Lobby lobby;
 
     @Column(nullable = false)
     private boolean ready;
@@ -79,11 +82,11 @@ public class Player implements Serializable {
         this.password = password;
     }
     // In Player class
-    public long getLobbyId() {
-        return this.lobbyId;
+    public Lobby getLobby() {
+        return this.lobby;
     }
-    public void setLobbyId(long lobbyId) {
-        this.lobbyId = lobbyId;
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
     }
 
 }

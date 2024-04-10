@@ -36,7 +36,7 @@ public interface DTOMapper {
     @Mapping(target = "ready", ignore = true)
     @Mapping(target = "stats", ignore = true)
     @Mapping(target = "token", ignore = true)
-    @Mapping(target = "lobbyId", ignore = true)
+    @Mapping(target = "lobby", ignore = true)
     @Mapping(source = "username", target = "username")
     @Mapping(source = "password", target = "password")
     Player convertPlayerPostDTOtoEntity(PlayerPostDTO playerPostDTO);
@@ -51,7 +51,7 @@ public interface DTOMapper {
     @Mapping(source = "ready", target = "ready")
     @Mapping(target = "username", ignore = true)
     @Mapping(target = "token", ignore = true)
-    @Mapping(target = "lobbyId", ignore = true)
+    @Mapping(target = "lobby", ignore = true)
     @Mapping(source = "stats", target = "stats")
     Player convertPlayerPutDTOtoEntity(PlayerPutDTO playerPutDTO);
 }

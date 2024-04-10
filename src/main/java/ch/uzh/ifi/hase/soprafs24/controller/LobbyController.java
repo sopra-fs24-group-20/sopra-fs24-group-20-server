@@ -75,7 +75,7 @@ public class LobbyController {
         Player player = new Player();
         player.setUsername(username);
         player.setPassword(password);
-        player.setLobbyId(lobbyId);
+        player.setLobby(lobby);
         // Add player to lobby
         lobby.getPlayers().add(player);
         // Save changes to the database
