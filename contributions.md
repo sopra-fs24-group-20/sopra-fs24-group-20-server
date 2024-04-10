@@ -38,3 +38,33 @@ This markdown file logs the individual contributions of each team member through
 - Task 1: Create lobby screen
 - Task 2: Join lobby screen
 - Task 3: adjust frontend to take username as parameter to verify if logged in or not
+
+## Week 2
+
+### Giuliano Bernasconi
+- GitHub Issue Links: [Issue #]()
+- Task 1: 
+- Task 2: 
+
+### Joshua Stebler
+- GitHub Issue Links: [Issue #]()
+- Task 1:
+- Task 2:
+
+### Joshua Weder
+- GitHub Issue Links: [Issue #]()
+- Task 1: 
+- Task 2:
+
+### Leonora Horvatic
+- GitHub Issue Links: [Issue 13](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/13),
+  [Issue 14](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/14),
+  [Issue 15](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/15)
+- Task 1: Created the lobby screen
+- Task 2: 
+
+### Mirjam Alexandra Weibel
+- GitHub Issue Links: [Issue #]()
+- Task 1:
+- Task 2: 
+
