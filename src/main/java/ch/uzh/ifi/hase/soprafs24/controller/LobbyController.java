@@ -133,7 +133,4 @@ public class LobbyController {
         // Verwende lobbyName, um die zu löschende Lobby zu identifizieren
         // Rückgabe der entsprechenden Antwort, z.B. 204 NO CONTENT oder 404 NOT FOUND
     } */
-   private boolean isUsernameTakenInLobby(String username, Lobby lobby) {
-       return lobby.getPlayers().stream().anyMatch(player -> player.getUsername().equals(username));
-   }
 }
