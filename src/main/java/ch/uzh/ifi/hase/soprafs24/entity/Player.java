@@ -18,8 +18,8 @@ public class Player implements Serializable {
     @Column(nullable = false, unique = true)
     private String username;
     @ManyToOne
-    @JoinColumn(name = "lobby_id") // This column in the player table will refer to the lobby's id.
-    private Lobby lobby;
+    @JoinColumn(name = "lobbyId") // This column in the player table will refer to the lobby's id.
+    private long lobbyId;
 
     @Column(nullable = false)
     private boolean ready;
@@ -79,11 +79,11 @@ public class Player implements Serializable {
         this.password = password;
     }
     // In Player class
-    public Lobby getLobby() {
-        return this.lobby;
+    public long getLobbyId() {
+        return this.lobbyId;
     }
-    public void setLobby(Lobby lobby) {
-        this.lobby = lobby;
+    public void setLobbyId(long lobbyId) {
+        this.lobbyId = lobbyId;
     }
 
 }

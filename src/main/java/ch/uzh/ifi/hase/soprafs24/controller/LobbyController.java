@@ -48,6 +48,7 @@ public class LobbyController {
         // Extract lobby name, lobby password, and username from the DTO
         String lobbyName = lobbyPostDTO.getLobbyName();
         String lobbyPassword = lobbyPostDTO.getLobbyPassword();
+        long lobbyId = lobbyPostDTO.getLobbyId();
         String username = lobbyPostDTO.getUsername();
         String password = lobbyPostDTO.getPassword();
 
@@ -74,7 +75,7 @@ public class LobbyController {
         Player player = new Player();
         player.setUsername(username);
         player.setPassword(password);
-        player.setLobby(lobby);
+        player.setLobbyId(lobbyId);
         // Add player to lobby
         lobby.getPlayers().add(player);
         // Save changes to the database
