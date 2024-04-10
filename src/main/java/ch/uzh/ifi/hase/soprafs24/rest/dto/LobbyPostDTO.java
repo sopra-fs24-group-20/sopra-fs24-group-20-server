@@ -6,9 +6,11 @@ public class LobbyPostDTO {
     private String lobbyName;
     private String lobbyPassword;
     private String username;
+    private String password;
     private int roundDuration;
     private List<String> categories;
     private int rounds;
+
     private List<Character> excludedChars;
     private String gameMode;
     private boolean autoCorrectMode;
@@ -29,6 +31,7 @@ public class LobbyPostDTO {
     public String getLobbyPassword() { return lobbyPassword; }
 
     public String getUsername() { return username; }
+    public String getPassword() { return password; }
 
 
     // Weitere Setter-Funktionen für die anderen Attribute (für die Erstellung der Lobby)

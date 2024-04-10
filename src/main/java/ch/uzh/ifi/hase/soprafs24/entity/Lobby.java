@@ -20,16 +20,16 @@ public class Lobby {
     @Column
     private String lobbyPassword; // For simplicity, stored in plaintext. Consider encryption for real applications.
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int roundDuration;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int rounds;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int gameMode;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Boolean autoCorrectMode;
 
     @ElementCollection(fetch = FetchType.LAZY)

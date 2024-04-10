@@ -49,6 +49,7 @@ public class LobbyController {
         String lobbyName = lobbyPostDTO.getLobbyName();
         String lobbyPassword = lobbyPostDTO.getLobbyPassword();
         String username = lobbyPostDTO.getUsername();
+        String password = lobbyPostDTO.getPassword();
 
         // Check if lobby exists
         Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyName(lobbyName);
@@ -67,15 +68,12 @@ public class LobbyController {
         }
 
         // Check if username is unique within the lobby
-        if (isUsernameTakenInLobby(username, lobby)) {
-            // Username already taken in the lobby, return 400 BAD REQUEST
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Join lobby failed because username is already taken in the lobby");
-        }
+
 
         // Password matches, create player and add to lobby
         Player player = new Player();
         player.setUsername(username);
+        player.setPassword(password);
         player.setLobby(lobby);
         // Add player to lobby
         lobby.getPlayers().add(player);

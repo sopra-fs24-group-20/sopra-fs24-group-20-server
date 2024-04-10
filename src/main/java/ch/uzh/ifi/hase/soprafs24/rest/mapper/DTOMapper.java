@@ -30,6 +30,8 @@ public interface DTOMapper {
     @Mapping(source = "gameMode",target = "gameMode")
     @Mapping(source = "autoCorrectMode",target = "autoCorrectMode")
     LobbyGetDTO convertEntityToLobbyGetDTO(Lobby lobby);
+    @Mapping(source = "lobbyName",target = "lobbyName") // Ignore players list in the lobby DTO
+    @Mapping(source = "lobbyPassword",target = "lobbyPassword") // Ignore players list in the lobby DTO
     Lobby convertLobbyPostDTOtoEntity(LobbyPostDTO lobbyPostDTO); // New method for conversion
     @Mapping(target = "ready", ignore = true)
     @Mapping(target = "stats", ignore = true)
