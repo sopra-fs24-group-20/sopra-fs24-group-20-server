@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -84,6 +85,48 @@ public class LobbyController {
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
+    @PutMapping("/settings/{LobbyID}")
+    public ResponseEntity<Object> updateLobbySettings(@PathVariable Long LobbyID, @RequestBody LobbyPutDTO settings) {
+        Optional<Lobby> optionalLobby = lobbyRepository.findByid(LobbyID);
+        if (optionalLobby.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lobby not found");
+        }
+        Lobby lobby = optionalLobby.get();
+
+        // Update settings
+        lobby.setRoundDuration(settings.getRoundDuration());
+        lobby.setCategories(settings.getCategories());
+        lobby.setRounds(settings.getRounds());
+        lobby.setExcludedChars(settings.getExcludedChars());
+        lobby.setGameMode(settings.getGameMode());
+        lobby.setAutoCorrectMode(settings.getAutoCorrectMode());
+
+        lobbyRepository.save(lobby);
+
+        // No content to return, so we just send the 204 No Content status code without a body.
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+    @GetMapping("/settings/{LobbyID}")
+    public ResponseEntity<LobbyGetDTO> getLobbySettings(@PathVariable Long LobbyID) {
+        Optional<Lobby> optionalLobby = lobbyRepository.findByid(LobbyID);
+        if (optionalLobby.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Lobby lobby = optionalLobby.get();
+
+        // Convert the Lobby entity to LobbyGetDTO
+        LobbyGetDTO lobbyGetDTO = new LobbyGetDTO();
+        lobbyGetDTO.setLobbyName(lobby.getLobbyName());
+        lobbyGetDTO.setRoundDuration(lobby.getRoundDuration());
+        lobbyGetDTO.setCategories(lobby.getCategories());
+        lobbyGetDTO.setRounds(lobby.getRounds());
+        lobbyGetDTO.setGameMode(lobby.getGameMode());
+        lobbyGetDTO.setAutoCorrectMode(lobby.getAutoCorrectMode());
+
+        // Return the LobbyGetDTO with the settings
+        return ResponseEntity.ok(lobbyGetDTO);
+    }
+
 
    /*
     @GetMapping("/players")
@@ -107,19 +150,9 @@ public class LobbyController {
         // Rückgabe der entsprechenden Antwort, z.B. 204 NO CONTENT oder 400 BAD REQUEST
     }
 
-    @PutMapping("/settings")
-    public ResponseEntity<Object> updateLobbySettings(@RequestParam String lobbyName, @RequestBody String settings) {
-        // Implementiere die Logik zum Aktualisieren der Einstellungen einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren, und settings für die neuen Einstellungen
-        // Rückgabe der entsprechenden Antwort, z.B. 204 NO CONTENT oder 400 BAD REQUEST
-    }
 
-    @GetMapping("/settings")
-    public ResponseEntity<Object> getLobbySettings(@RequestParam String lobbyName) {
-        // Implementiere die Logik zum Abrufen der Einstellungen einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren
-        // Rückgabe der entsprechenden Antwort mit den Einstellungen oder einer Fehlermeldung
-    }
+
+
 
     @PostMapping("/leave")
     public ResponseEntity<Object> leaveLobby(@RequestBody LobbyPostDTO lobbyPostDTO) {

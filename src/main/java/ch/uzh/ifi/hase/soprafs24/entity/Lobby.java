@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
-import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -28,7 +27,7 @@ public class Lobby {
     private int rounds;
 
     @Column(nullable = true)
-    private int gameMode;
+    private String gameMode;
 
     @Column(nullable = true)
     private Boolean autoCorrectMode;
@@ -69,11 +68,11 @@ public class Lobby {
         this.lobbyName = lobbyName;
     }
 
-    public Boolean getautoCorrectMode() {
+    public Boolean getAutoCorrectMode() {
         return autoCorrectMode;
     }
 
-    public void setautoCorrectMode(Boolean autoCorrectMode) {
+    public void setAutoCorrectMode(Boolean autoCorrectMode) {
         this.autoCorrectMode = autoCorrectMode;
     }
 
@@ -93,21 +92,19 @@ public class Lobby {
         this.roundDuration = roundDuration;
     }
 
-    public int getgameMode() {
+    public String getGameMode() {
         return gameMode;
     }
 
-    public void setgameMode(int gameMode) {
+    public void setGameMode(String gameMode) {
         this.gameMode = gameMode;
     }
 
-    public int getrounds() {
-        return rounds;
-    }
 
     public void rounds(int rounds) {
         this.rounds = rounds;
     }
+
 
     public List<String> getCategories() {
         return categories;
@@ -149,8 +146,12 @@ public class Lobby {
         this.game = game;
     }
 
+    public int getRounds() {
+        return this.rounds;
+    }
 
-    // Add methods to manage players in the lobby if needed
-    // ...
+    public void setRounds(int rounds) {
+        this.rounds = rounds;
+    }
 
 }

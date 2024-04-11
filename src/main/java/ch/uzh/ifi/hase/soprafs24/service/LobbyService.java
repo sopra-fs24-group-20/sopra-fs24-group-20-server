@@ -39,9 +39,10 @@ public class LobbyService {
 
         // Set default values for other properties
         lobby.setRoundDuration(60); // Default round duration of 60 seconds
-        lobby.setautoCorrectMode(true);
+        lobby.setAutoCorrectMode(true);
         lobby.setCategories(new ArrayList<>()); // Empty list of categories by default
         lobby.setExcludedChars(new ArrayList<>()); // Empty list of excluded characters by default
+        lobby.setGameMode("1");
         // lobby.setGameStatus(GameStatus.SETUP);
         return lobbyRepository.save(lobby);
     }
