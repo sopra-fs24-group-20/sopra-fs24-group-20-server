@@ -42,9 +42,10 @@ This markdown file logs the individual contributions of each team member through
 ## Week 2
 
 ### Giuliano Bernasconi
-- GitHub Issue Links: [Issue #]()
-- Task 1: 
-- Task 2: 
+- GitHub Issue Links: [Issue 27](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/27), [Issue 75](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/75), [Issue 76](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/76)
+- Task 1: Small adjustments to Code to Enable functionalities for the Owner of a Lobby 
+- Task 2: Functionalities for leaving a lobby
+- Task 3: Functionalities to delete a lobby
 
 ### Joshua Stebler
 - GitHub Issue Links: [Issue #]()
