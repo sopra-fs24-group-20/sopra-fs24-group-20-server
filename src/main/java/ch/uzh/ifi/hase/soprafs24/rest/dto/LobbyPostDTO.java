@@ -15,6 +15,7 @@ public class LobbyPostDTO {
     private List<Character> excludedChars;
     private String gameMode;
     private boolean autoCorrectMode;
+    private String ownerUsername; // New field for owner's username
 
     // Setter-Funktionen
     public void setLobbyName(String lobbyName) {
@@ -35,6 +36,14 @@ public class LobbyPostDTO {
 
     public String getUsername() { return username; }
     public String getPassword() { return password; }
+
+    public String getOwnerUsername() {
+        return ownerUsername;
+    }
+
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
+    }
 
 
     // Weitere Setter-Funktionen für die anderen Attribute (für die Erstellung der Lobby)

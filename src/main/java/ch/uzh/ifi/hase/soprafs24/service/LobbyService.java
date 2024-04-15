@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 
 @Service
@@ -26,7 +27,8 @@ public class LobbyService {
     private PlayerRepository playerRepository; // Added this field
 
 
-    public Lobby createLobby(String lobbyName, String lobbyPassword) {
+    @Transactional
+    public Lobby createLobby(String lobbyName, String lobbyPassword, Player owner) {
         if (lobbyName == null || lobbyName.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby name must not be null or empty");
         }
@@ -36,6 +38,7 @@ public class LobbyService {
         Lobby lobby = new Lobby();
         lobby.setLobbyName(lobbyName);
         lobby.setLobbyPassword(lobbyPassword);
+        lobby.setLobbyOwner(owner); // Set the owner's username
 
         // Set default values for other properties
         lobby.setRoundDuration(60); // Default round duration of 60 seconds
@@ -45,6 +48,21 @@ public class LobbyService {
         lobby.setGameMode("1");
         // lobby.setGameStatus(GameStatus.SETUP);
         return lobbyRepository.save(lobby);
+    }
+
+    @Transactional
+    public void deleteLobbyById(long lobbyId) {
+        // Find the lobby by its ID
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        if (optionalLobby.isPresent()) {
+            Lobby lobby = optionalLobby.get();
+
+            // Delete the lobby from the repository
+            lobbyRepository.delete(lobby);
+        } else {
+            // Lobby not found, throw an exception or handle the situation accordingly
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+        }
     }
     @Transactional
     public void checkAndStartGame(Lobby lobby) {

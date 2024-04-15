@@ -12,13 +12,18 @@ public class Lobby {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long lobbyId;
 
     @Column(nullable = false)
     private String lobbyName;
 
     @Column
     private String lobbyPassword; // For simplicity, stored in plaintext. Consider encryption for real applications.
+
+
+    @OneToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Player lobbyOwner; // Attribute for owner ensuring a bidirectional one-to-one relationship
 
     @Column(nullable = true)
     private int roundDuration;
@@ -52,12 +57,12 @@ public class Lobby {
     // Other settings and fields as needed
 
     // Getters and setters
-    public Long getId() {
-        return id;
+    public Long getLobbyId() {
+        return lobbyId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setLobbyId(Long id) {
+        this.lobbyId = lobbyId;
     }
 
     public String getLobbyName() {
@@ -82,6 +87,13 @@ public class Lobby {
 
     public void setLobbyPassword(String lobbyPassword) {
         this.lobbyPassword = lobbyPassword;
+    }
+    
+    public Player getLobbyOwner() {
+        return lobbyOwner;
+    }
+    public void setLobbyOwner(Player lobbyOwner) {
+        this.lobbyOwner = lobbyOwner;
     }
 
     public int getRoundDuration() {
