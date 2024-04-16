@@ -65,7 +65,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 2: Final leaderboard page format
 
 ### Mirjam Alexandra Weibel
-- GitHub Issue Links: [Issue #]()
-- Task 1:
-- Task 2: 
+- GitHub Issue Links: [Issue 17](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/17), [Issue 18](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/18), [Issue 21](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/21)
+- Task 1: game screen page 
+- Task 2: bug fixes in frontend and consistency checks for frontend and backend
 
