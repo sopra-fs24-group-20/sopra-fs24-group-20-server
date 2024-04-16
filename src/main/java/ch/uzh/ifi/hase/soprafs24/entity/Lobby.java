@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
+import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -20,7 +22,8 @@ public class Lobby {
     @Column
     private String lobbyPassword; // For simplicity, stored in plaintext. Consider encryption for real applications.
 
-
+    @Column
+    private LobbyStatus lobbyStatus;
     @OneToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private Player lobbyOwner; // Attribute for owner ensuring a bidirectional one-to-one relationship
@@ -43,9 +46,6 @@ public class Lobby {
     @ElementCollection(fetch = FetchType.LAZY)
     private List<Character> excludedChars = new ArrayList<>();
 
-    //@Enumerated(EnumType.STRING)
-    //@Column(nullable = false)
-    //private GameStatus gameStatus;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "game_id", referencedColumnName = "id")
     private Game game;
@@ -61,7 +61,7 @@ public class Lobby {
         return lobbyId;
     }
 
-    public void setLobbyId(Long id) {
+    public void setLobbyId(Long lobbyId) {
         this.lobbyId = lobbyId;
     }
 
@@ -110,6 +110,10 @@ public class Lobby {
 
     public void setGameMode(String gameMode) {
         this.gameMode = gameMode;
+    }
+
+    public LobbyStatus getLobbyStatus() {
+        return lobbyStatus;
     }
 
 
@@ -164,6 +168,9 @@ public class Lobby {
 
     public void setRounds(int rounds) {
         this.rounds = rounds;
+    }
+    public void setLobbyStatus(LobbyStatus lobbyStatus) {
+        this.lobbyStatus = lobbyStatus;
     }
 
 }

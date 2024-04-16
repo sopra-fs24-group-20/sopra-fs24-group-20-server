@@ -12,7 +12,8 @@ public class Game implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // If you want to auto-generate the ID
     private Long id;
-
+    @OneToOne(mappedBy = "game")
+    private Lobby lobby;
     @Enumerated(EnumType.STRING) // To store the enum as a string in the database
     @Column(nullable = false)
     private GameStatus status;
@@ -46,6 +47,12 @@ public class Game implements Serializable {
         this.roundCount = roundCount;
     }
 
-    // Additional logic as needed
+    public Lobby getLobby() {
+        return lobby;
+    }
+
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
+    }
 
 }

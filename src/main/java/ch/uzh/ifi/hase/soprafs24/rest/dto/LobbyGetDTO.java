@@ -1,15 +1,18 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
+import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
+
 import java.util.List;
 
 
 public class LobbyGetDTO {
     private String lobbyName;
-    private int roundDuration;
+    private Integer roundDuration;
     private List<String> categories;
-    private int rounds;
+    private Integer rounds;
     private String gameMode;
-    private boolean autoCorrectMode;
+    private Boolean autoCorrectMode;
+    private LobbyStatus lobbyStatus;
 
     // Getter-Funktionen
     public String getLobbyName() {
@@ -31,6 +34,10 @@ public class LobbyGetDTO {
 
     public String getGameMode() {
         return gameMode;
+    }
+
+    public LobbyStatus getLobbyStatus() {
+        return lobbyStatus;
     }
 
     public boolean isAutoCorrectMode() {
@@ -58,6 +65,9 @@ public class LobbyGetDTO {
 
     public void setAutoCorrectMode(boolean autoCorrectMode) {
         this.autoCorrectMode = autoCorrectMode;
+    }
+    public void setLobbyStatus(LobbyStatus lobbyStatus) {
+        this.lobbyStatus = lobbyStatus;
     }
 }
 

@@ -1,10 +1,13 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
+import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyGetDTO;
@@ -56,7 +59,6 @@ public class LobbyController {
         long lobbyId = lobbyPostDTO.getLobbyId();
         String username = lobbyPostDTO.getUsername();
         String password = lobbyPostDTO.getPassword();
-
         // Check if lobby exists
         Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(lobbyId);
         if (optionalLobby.isEmpty()) {
@@ -64,7 +66,6 @@ public class LobbyController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Join lobby failed because the lobby doesn’t exist");
         }
-
         // Lobby found, check if password matches
         Lobby lobby = optionalLobby.get();
         if (!lobby.getLobbyPassword().equals(lobbyPassword)) {
@@ -72,8 +73,10 @@ public class LobbyController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Join lobby failed because password doesn’t match");
         }
-
-        // Check if username is unique within the lobby
+        if (lobby.getLobbyStatus() != LobbyStatus.SETUP) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Cannot join lobby as the game is not in SETUP mode.");
+        }
 
 
         // Password matches, create player and add to lobby
@@ -89,27 +92,43 @@ public class LobbyController {
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
-    @PutMapping("/settings/{LobbyId}") // Ensure this matches exactly with the @PathVariable
-    public ResponseEntity<Object> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {
+    @PutMapping("/settings/{LobbyId}")
+    @Transactional
+    public ResponseEntity<Lobby> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {
         Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(LobbyId);
         if (optionalLobby.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lobby not found");
+            return ResponseEntity.notFound().build(); // Returns a 404 Not Found
         }
+
         Lobby lobby = optionalLobby.get();
 
+        // Update settings if not null
+        if (settings.getRoundDuration() != null) {
+            lobby.setRoundDuration(settings.getRoundDuration());
+        }
+        if (settings.getGameMode() != null) {
+            lobby.setGameMode(settings.getGameMode());
+        }
+        if (settings.getCategories() != null) {
+            lobby.setCategories(settings.getCategories());
+        }
+        if (settings.getRounds() != null) {
+            lobby.setRounds(settings.getRounds());
+        }
+        if (settings.getExcludedChars() != null) {
+            lobby.setExcludedChars(settings.getExcludedChars());
+        }
+        if (settings.getAutoCorrectMode() != null) {
+            lobby.setAutoCorrectMode(settings.getAutoCorrectMode());
+        }
+        if (settings.getLobbyStatus() != null) {
+            lobby.setLobbyStatus(settings.getLobbyStatus());
+        }
 
-        // Update settings
-        lobby.setRoundDuration(settings.getRoundDuration());
-        lobby.setCategories(settings.getCategories());
-        lobby.setRounds(settings.getRounds());
-        lobby.setExcludedChars(settings.getExcludedChars());
-        lobby.setGameMode(settings.getGameMode());
-        lobby.setAutoCorrectMode(settings.getAutoCorrectMode());
-
+        // Save the updated lobby
         lobbyRepository.save(lobby);
 
-        // No content to return, so we just send the 204 No Content status code without a body.
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.noContent().build();
     }
     @GetMapping("/settings/{LobbyId}")
     public ResponseEntity<LobbyGetDTO> getLobbySettings(@PathVariable Long LobbyId) {
@@ -118,7 +137,7 @@ public class LobbyController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         Lobby lobby = optionalLobby.get();
-
+        //lobby.setLobbyStatus(LobbyStatus.SETUP);///////////////////////////////
         // Convert the Lobby entity to LobbyGetDTO
         LobbyGetDTO lobbyGetDTO = new LobbyGetDTO();
         lobbyGetDTO.setLobbyName(lobby.getLobbyName());
@@ -127,6 +146,7 @@ public class LobbyController {
         lobbyGetDTO.setRounds(lobby.getRounds());
         lobbyGetDTO.setGameMode(lobby.getGameMode());
         lobbyGetDTO.setAutoCorrectMode(lobby.getAutoCorrectMode());
+        lobbyGetDTO.setLobbyStatus(lobby.getLobbyStatus());
 
         // Return the LobbyGetDTO with the settings
         return ResponseEntity.ok(lobbyGetDTO);

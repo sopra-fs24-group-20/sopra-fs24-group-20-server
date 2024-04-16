@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service; // Correct package statement
 
+import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
@@ -46,7 +47,7 @@ public class LobbyService {
         lobby.setCategories(new ArrayList<>()); // Empty list of categories by default
         lobby.setExcludedChars(new ArrayList<>()); // Empty list of excluded characters by default
         lobby.setGameMode("1");
-        // lobby.setGameStatus(GameStatus.SETUP);
+        lobby.setLobbyStatus(LobbyStatus.SETUP);
         return lobbyRepository.save(lobby);
     }
 
