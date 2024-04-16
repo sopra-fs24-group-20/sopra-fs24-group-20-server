@@ -97,6 +97,7 @@ public class LobbyController {
         }
         Lobby lobby = optionalLobby.get();
 
+
         // Update settings
         lobby.setRoundDuration(settings.getRoundDuration());
         lobby.setCategories(settings.getCategories());
