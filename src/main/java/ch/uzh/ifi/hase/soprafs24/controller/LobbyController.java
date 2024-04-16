@@ -89,7 +89,7 @@ public class LobbyController {
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
-    @PutMapping("/settings/{LobbyID}")
+    @PutMapping("/settings/{LobbyId}") // Ensure this matches exactly with the @PathVariable
     public ResponseEntity<Object> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {
         Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(LobbyId);
         if (optionalLobby.isEmpty()) {
