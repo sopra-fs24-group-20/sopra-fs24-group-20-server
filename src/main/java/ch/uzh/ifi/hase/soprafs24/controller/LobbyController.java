@@ -58,7 +58,6 @@ public class LobbyController {
         String lobbyPassword = lobbyPostDTO.getLobbyPassword();
         long lobbyId = lobbyPostDTO.getLobbyId();
         String username = lobbyPostDTO.getUsername();
-        String password = lobbyPostDTO.getPassword();
         // Check if lobby exists
         Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(lobbyId);
         if (optionalLobby.isEmpty()) {
@@ -78,20 +77,19 @@ public class LobbyController {
                     .body("Cannot join lobby as the game is not in SETUP mode.");
         }
 
+        Optional<Player> optionalPlayer=playerRepository.findByUsername(username);
+        if(optionalLobby.isEmpty()){return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Join Lobby failed user not found");
 
-        // Password matches, create player and add to lobby
-        Player player = new Player();
-        player.setUsername(username);
-        player.setPassword(password);
+        }
+        Player player=optionalPlayer.get();
         player.setLobby(lobby);
-        // Add player to lobby
         lobby.getPlayers().add(player);
-        // Save changes to the database
         lobbyRepository.save(lobby);
 
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
+
     @PutMapping("/settings/{LobbyId}")
     @Transactional
     public ResponseEntity<Lobby> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {

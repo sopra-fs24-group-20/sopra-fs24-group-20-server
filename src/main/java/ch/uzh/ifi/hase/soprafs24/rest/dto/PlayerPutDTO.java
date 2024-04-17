@@ -9,7 +9,7 @@ import java.util.List;
 public class PlayerPutDTO {
 
     private List<StatisticDTO> stats;
-    private boolean ready;
+    private Boolean ready;
 
 
     public boolean getReady() {

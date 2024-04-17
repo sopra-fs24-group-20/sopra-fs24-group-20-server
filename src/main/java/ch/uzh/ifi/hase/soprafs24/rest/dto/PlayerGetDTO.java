@@ -8,7 +8,7 @@ import java.util.List;
 
 public class PlayerGetDTO {
 
-  private boolean ready;
+  private Boolean ready;
   private String password;
   private String username;
     private List<StatisticDTO> stats;

@@ -93,7 +93,32 @@ public class PlayerController {
         PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
         return ResponseEntity.ok(playerGetDTO);
     }
-
+    @PostMapping("/player/answer/{username}")
+    public ResponseEntity<?> addPlayerAnswer(@PathVariable String username, @RequestBody List<String> answers) {
+        try {
+            boolean updated = PlayerService.addAnswer(username, answers);
+            if (updated) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @PutMapping("/player/answer/{username}")
+    public ResponseEntity<?> addPlayerVotes(@PathVariable String username, @RequestBody List<Boolean> votes) {
+        try {
+            boolean updated = PlayerService.addVotes(username, votes);
+            if (updated) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     {/*
   @PutMapping("/logout/{id}")
   @ResponseStatus(HttpStatus.OK)

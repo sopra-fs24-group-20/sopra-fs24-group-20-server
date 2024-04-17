@@ -25,7 +25,7 @@ public class Player implements Serializable {
     private Lobby lobby;
 
     @Column(nullable = false)
-    private boolean ready;
+    private Boolean ready;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Statistic> stats;
