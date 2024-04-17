@@ -65,6 +65,47 @@ public class LobbyService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
         }
     }
+
+
+    @Transactional
+    public void leaveLobby(Long lobbyId, Player player) {
+        // Find the lobby by its ID
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        if (optionalLobby.isPresent()) {
+            Lobby lobby = optionalLobby.get();
+
+            // Check if player is in the lobby
+            if (!lobby.getPlayers().contains(player)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player is not in the lobby.");
+            }
+
+            // Check if the player is the owner
+            if (lobby.getLobbyOwner().equals(player)) {
+                // If the player is the owner, find the next player to be assigned as owner
+                Player nextOwner = null;
+                if (lobby.getPlayers().size() > 1) {
+                    nextOwner = lobby.getPlayers().get(1); // Assuming the second player becomes the owner
+                }
+
+                // If the next owner exists, assign them as the owner
+                if (nextOwner != null) {
+                    lobby.setLobbyOwner(nextOwner);
+                } else {
+                    // If the next owner doesn't exist (current owner is the last player), delete the lobby
+                    deleteLobbyById(lobbyId);
+                    return;
+                }
+            }
+
+            // Remove the player from the lobby and update the lobby
+            lobby.getPlayers().remove(player);
+            lobbyRepository.save(lobby);
+        } else {
+            // Lobby not found, throw an exception or handle the situation accordingly
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+        }
+    }
+
     @Transactional
     public void checkAndStartGame(Lobby lobby) {
         if (areAllPlayersReady(lobby)) {

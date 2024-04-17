@@ -80,7 +80,7 @@ public class LobbyController {
         }
 
         Optional<Player> optionalPlayer=playerRepository.findByUsername(username);
-        if(optionalLobby.isEmpty()){return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Join Lobby failed user not found");
+        if(optionalPlayer.isEmpty()){return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Join Lobby failed user not found");
 
         }
         Player player=optionalPlayer.get();
@@ -209,78 +209,44 @@ public class LobbyController {
 
     */
 
-
-    @PostMapping("/leave")
-    public ResponseEntity<Object> leaveLobby(@RequestBody LobbyPostDTO lobbyPostDTO) {
-        // Extract lobby ID and player's username from the DTO
-        String lobbyName = lobbyPostDTO.getLobbyName();
-        long lobbyId = lobbyPostDTO.getLobbyId();
-        String username = lobbyPostDTO.getUsername();
-
+    @PutMapping("/{lobbyId}/leave")
+    public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestBody Player player) {
         // Check if lobby exists
         Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(lobbyId);
         if (optionalLobby.isEmpty()) {
-            // Lobby not found, return 404 NOT FOUND
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Leave lobby failed because the lobby doesn’t exist");
+            return ResponseEntity.notFound().build();
         }
 
-        // Lobby found, retrieve lobby entity
         Lobby lobby = optionalLobby.get();
 
-        // Check if the player is part of the lobby
-        boolean playerFound = false;
-        for (Player player : lobby.getPlayers()) {
-            if (player.getUsername().equals(username)) {
-                // Player found, remove from lobby
-                lobby.getPlayers().remove(player);
-                playerFound = true;
-                break;
+        // Check if player is in the lobby
+        boolean playerInLobby = lobby.getPlayers().contains(player);
+        if (!playerInLobby) {
+            return ResponseEntity.badRequest().body("Player is not in the lobby.");
+        }
+
+        // Check if the player is the owner
+        if (lobby.getLobbyOwner().equals(player)) {
+            // If the player is the owner, find the next player to be assigned as owner
+            Player nextOwner = null;
+            if (lobby.getPlayers().size() > 1) {
+                nextOwner = lobby.getPlayers().get(1); // Assuming the second player becomes the owner
+            }
+
+            // If the next owner exists, assign them as the owner
+            if (nextOwner != null) {
+                lobby.setLobbyOwner(nextOwner);
+            } else {
+                // If the next owner doesn't exist (current owner is the last player), delete the lobby
+                lobbyService.deleteLobbyById(lobbyId);
+                return ResponseEntity.ok().build();
             }
         }
 
-        // If player is not found in the lobby, return a meaningful error message
-        if (!playerFound) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Leave lobby failed because the player is not part of the lobby");
-        }
+        // Remove the player from the lobby and update the lobby
+        lobby.getPlayers().remove(player);
+        lobbyRepository.save(lobby); // Update the lobby in the database
 
-        // Save changes to the database
-        lobbyRepository.save(lobby);
-
-        // Return 204 NO CONTENT to indicate successful leaving of the lobby
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
-
-    @PostMapping("/delete")
-    public ResponseEntity<Object> deleteLobby(@RequestBody LobbyPostDTO lobbyPostDTO) {
-        // Extract lobby ID and player's username from the DTO
-        long lobbyId = lobbyPostDTO.getLobbyId();
-        String username = lobbyPostDTO.getUsername();
-
-        // Check if lobby exists
-        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
-        if (optionalLobby.isEmpty()) {
-            // Lobby not found, return 404 NOT FOUND
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Delete lobby failed because the lobby doesn’t exist");
-        }
-
-        // Lobby found, retrieve lobby entity
-        Lobby lobby = optionalLobby.get();
-
-        // Check if the player is the owner of the lobby
-        if (!lobby.getLobbyOwner().getUsername().equals(username)) {
-            // The player is not the owner, return an error message
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Only the lobby owner can delete the lobby");
-        }
-
-        // Delete the lobby
-        lobbyRepository.delete(lobby);
-
-        // Return 204 NO CONTENT to indicate successful deletion of the lobby
-        return ResponseEntity.noContent().build();
-    }
-
 }
