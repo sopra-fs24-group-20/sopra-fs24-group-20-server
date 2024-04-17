@@ -48,9 +48,10 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: Functionalities to delete a lobby
 
 ### Joshua Stebler
-- GitHub Issue Links: [Issue #]()
-- Task 1:
-- Task 2:
+- GitHub Issue Links: [Issue 35](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/35),[Issue 5](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/5),[Issue 4](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/4)
+- Task 1:Add The ability to change The settings
+- Task 2:Only allow a player to join if the loby is in setup
+- Task 3
 
 ### Joshua Weder
 - GitHub Issue Links: [Issue 22](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/22)
@@ -71,4 +72,5 @@ This markdown file logs the individual contributions of each team member through
 - GitHub Issue Links: [Issue 17](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/17), [Issue 18](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/18), [Issue 21](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/21)
 - Task 1: game screen page 
 - Task 2: bug fixes in frontend and consistency checks for frontend and backend
+
 
