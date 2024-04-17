@@ -1,4 +1,4 @@
-package ch.uzh.ifi.hase.soprafs24.controller;
+package ch.uzh.ifi.hase.soprafs24;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;

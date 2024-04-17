@@ -33,15 +33,4 @@ public class GameService {
 
     }
 
-    @Transactional
-    public GameStatus stopGame(Long lobbyId) {
-        Game game = gameRepository.findByLobbyId(lobbyId);
-        if (game != null) {
-            game.setStatus(GameStatus.VOTE);
-            gameRepository.save(game);
-            return GameStatus.VOTE;
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
-        }
-    }
 }
