@@ -53,9 +53,12 @@ This markdown file logs the individual contributions of each team member through
 - Task 2:
 
 ### Joshua Weder
-- GitHub Issue Links: [Issue #]()
-- Task 1: 
-- Task 2:
+- GitHub Issue Links: [Issue 22](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/22)
+  [Issue 23](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/23)
+  [Issue 24](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/24)
+- Task 1: Formatting of the Evaluation Screen
+- Task 2: First functionalities of the Evaluation Screen
+- Task 3: bug fixes in the frontend regarding routing etc. 
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 15](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/15),
