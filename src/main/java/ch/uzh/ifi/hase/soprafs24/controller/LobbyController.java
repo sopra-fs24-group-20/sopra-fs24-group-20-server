@@ -182,33 +182,6 @@ public class LobbyController {
     }
 
 
-   /*
-    @GetMapping("/players")
-    public ResponseEntity<Object> getPlayers(@RequestParam String lobbyName) {
-        // Implementiere die Logik zum Abrufen der Spieler in einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren
-        // Rückgabe der entsprechenden Antwort mit den Spielern oder einer Fehlermeldung
-    }
-
-    @GetMapping("/status")
-    public ResponseEntity<Object> getLobbyStatus(@RequestParam String lobbyName) {
-        // Implementiere die Logik zum Abrufen des Status einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren
-        // Rückgabe der entsprechenden Antwort mit dem Status oder einer Fehlermeldung
-    }
-
-    @PutMapping("/status")
-    public ResponseEntity<Object> updateLobbyStatus(@RequestParam String lobbyName, @RequestBody String lobbyStatus) {
-        // Implementiere die Logik zum Aktualisieren des Status einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren, und lobbyStatus für den neuen Status
-        // Rückgabe der entsprechenden Antwort, z.B. 204 NO CONTENT oder 400 BAD REQUEST
-    }
-
-
-
-
-    */
-
 
     @PostMapping("/leave")
     public ResponseEntity<Object> leaveLobby(@RequestBody LobbyPostDTO lobbyPostDTO) {
