@@ -2,7 +2,10 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,15 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPutDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/lobby")
@@ -89,7 +91,36 @@ public class LobbyController {
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
+    @GetMapping("/players")
+    public ResponseEntity<List<PlayerGetDTO>> getAllPlayers() {
+        List<Player> players = playerRepository.findAll();
+        List<PlayerGetDTO> playerDTOs = players.stream()
+                .map(this::convertToPlayerGetDTO)
+                .collect(Collectors.toList());
 
+        return ResponseEntity.ok(playerDTOs);
+    }
+
+    private PlayerGetDTO convertToPlayerGetDTO(Player player) {
+        PlayerGetDTO dto = new PlayerGetDTO();
+        dto.setReady(player.getReady());
+        dto.setUsername(player.getUsername());
+        dto.setPassword(player.getPassword());
+        dto.setStats(player.getStats().stream()
+                .map(this::convertToStatisticDTO)
+                .collect(Collectors.toList()));
+        // Ensure the password is not set
+        return dto;
+    }
+
+    private StatisticDTO convertToStatisticDTO(Statistic stat) {
+        StatisticDTO statDto = new StatisticDTO();
+        statDto.setAnswer(stat.getAnswer());
+        statDto.setPoints(stat.getPoints());
+        statDto.setVeto(stat.getVeto());
+        statDto.setBonus(stat.getBonus());
+        return statDto;
+    }
     @PutMapping("/settings/{LobbyId}")
     @Transactional
     public ResponseEntity<Lobby> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {

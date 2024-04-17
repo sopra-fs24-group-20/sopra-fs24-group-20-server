@@ -29,6 +29,4 @@ public class PlayerPutDTO {
         this.stats = stats;
     }
 
-
-
 }
