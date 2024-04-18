@@ -34,6 +34,7 @@ public class LobbyController {
     @Autowired
     private LobbyService lobbyService;
 
+
     @PostMapping("/create")
     public ResponseEntity<LobbyGetDTO> createLobby(@RequestBody LobbyPostDTO lobbyPostDTO) {
 
