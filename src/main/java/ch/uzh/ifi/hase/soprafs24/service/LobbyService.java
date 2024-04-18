@@ -8,11 +8,13 @@ import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -22,6 +24,7 @@ public class LobbyService {
 
     @Autowired
     private LobbyRepository lobbyRepository; // Corrected to instance call
+
     @Autowired
     private GameRepository gameRepository; // Corrected to instance call
     @Autowired
@@ -49,6 +52,8 @@ public class LobbyService {
         lobby.setGameMode("1");
         lobby.setLobbyStatus(LobbyStatus.SETUP);
         return lobbyRepository.save(lobby);
+
+
     }
 
     @Transactional
@@ -68,19 +73,20 @@ public class LobbyService {
 
 
     @Transactional
-    public void leaveLobby(Long lobbyId, Player player) {
+    public boolean leaveLobby(Long lobbyId, String username) {
         // Find the lobby by its ID
         Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
         if (optionalLobby.isPresent()) {
             Lobby lobby = optionalLobby.get();
 
             // Check if player is in the lobby
-            if (!lobby.getPlayers().contains(player)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player is not in the lobby.");
+            boolean playerInLobby = lobby.getPlayers().stream().anyMatch(player -> player.getUsername().equals(username));
+            if (!playerInLobby) {
+                return false; // Player is not in the lobby
             }
 
             // Check if the player is the owner
-            if (lobby.getLobbyOwner().equals(player)) {
+            if (lobby.getLobbyOwner().getUsername().equals(username)) {
                 // If the player is the owner, find the next player to be assigned as owner
                 Player nextOwner = null;
                 if (lobby.getPlayers().size() > 1) {
@@ -93,18 +99,20 @@ public class LobbyService {
                 } else {
                     // If the next owner doesn't exist (current owner is the last player), delete the lobby
                     deleteLobbyById(lobbyId);
-                    return;
+                    return true; // Player successfully left the lobby
                 }
             }
 
             // Remove the player from the lobby and update the lobby
-            lobby.getPlayers().remove(player);
+            lobby.getPlayers().removeIf(player -> player.getUsername().equals(username));
             lobbyRepository.save(lobby);
+            return true; // Player successfully left the lobby
         } else {
             // Lobby not found, throw an exception or handle the situation accordingly
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
         }
     }
+
 
     @Transactional
     public void checkAndStartGame(Lobby lobby) {
@@ -120,4 +128,5 @@ public class LobbyService {
     private boolean areAllPlayersReady(Lobby lobby) {
         return lobby.getPlayers().stream().allMatch(Player::getReady);
     }
+
 }

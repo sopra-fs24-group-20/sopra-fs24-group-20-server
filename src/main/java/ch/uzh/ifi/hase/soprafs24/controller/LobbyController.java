@@ -5,11 +5,13 @@ import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
+import ch.uzh.ifi.hase.soprafs24.websocket.WebSocketService;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -34,6 +36,7 @@ public class LobbyController {
 
     @PostMapping("/create")
     public ResponseEntity<LobbyGetDTO> createLobby(@RequestBody LobbyPostDTO lobbyPostDTO) {
+
         // Check if required fields are present
         if (lobbyPostDTO.getLobbyName() == null || lobbyPostDTO.getLobbyName().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby name must not be empty");
@@ -48,6 +51,8 @@ public class LobbyController {
         // Call service method to create lobby
         Lobby createdLobby = lobbyService.createLobby(lobbyInput.getLobbyName(), lobbyInput.getLobbyPassword(), ownerPlayer);
 
+        //start Websocket
+        WebSocketService.startWebSocket(createdLobby.getLobbyId());
         // Convert created lobby entity to DTO and return it
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(DTOMapper.INSTANCE.convertEntityToLobbyGetDTO(createdLobby));
@@ -181,72 +186,13 @@ public class LobbyController {
         return ResponseEntity.ok(lobbyGetDTO);
     }
 
-
-   /*
-    @GetMapping("/players")
-    public ResponseEntity<Object> getPlayers(@RequestParam String lobbyName) {
-        // Implementiere die Logik zum Abrufen der Spieler in einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren
-        // Rückgabe der entsprechenden Antwort mit den Spielern oder einer Fehlermeldung
-    }
-
-    @GetMapping("/status")
-    public ResponseEntity<Object> getLobbyStatus(@RequestParam String lobbyName) {
-        // Implementiere die Logik zum Abrufen des Status einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren
-        // Rückgabe der entsprechenden Antwort mit dem Status oder einer Fehlermeldung
-    }
-
-    @PutMapping("/status")
-    public ResponseEntity<Object> updateLobbyStatus(@RequestParam String lobbyName, @RequestBody String lobbyStatus) {
-        // Implementiere die Logik zum Aktualisieren des Status einer bestimmten Lobby
-        // Verwende lobbyName, um die Lobby zu identifizieren, und lobbyStatus für den neuen Status
-        // Rückgabe der entsprechenden Antwort, z.B. 204 NO CONTENT oder 400 BAD REQUEST
-    }
-
-
-
-
-    */
-
-    @PutMapping("/{lobbyId}/leave")
-    public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestBody Player player) {
-        // Check if lobby exists
-        Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(lobbyId);
-        if (optionalLobby.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Lobby lobby = optionalLobby.get();
-
-        // Check if player is in the lobby
-        boolean playerInLobby = lobby.getPlayers().contains(player);
-        if (!playerInLobby) {
+    @PutMapping("/leave/{lobbyId}")
+    public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestParam String username) {
+        boolean leftSuccessfully = lobbyService.leaveLobby(lobbyId, username);
+        if (leftSuccessfully) {
+            return ResponseEntity.ok().build();
+        } else {
             return ResponseEntity.badRequest().body("Player is not in the lobby.");
         }
-
-        // Check if the player is the owner
-        if (lobby.getLobbyOwner().equals(player)) {
-            // If the player is the owner, find the next player to be assigned as owner
-            Player nextOwner = null;
-            if (lobby.getPlayers().size() > 1) {
-                nextOwner = lobby.getPlayers().get(1); // Assuming the second player becomes the owner
-            }
-
-            // If the next owner exists, assign them as the owner
-            if (nextOwner != null) {
-                lobby.setLobbyOwner(nextOwner);
-            } else {
-                // If the next owner doesn't exist (current owner is the last player), delete the lobby
-                lobbyService.deleteLobbyById(lobbyId);
-                return ResponseEntity.ok().build();
-            }
-        }
-
-        // Remove the player from the lobby and update the lobby
-        lobby.getPlayers().remove(player);
-        lobbyRepository.save(lobby); // Update the lobby in the database
-
-        return ResponseEntity.ok().build();
     }
 }
