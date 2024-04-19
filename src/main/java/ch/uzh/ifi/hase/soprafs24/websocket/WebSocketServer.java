@@ -1,4 +1,4 @@
-package ch.uzh.ifi.hase.soprafs24.websocket;
+package ch.uzh.ifi.hase.soprafs24.Websocket;
 
 import java.io.IOException;
 import java.util.*;
