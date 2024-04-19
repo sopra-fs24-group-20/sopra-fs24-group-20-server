@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface LobbyRepository extends JpaRepository<Lobby, Long> {
     // Query methods can be defined here
     Optional<Lobby> findByLobbyName(String LobbyName);
-    Optional<Lobby> findByLobbyId(Long lobbyId);
+    Optional<Lobby> findById(Long id);
 }

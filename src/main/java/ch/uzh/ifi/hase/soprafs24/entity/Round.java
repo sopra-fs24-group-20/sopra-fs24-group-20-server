@@ -1,11 +1,16 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import java.sql.Struct;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Entity
 @Table(name = "ROUND")
@@ -18,14 +23,29 @@ public class Round {
     @Column(nullable = false)
     private char assignedLetter;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "game_id", nullable = false)
+    @JsonIgnore
+    private Game game;
+
+    @Type(type = "text")
+    @Column(columnDefinition = "text")
+    private String playerAnswers;
     // Constructors, getters, and setters
 
-    public Round() {
-        // JPA requires a no-arg constructor
+    public String getPlayerAnswers() {
+        return playerAnswers;
     }
 
-    public Round(char assignedLetter) {
-        this.assignedLetter = assignedLetter;
+    public void setPlayerAnswers(String playerAnswers) {
+        this.playerAnswers = playerAnswers;
+    }
+    public Round() {
+        this.assignedLetter = generateRandomLetter();
+    }
+
+    private char generateRandomLetter() {
+        return (char) ('A' + new Random().nextInt(26));
     }
 
     public Long getId() {
@@ -43,4 +63,14 @@ public class Round {
     public void setAssignedLetter(char assignedLetter) {
         this.assignedLetter = assignedLetter;
     }
+
+
+    public Game getGame() {
+        return game;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
+    }
+    //public Lobby getLobby(){return getGame().getLobby();}
 }

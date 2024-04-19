@@ -1,4 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.service;
+import java.util.NoSuchElementException;
 
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
@@ -16,21 +17,16 @@ import static ch.uzh.ifi.hase.soprafs24.constant.GameStatus.ANSWER;
 
 @Service
 public class GameService {
+
     private final GameRepository gameRepository;
+
     @Autowired
     public GameService(GameRepository gameRepository) {
         this.gameRepository = gameRepository;
     }
-    public Boolean checkAllReady(){
-        return true;
-    }
-    public void startGame(){
-        if(checkAllReady()){
-            Game game = new Game();
-            game.setStatus(ANSWER);
-            //start round//////////////////////////////////////////////////////////////////////////////
-        }
 
+    public Game getGameByLobbyId(Long lobbyId) {
+        return gameRepository.findByLobbyId(lobbyId).orElseThrow(() ->
+                new NoSuchElementException("Game with lobbyId " + lobbyId + " not found"));
     }
-
 }

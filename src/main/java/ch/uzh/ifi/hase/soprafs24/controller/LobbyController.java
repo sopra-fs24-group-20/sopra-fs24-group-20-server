@@ -1,11 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
 import ch.uzh.ifi.hase.soprafs24.websocket.WebSocketService;
+import org.apache.catalina.Store;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,6 +36,8 @@ public class LobbyController {
     private PlayerRepository playerRepository;
     @Autowired
     private LobbyService lobbyService;
+    @Autowired
+    private GameRepository gameRepository;
 
 
     @PostMapping("/create")
@@ -52,6 +57,14 @@ public class LobbyController {
         // Call service method to create lobby
         Lobby createdLobby = lobbyService.createLobby(lobbyInput.getLobbyName(), lobbyInput.getLobbyPassword(), ownerPlayer);
 
+        lobbyRepository.save(createdLobby); // Update the lobby with the game link
+        Game game = new Game();
+        game.setStatus(GameStatus.VOTE);
+        game.setRoundCount(1); // Ensure this is never null, set a default or calculated value
+        game.setLobby(createdLobby);
+        createdLobby.setGame(game);
+
+        gameRepository.save(game);
         //start Websocket
         WebSocketService.startWebSocket(createdLobby.getLobbyId());
         // Convert created lobby entity to DTO and return it
@@ -67,7 +80,7 @@ public class LobbyController {
         long lobbyId = lobbyPostDTO.getLobbyId();
         String username = lobbyPostDTO.getUsername();
         // Check if lobby exists
-        Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(lobbyId);
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
         if (optionalLobby.isEmpty()) {
             // Lobby not found, return 404 NOT FOUND
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -130,7 +143,7 @@ public class LobbyController {
     @PutMapping("/settings/{LobbyId}")
     @Transactional
     public ResponseEntity<Lobby> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {
-        Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(LobbyId);
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(LobbyId);
         if (optionalLobby.isEmpty()) {
             return ResponseEntity.notFound().build(); // Returns a 404 Not Found
         }
@@ -167,7 +180,7 @@ public class LobbyController {
     }
     @GetMapping("/settings/{LobbyId}")
     public ResponseEntity<LobbyGetDTO> getLobbySettings(@PathVariable Long LobbyId) {
-        Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyId(LobbyId);
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(LobbyId);
         if (optionalLobby.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

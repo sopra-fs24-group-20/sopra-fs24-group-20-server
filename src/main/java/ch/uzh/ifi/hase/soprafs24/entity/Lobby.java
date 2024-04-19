@@ -14,7 +14,7 @@ public class Lobby {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long lobbyId;
+    private Long id;
 
     @Column(nullable = false)
     private String lobbyName;
@@ -48,6 +48,7 @@ public class Lobby {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "game_id", referencedColumnName = "id")
+    @JsonManagedReference
     private Game game;
 
     @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -58,11 +59,11 @@ public class Lobby {
 
     // Getters and setters
     public Long getLobbyId() {
-        return lobbyId;
+        return id;
     }
 
     public void setLobbyId(Long lobbyId) {
-        this.lobbyId = lobbyId;
+        this.id = lobbyId;
     }
 
     public String getLobbyName() {

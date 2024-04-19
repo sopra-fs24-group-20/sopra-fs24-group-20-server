@@ -5,7 +5,7 @@ import java.util.List;
 public class LobbyPostDTO {
     private String lobbyName;
     private String lobbyPassword;
-    private long lobbyId;
+    private long id;
     private String username;
     private String password;
     private int roundDuration;
@@ -31,8 +31,8 @@ public class LobbyPostDTO {
     }
 
     public String getLobbyPassword() { return lobbyPassword; }
-    public void setLobbyId(long lobbyId) { this.lobbyId = lobbyId; }
-    public long getLobbyId() { return lobbyId; }
+    public void setLobbyId(long lobbyId) { this.id = lobbyId; }
+    public long getLobbyId() { return id; }
 
     public String getUsername() { return username; }
     public String getPassword() { return password; }
