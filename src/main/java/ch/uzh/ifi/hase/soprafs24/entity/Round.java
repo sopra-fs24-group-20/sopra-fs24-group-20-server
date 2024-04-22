@@ -1,14 +1,9 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.sql.Struct;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -28,18 +23,15 @@ public class Round {
     @JsonIgnore
     private Game game;
 
-    @Type(type = "text")
-    @Column(columnDefinition = "text")
-    private String playerAnswers;
+    @ElementCollection
+    @CollectionTable(name = "player_answers", joinColumns = @JoinColumn(name = "round_id"))
+    @MapKeyColumn(name = "player_id")
+    @Column(name = "answer_info") // Rename to a more descriptive name
+    private Map<String, Answer> roundAnswers = new HashMap<>();
+
     // Constructors, getters, and setters
 
-    public String getPlayerAnswers() {
-        return playerAnswers;
-    }
 
-    public void setPlayerAnswers(String playerAnswers) {
-        this.playerAnswers = playerAnswers;
-    }
     public Round() {
         this.assignedLetter = generateRandomLetter();
     }
@@ -73,4 +65,12 @@ public class Round {
         this.game = game;
     }
     //public Lobby getLobby(){return getGame().getLobby();}
+
+    public Map<String, Answer> getRoundAnswers() {
+        return roundAnswers;
+    }
+
+    public void setRoundAnswers(Map<String, Answer> roundAnswers) {
+        this.roundAnswers = roundAnswers;
+    }
 }
