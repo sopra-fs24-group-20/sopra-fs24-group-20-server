@@ -199,6 +199,21 @@ public class LobbyController {
         return ResponseEntity.ok(lobbyGetDTO);
     }
 
+    @GetMapping("/{lobbyId}/gameId")
+    public ResponseEntity<Object> getGameId(@PathVariable Long lobbyId) {
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        if (optionalLobby.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lobby not found with id: " + lobbyId);
+        }
+        Lobby lobby = optionalLobby.get();
+        if (lobby.getGame() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game not found for Lobby with id: " + lobbyId);
+        }
+        Long gameId = lobby.getGame().getId();
+
+        return ResponseEntity.ok(gameId);
+    }
+
     @PutMapping("/leave/{lobbyId}")
     public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestParam String username) {
         boolean leftSuccessfully = lobbyService.leaveLobby(lobbyId, username);
