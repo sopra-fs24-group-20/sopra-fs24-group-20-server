@@ -220,7 +220,8 @@ public class LobbyController {
         if (leftSuccessfully) {
             return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.badRequest().body("Player is not in the lobby.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("There was an issue with the player leaving the lobby.");
         }
     }
+
 }

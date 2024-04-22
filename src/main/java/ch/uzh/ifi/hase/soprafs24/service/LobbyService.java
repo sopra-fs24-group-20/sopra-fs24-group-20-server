@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -74,44 +75,37 @@ public class LobbyService {
 
     @Transactional
     public boolean leaveLobby(Long lobbyId, String username) {
-        // Find the lobby by its ID
-        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
-        if (optionalLobby.isPresent()) {
-            Lobby lobby = optionalLobby.get();
+        // Fetch the lobby, handling the case where it might not exist
+        Lobby lobby = lobbyRepository.findById(lobbyId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
-            // Check if player is in the lobby
-            boolean playerInLobby = lobby.getPlayers().stream().anyMatch(player -> player.getUsername().equals(username));
-            if (!playerInLobby) {
-                return false; // Player is not in the lobby
+        // Check if the user trying to leave is the owner
+        boolean isOwnerLeaving = lobby.getLobbyOwner().getUsername().equals(username);
+
+        // Remove the player from the lobby
+        lobby.getPlayers().removeIf(player -> player.getUsername().equals(username));
+
+        // If the owner is leaving, handle lobby ownership transfer or lobby deletion
+        if (isOwnerLeaving) {
+            if (lobby.getPlayers().isEmpty()) {
+                // No players left, delete the lobby if owner leaves and no one else is there
+                lobbyRepository.delete(lobby);
+            } else {
+                // Assign a new owner from remaining players and update the lobby
+                lobby.setLobbyOwner(lobby.getPlayers().get(0));
+                lobbyRepository.save(lobby);
             }
-
-            // Check if the player is the owner
-            if (lobby.getLobbyOwner().getUsername().equals(username)) {
-                // If the player is the owner, find the next player to be assigned as owner
-                Player nextOwner = null;
-                if (lobby.getPlayers().size() > 1) {
-                    nextOwner = lobby.getPlayers().get(1); // Assuming the second player becomes the owner
-                }
-
-                // If the next owner exists, assign them as the owner
-                if (nextOwner != null) {
-                    lobby.setLobbyOwner(nextOwner);
-                } else {
-                    // If the next owner doesn't exist (current owner is the last player), delete the lobby
-                    deleteLobbyById(lobbyId);
-                    return true; // Player successfully left the lobby
-                }
-            }
-
-            // Remove the player from the lobby and update the lobby
-            lobby.getPlayers().removeIf(player -> player.getUsername().equals(username));
-            lobbyRepository.save(lobby);
-            return true; // Player successfully left the lobby
         } else {
-            // Lobby not found, throw an exception or handle the situation accordingly
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+            // Just save the updated list of players if a non-owner is leaving
+            lobbyRepository.save(lobby);
         }
+
+        return true;  // Return true as the operation is expected to always succeed if no exceptions were thrown
     }
+
+
+
+
 
 
     @Transactional

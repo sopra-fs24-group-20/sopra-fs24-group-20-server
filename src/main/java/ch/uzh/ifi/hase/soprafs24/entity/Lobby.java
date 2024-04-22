@@ -25,7 +25,7 @@ public class Lobby {
     @Column
     private LobbyStatus lobbyStatus;
     @OneToOne
-    @JoinColumn(name = "owner_id", nullable = false)
+    @JoinColumn(name = "owner_id", nullable = true)
     private Player lobbyOwner; // Attribute for owner ensuring a bidirectional one-to-one relationship
 
     @Column(nullable = true)
@@ -46,7 +46,7 @@ public class Lobby {
     @ElementCollection(fetch = FetchType.LAZY)
     private List<Character> excludedChars = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "game_id", referencedColumnName = "id")
     @JsonManagedReference
     private Game game;
