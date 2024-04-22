@@ -77,10 +77,9 @@ public class LobbyController {
         // Extract lobby name, lobby password, and username from the DTO
         String lobbyName = lobbyPostDTO.getLobbyName();
         String lobbyPassword = lobbyPostDTO.getLobbyPassword();
-        long lobbyId = lobbyPostDTO.getLobbyId();
         String username = lobbyPostDTO.getUsername();
         // Check if lobby exists
-        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        Optional<Lobby> optionalLobby = lobbyRepository.findByLobbyName(username);
         if (optionalLobby.isEmpty()) {
             // Lobby not found, return 404 NOT FOUND
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
