@@ -1,4 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
+import ch.uzh.ifi.hase.soprafs24.entity.Answer;
+import ch.uzh.ifi.hase.soprafs24.entity.CategoryAnswer;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
+@RequestMapping("/round")
 public class RoundController {
 
     private final RoundService roundService;
@@ -20,7 +23,7 @@ public class RoundController {
     public RoundController(RoundService roundService) {
         this.roundService = roundService;
     }
-    @GetMapping("/rounds/{gameId}")
+    @GetMapping("/{gameId}")
     public ResponseEntity<List<Round>> getRoundsByGameId(@PathVariable Long gameId) {
         List<Round> rounds = roundService.getRoundByGameId(gameId);
         if (rounds != null && !rounds.isEmpty()) {
@@ -31,28 +34,38 @@ public class RoundController {
     }
     @Autowired
     private ObjectMapper objectMapper;
-    @PostMapping("/rounds/{gameId}/entries")
+    @GetMapping("/answers/{gameId}")
+    public ResponseEntity<Map<String, Answer>> getAllRoundAnswers(@RequestParam Long gameId) {
+        List<Round> rounds = roundService.getRoundByGameId(gameId);
+        if (rounds != null && !rounds.isEmpty()) {
+            // Retrieve the answers for the first round (assuming only one round per game for simplicity)
+            Round round = rounds.get(0);
+            Map<String, Answer> roundAnswers = round.getRoundAnswers();
 
-    public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
-        try {
-            Round currentRound = roundService.getCurrentRoundByGameId(gameId);
-            if (currentRound != null) {
-                String entryJson = objectMapper.writeValueAsString(gameEntry);
-                String existingAnswers = currentRound.getPlayerAnswers();
-                String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
-                currentRound.setPlayerAnswers(updatedAnswers);
-                roundService.saveRound(currentRound);
-                return ResponseEntity.ok("{\"message\":\"Entry added successfully.\"}");
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"Failed to serialize entry.\"}");
+            // Return the round answers
+            return ResponseEntity.ok(roundAnswers);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    @PutMapping("/answers/player")
+    public ResponseEntity<Void> putPlayerAnswers(@RequestBody Map<String, Map<String, String>> playerAnswersFromFrontend) {
+        // Process and update the existing roundAnswers map with the player answers received from the frontend
+        roundService.updatePlayerAnswers(playerAnswersFromFrontend);
 
-    @GetMapping("/rounds/letters/{gameId}")
+        // Return a success response
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/answers/all")
+    public ResponseEntity<Void> putAllAnswers(@RequestBody Map<String, Answer> roundAnswersFromFrontend) {
+        // Update the existing roundAnswers map with the parsed round answers received from the frontend
+        roundService.updateAllAnswers(roundAnswersFromFrontend);
+
+        // Return a success response
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/letters/{gameId}")
     public ResponseEntity<Character> getLetter(@PathVariable Long gameId) {
         char currentLetter = roundService.getCurrentRoundLetter(gameId);
         if (currentLetter != '\0') {
