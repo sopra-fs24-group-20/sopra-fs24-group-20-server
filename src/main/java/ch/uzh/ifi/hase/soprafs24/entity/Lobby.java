@@ -25,7 +25,7 @@ public class Lobby {
     @Column
     private LobbyStatus lobbyStatus;
     @OneToOne
-    @JoinColumn(name = "owner_id", nullable = false)
+    @JoinColumn(name = "owner_id")
     private Player lobbyOwner; // Attribute for owner ensuring a bidirectional one-to-one relationship
 
     @Column(nullable = true)

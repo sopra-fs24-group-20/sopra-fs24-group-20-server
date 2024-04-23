@@ -166,5 +166,4 @@ public class WebSocketController {
             System.out.println("Failed to update round with answers");
         }
     }
-
 }
