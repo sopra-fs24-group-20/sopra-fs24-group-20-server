@@ -74,7 +74,7 @@ public class RoundService {
         }
 
         // Get scores and answers by category
-        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = calculateScoresAndAnswersByCategory(gameId);
+        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = calculateScoresCategory(gameId);
 
         Map<String, Integer> finalScores = new HashMap<>();
 
