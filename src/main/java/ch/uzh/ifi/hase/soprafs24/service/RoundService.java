@@ -1,5 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.service;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -67,18 +73,20 @@ public class RoundService {
     public void saveRound(Round round) {
         roundRepository.save(round);
     }
+
+    //sum up the scores from the function below
     public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
 
-        // Get scores and answers by category
+        // Get scores
         Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = calculateScoresCategory(gameId);
 
         Map<String, Integer> finalScores = new HashMap<>();
 
-        // Sum up scores across all categories
+        // Sum up
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
                 Integer score = (Integer) details.get("score");
@@ -86,7 +94,7 @@ public class RoundService {
             });
         });
 
-        // Sorting the leaderboard
+        // Sorting
         return finalScores.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -102,8 +110,8 @@ public class RoundService {
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
-
-        char assignedLetter = currentRound.getAssignedLetter(); // Fetch the assigned letter of the round
+        // get the assigned letter of the round
+        char assignedLetter = currentRound.getAssignedLetter();
         String answersJson = currentRound.getPlayerAnswers();
         if (answersJson == null || answersJson.isEmpty()) {
             return new HashMap<>();
@@ -114,7 +122,7 @@ public class RoundService {
 
         Map<String, Map<String, String>> answersByCategory = new HashMap<>();
 
-        // Prepare to collect all answers and compute scores
+        // Collect and parse jsoen
         answers.forEach(answer -> answer.keySet().forEach(key -> {
             if (!key.equals("username")) {
                 String value = answer.getOrDefault(key, "");
@@ -123,12 +131,11 @@ public class RoundService {
             }
         }));
 
-        // Calculate scores for each category based on uniqueness and include answers
         Map<String, Map<String, Map<String, Object>>> categoryScores = new HashMap<>();
         answersByCategory.forEach((category, userAnswers) -> {
             Map<String, Set<String>> uniqueCheck = new HashMap<>();
 
-            // Check and score each answer
+            // Check answer
             userAnswers.forEach((username, value) -> {
                 if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
                     uniqueCheck.computeIfAbsent(value.toLowerCase(), v -> new HashSet<>()).add(username);
@@ -138,10 +145,17 @@ public class RoundService {
             Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
             userAnswers.forEach((username, value) -> {
                 int points = 0;
-                if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter) && uniqueCheck.get(value.toLowerCase()).size() == 1) {
-                    points = 10;
-                } else if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
-                    points = 5;
+                //if word beginns with right letter
+                if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
+                    if (checkWordExists(value)) {
+                        if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
+                            points = 10;//word unique
+                        } else {
+                            points = 5;//word duplicated
+                        }
+                    } else {//word not exist
+                        points = 0;
+                    }
                 }
 
                 Map<String, Object> scoreAndAnswer = new HashMap<>();
@@ -154,5 +168,33 @@ public class RoundService {
         });
 
         return categoryScores;
+    }
+    public boolean checkWordExists(String word) {
+        try {
+            URL url = new URL("https://en.wiktionary.org/w/api.php?action=query&format=json&titles=" + word);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.connect();
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) {
+                throw new RuntimeException("HttpResponseCode: " + responseCode);
+            } else {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+
+                Pattern pattern = Pattern.compile("\"missing\"\\s*:\\s*\"\"");
+                Matcher matcher = pattern.matcher(response.toString());
+                return !matcher.find();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
