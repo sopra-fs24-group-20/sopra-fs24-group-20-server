@@ -61,4 +61,26 @@ public class RoundController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    @GetMapping("/rounds/leaderboard/{gameId}")
+    public ResponseEntity<Map<String, Integer>> getLeaderboard(@PathVariable Long gameId) {
+        try {
+            Map<String, Integer> leaderboard = roundService.calculateLeaderboard(gameId);
+            return ResponseEntity.ok(leaderboard);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    @GetMapping("/rounds/scores/{gameId}")
+    public ResponseEntity<?> getScoresByCategory(@PathVariable Long gameId) {
+        try {
+            Map<String, Map<String, Map<String, Object>>> scoresAndAnswersByCategory = roundService.calculateScoresCategory(gameId);
+            return ResponseEntity.ok(scoresAndAnswersByCategory);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
