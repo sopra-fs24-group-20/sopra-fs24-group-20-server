@@ -4,7 +4,7 @@ This markdown file logs the individual contributions of each team member through
 
 ---
 
-## Week 1 
+## Week 1 & 2
 
 ### Giuliano Bernasconi
 - GitHub Issue Links: [Issue 29](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/29), [Issue 32](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/32)
@@ -39,7 +39,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 2: Join lobby screen
 - Task 3: adjust frontend to take username as parameter to verify if logged in or not
 
-## Week 2
+## Week 3
 
 ### Giuliano Bernasconi
 - GitHub Issue Links: [Issue 27](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/27), [Issue 75](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/75), [Issue 76](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/76)
@@ -72,5 +72,28 @@ This markdown file logs the individual contributions of each team member through
 - GitHub Issue Links: [Issue 17](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/17), [Issue 18](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/18), [Issue 21](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/21)
 - Task 1: game screen page 
 - Task 2: bug fixes in frontend and consistency checks for frontend and backend
+
+## Week 4
+
+### Giuliano Bernasconi
+- GitHub Issue Links: 
+- Task 1: 
+
+### Joshua Stebler
+- GitHub Issue Links:
+- Task 1:
+
+### Joshua Weder
+- GitHub Issue Links: 
+- Task 1: 
+
+### Leonora Horvatic
+- GitHub Issue Links: 
+- Task 1: 
+
+### Mirjam Alexandra Weibel
+- GitHub Issue Links: 
+- Task 1: 
+
 
 
