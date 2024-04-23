@@ -51,7 +51,7 @@ public class Lobby {
     @JsonManagedReference
     private Game game;
 
-    @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "lobby", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JsonManagedReference
     private List<Player> players = new ArrayList<>();
 
