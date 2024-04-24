@@ -92,8 +92,14 @@ This markdown file logs the individual contributions of each team member through
 - Task 1:
 
 ### Leonora Horvatic
-- GitHub Issue Links: 
-- Task 1: 
+- GitHub Issue Links: [Issue 13](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/13),
+  [Issue 14](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/14),
+  [Issue 25](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/25),
+[Issue 26](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/26),
+- Task 1: debugging and clean ups
+- Task 2: ws settup in frontend
+- Task 3: final leaderboard functionality
+- Task 4: lobby page functionality handling with ws
 
 ### Mirjam Alexandra Weibel
 - GitHub Issue Links: 
