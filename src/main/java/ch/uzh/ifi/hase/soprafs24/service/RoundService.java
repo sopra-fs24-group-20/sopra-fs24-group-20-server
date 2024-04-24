@@ -122,7 +122,7 @@ public class RoundService {
 
         Map<String, Map<String, String>> answersByCategory = new HashMap<>();
 
-        // Collect and parse jsoen
+        // Collect and parse json
         answers.forEach(answer -> answer.keySet().forEach(key -> {
             if (!key.equals("username")) {
                 String value = answer.getOrDefault(key, "");
@@ -145,7 +145,7 @@ public class RoundService {
             Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
             userAnswers.forEach((username, value) -> {
                 int points = 0;
-                //if word beginns with right letter
+                //if word begins with right letter
                 if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
                     if (checkWordExists(value)) {
                         if (uniqueCheck.get(value.toLowerCase()).size() == 1) {

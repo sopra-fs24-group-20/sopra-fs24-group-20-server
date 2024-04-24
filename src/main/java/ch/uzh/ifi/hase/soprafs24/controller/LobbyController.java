@@ -8,13 +8,9 @@ import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
 import ch.uzh.ifi.hase.soprafs24.websocket.WebSocketService;
-import org.apache.catalina.Store;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -109,14 +105,15 @@ public class LobbyController {
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
-    @GetMapping("/players")
-    public ResponseEntity<List<PlayerGetDTO>> getAllPlayers() {
-        List<Player> players = playerRepository.findAll();
-        List<PlayerGetDTO> playerDTOs = players.stream()
-                .map(this::convertToPlayerGetDTO)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(playerDTOs);
+    @GetMapping("/players/{lobbyId}") //accept body (lobbyName) return only player
+    public ResponseEntity<List<Player>> getAllPlayers(@PathVariable Long LobbyId) {
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(LobbyId);
+        if (optionalLobby.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Lobby lobby = optionalLobby.get();
+        List<Player> lobbyPlayers = lobby.getPlayers();
+        return ResponseEntity.ok(lobbyPlayers);
     }
 
     private PlayerGetDTO convertToPlayerGetDTO(Player player) {
