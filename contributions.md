@@ -80,7 +80,7 @@ This markdown file logs the individual contributions of each team member through
 - Task1 :
 
 ### Joshua Stebler
-- GitHub Issue Links: [Issue 77](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/77), [Issue 59](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/59), [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/47, [Issue 7](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/7, [Issue 38](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/38, [Issue 37](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/37)
+- GitHub Issue Links: [Issue 77](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/77), [Issue 59](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/59), [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/47), [Issue 7](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/7), [Issue 38](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/38), [Issue 37](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/37)
 - Task 1: Add answer endpointe
 - Task 2: Use the api the assigned button and the uniqueness in the other submissions to asign points
 - Task 3: Prepare the data to add a engpoint where the points per player round can be gotten and one where the points per player answer are.
