@@ -103,7 +103,7 @@ This markdown file logs the individual contributions of each team member through
 
 ### Mirjam Alexandra Weibel
 - GitHub Issue Links: [Issue 16](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/16), [Issue 19](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/19), [Issue 20](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/20)
-- Task 1: connect gamescreen to backend with REST
+- Task 1: connect game meaningfully to backend with REST 
 - Task 2: implement game functionality with ws
 - Task 3: debugging and clean up, consistency checks frontend / backend
 
