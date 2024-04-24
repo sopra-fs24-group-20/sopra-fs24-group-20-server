@@ -3,6 +3,8 @@ package ch.uzh.ifi.hase.soprafs24.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -31,8 +33,19 @@ public class Round {
     @Type(type = "text")
     @Column(columnDefinition = "text")
     private String playerAnswers;
+
+    @Column(columnDefinition = "text")
+    private String roundPoints;  // This will store the JSON string
+
     // Constructors, getters, and setters
 
+    public String getRoundPoints() {
+        return roundPoints;
+    }
+
+    public void setRoundPoints(String pointsJson) {
+        this.roundPoints = pointsJson;
+    }
     public String getPlayerAnswers() {
         return playerAnswers;
     }

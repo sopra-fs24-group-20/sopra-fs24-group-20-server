@@ -108,10 +108,10 @@ public class WebSocketController {
         }
     }
 
-    @MessageMapping("/join")
-    @SendTo("/topic/lobby_join")
+    @MessageMapping("/refresh")
+    @SendTo("/topic/lobby-refresh")
     public String lobbyJoin(){
-        return "{\"command\":\"new-join\"}";
+        return "{\"command\":\"refresh\"}";
     }
 
     @MessageMapping("/stop-game")

@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,4 +86,30 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+        /* Working function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    commented out because not part of m3 and not shure if it adds bugs
+    @PostMapping("/rounds/{gameId}/submitVotes")
+    public ResponseEntity<?> submitVotes(@PathVariable Long gameId, @RequestBody String rawJson) {
+        try {
+            // First, parse the raw JSON into a simpler structure or directly into the desired complex structure
+            ObjectMapper objectMapper = new ObjectMapper();
+            TypeReference<HashMap<String, HashMap<String, HashMap<String, Object>>>> typeRef =
+                    new TypeReference<>() {};
+            HashMap<String, HashMap<String, HashMap<String, Object>>> votes = objectMapper.readValue(rawJson, typeRef);
+
+            // Proceed with using the parsed 'votes' as before
+            Map<String, Map<String, Map<String, Object>>> updatedScores = roundService.adjustScores(gameId, votes);
+            return ResponseEntity.ok(updatedScores);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
+        } catch (RuntimeException e) {
+            e.printStackTrace();  // Log runtime exceptions to help diagnose issues.
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();  // Log unexpected exceptions.
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    */
 }

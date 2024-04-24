@@ -166,9 +166,13 @@ public class RoundService {
 
             categoryScores.put(category, userScoresAndAnswers);
         });
-
+        ObjectMapper objectMapper = new ObjectMapper();
+        String scoresJson = objectMapper.writeValueAsString(categoryScores);
+        currentRound.setRoundPoints(scoresJson);
+        roundRepository.save(currentRound);
         return categoryScores;
     }
+
     public boolean checkWordExists(String word) {
         try {
             URL url = new URL("https://en.wiktionary.org/w/api.php?action=query&format=json&titles=" + word);
@@ -197,4 +201,62 @@ public class RoundService {
             return false;
         }
     }
-}
+    /* Working function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    commented out because not part of m3 and not shure if it adds bugs
+    public Map<String, Map<String, Map<String, Object>>> adjustScores(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
+        Round currentRound = getCurrentRoundByGameId(gameId);
+        if (currentRound == null) {
+            throw new RuntimeException("No current round found for game ID: " + gameId);
+        }
+
+        // Retrieve the current scores stored in the Round
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String answersJson = currentRound.getRoundPoints().toString();
+        TypeReference<Map<String, Map<String, Map<String, Object>>>> typeRef = new TypeReference<>() {};
+        Map<String, Map<String, Map<String, Object>>> currentScores = objectMapper.readValue(answersJson, typeRef);
+
+        // Prepare to aggregate vetoes and bonuses
+        Map<String, Map<String, Boolean>> hasVeto = new HashMap<>();
+        Map<String, Map<String, Integer>> bonusCounts = new HashMap<>();
+
+        // Count vetoes and bonuses
+        adjustments.forEach((category, users) -> users.forEach((username, details) -> {
+            boolean veto = (boolean) details.get("veto");
+            boolean bonus = (boolean) details.get("bonus");
+            int bonusCount = bonus ? 3 : 0;  // Each bonus adds 3 points
+
+            hasVeto.computeIfAbsent(category, k -> new HashMap<>()).merge(username, veto, (a, b) -> a || b);
+            bonusCounts.computeIfAbsent(category, k -> new HashMap<>()).merge(username, bonusCount, Integer::sum);
+        }));
+
+        // Apply vetoes and bonuses
+        currentScores.forEach((category, users) -> users.forEach((username, userScores) -> {
+            int currentScore = (int) userScores.get("score");
+
+            // Apply vetoes if any
+            Boolean veto = hasVeto.getOrDefault(category, new HashMap<>()).get(username);
+            if (veto != null && veto) {
+                currentScore = (currentScore == 10 ? 0 : 10);  // Flips score if veto is applied
+            }
+
+            // Apply bonuses
+            Integer bonusAddition = bonusCounts.getOrDefault(category, new HashMap<>()).get(username);
+            if (bonusAddition != null) {
+                currentScore += bonusAddition;
+            }
+
+            userScores.put("score", currentScore);
+        }));
+
+        // Serialize and save the updated scores back to the round
+        String scoresJson = objectMapper.writeValueAsString(currentScores);
+        currentRound.setRoundPoints(scoresJson);
+        roundRepository.save(currentRound);
+        currentRound.setPlayerAnswers(scoresJson);  // Assuming you need to update this field as well
+
+        return currentScores;
+    }
+    */
+    }
+
