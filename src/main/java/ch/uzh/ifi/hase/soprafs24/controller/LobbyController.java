@@ -109,7 +109,7 @@ public class LobbyController {
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
-    @GetMapping("/players/{lobbyId}") //accept body (lobbyName) return only player
+    @GetMapping("/players/{LobbyId}") //accept body (lobbyName) return only player
     public ResponseEntity<List<Player>> getAllPlayers(@PathVariable Long LobbyId) {
         Optional<Lobby> optionalLobby = lobbyRepository.findById(LobbyId);
         if (optionalLobby.isEmpty()) {
