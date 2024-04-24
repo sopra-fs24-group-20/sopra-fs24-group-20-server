@@ -88,8 +88,12 @@ This markdown file logs the individual contributions of each team member through
 - Task 5 Add functionality to start(create) a game and start(create) a round
 
 ### Joshua Weder
-- GitHub Issue Links: 
-- Task 1:
+- GitHub Issue Links: [Issue 23](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/23)
+  [Issue 91](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/91)
+- Task 1: Button that navigates between the individual categories and navigates to the final Leaderboard screen in the end.
+  Generally fixed the routing.
+- Task 2: First implementation of the Veto and Bonus buttons.
+- Task 3: Fixated the display of the answers of each player for each category. Changed the overall formatting of the evaluation screen.
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 13](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/13),
