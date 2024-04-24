@@ -24,7 +24,7 @@ public class Round {
     @JsonIgnore
     private Game game;
 
-    /*
+
     @ElementCollection
     @CollectionTable(name = "player_answers", joinColumns = @JoinColumn(name = "player_answer_id"))
     @MapKeyColumn(name = "username")
@@ -60,7 +60,7 @@ public class Round {
             this.categoryAnswer = categoryAnswer;
         }
     }
-    */
+
 
 
     public Round() {
@@ -97,7 +97,7 @@ public class Round {
     }
     //public Lobby getLobby(){return getGame().getLobby();}
 
-    /*
+
     public Map<String, List<PlayerCategoryResponse>> getRoundAnswers() {
         return roundAnswers;
     }
@@ -105,5 +105,5 @@ public class Round {
     public void setRoundAnswers(Map<String, List<PlayerCategoryResponse>> roundAnswers) {
         this.roundAnswers = roundAnswers;
     }
-     */
+
 }

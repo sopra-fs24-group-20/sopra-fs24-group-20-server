@@ -49,12 +49,10 @@ public class RoundService {
         return '\0';
     }
 
-    /*
     @Transactional
-    public void updatePlayerAnswers(String roundId, String username, Map<String, String> categoryAnswers) {
+    public void updatePlayerAnswers(Long gameId, String username, Map<String, String> categoryAnswers) {
         // Retrieve the round based on ID, throwing an exception if not found
-        Round round = roundRepository.findById(Long.valueOf(roundId))
-                .orElseThrow(() -> new IllegalArgumentException("Round not found!"));
+        Round round = getCurrentRoundByGameId(gameId);
 
         // Get the existing answers map or initialize a new one if none exists for the user
         Map<String, List<Round.PlayerCategoryResponse>> playerAnswers = round.getRoundAnswers();
@@ -86,10 +84,9 @@ public class RoundService {
 
 
     @Transactional
-    public void updateAllAnswers(Long roundId, Map<String, List<Round.PlayerCategoryResponse>> newPlayerAnswers) {
+    public void updateAllAnswers(Long GameId, Map<String, List<Round.PlayerCategoryResponse>> newPlayerAnswers) {
         // Retrieve the round based on ID
-        Round round = roundRepository.findById(roundId)
-                .orElseThrow(() -> new RuntimeException("Round not found"));
+        Round round = getCurrentRoundByGameId(GameId);
 
         // Replace the existing answers map with the new one
         round.setRoundAnswers(newPlayerAnswers);
@@ -98,7 +95,7 @@ public class RoundService {
         roundRepository.save(round);
     }
 
-     */
+
 
     public Round getCurrentRound() {
         return roundRepository.findTopByOrderByIdDesc().orElse(null);

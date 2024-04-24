@@ -2,13 +2,17 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
@@ -31,47 +35,41 @@ public class RoundController {
     }
     @Autowired
     private ObjectMapper objectMapper;
-    /*
+
     @GetMapping("/answers/{gameId}")
-    public ResponseEntity<Map<String, Answer>> getAllRoundAnswers(@RequestParam Long gameId) {
-        List<Round> rounds = roundService.getRoundByGameId(gameId);
-        if (rounds != null && !rounds.isEmpty()) {
-            // Retrieve the answers for the first round (assuming only one round per game for simplicity)
-            Round round = rounds.get(0);
-            Map<String, Answer> roundAnswers = round.getRoundAnswers();
-
-            // Return the round answers
-            return ResponseEntity.ok(roundAnswers);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<String> getAnswersByGameId(@PathVariable Long gameId) {
+        Round currentRound = roundService.getCurrentRoundByGameId(gameId);
+        if (currentRound == null) {
+            return ResponseEntity.notFound().build(); // Return 404 if no current round found
         }
-    }
-    @PutMapping("/answers/player")
-    public ResponseEntity<Void> putPlayerAnswers(@RequestBody PlayerAnswersRequest playerAnswersRequest) {
+
+        // Assuming PlayerCategoryResponse can be directly serialized and matches the frontend expectations
+        List<Round.PlayerCategoryResponse> currentRoundAnswers = currentRound.getRoundAnswers().getOrDefault("username", new ArrayList<>());
+
         try {
-            // Extract data from the request
-            String roundId = playerAnswersRequest.getRoundId();
-            String username = playerAnswersRequest.getUsername();
-            Map<String, String> categoryAnswers = playerAnswersRequest.getAnswers();
-
-            // Call the existing method to update player answers
-            roundService.updatePlayerAnswers(roundId, username, categoryAnswers);
-
-            // Return a success response
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            // Handle any exceptions and return appropriate response
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(currentRoundAnswers);
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(json);
+        } catch (Exception e) {
+            // Log the error and return an appropriate response
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing JSON");
         }
     }
 
-    @PutMapping("/answers/all")
-    public ResponseEntity<?> updateAnswers(@PathVariable Long roundId, @RequestBody Map<String, List<Round.PlayerCategoryResponse>> newPlayerAnswers) {
-        roundService.updateAllAnswers(roundId, newPlayerAnswers);
-        return ResponseEntity.ok("Answers updated successfully");
+
+    @PutMapping("/answers/{gameId}/player")
+    public ResponseEntity<?> updatePlayerAnswers(@PathVariable Long gameId, @RequestBody PlayerAnswersUpdateRequest request) {
+        roundService.updatePlayerAnswers(gameId, request.getUsername(), request.getCategoryAnswers());
+        return ResponseEntity.ok("Player answers updated successfully");
     }
-     */
+
+    @PutMapping("/answers/{gameId}/all")
+    public ResponseEntity<?> updateAllAnswers(@PathVariable Long gameId, @RequestBody Map<String, List<Round.PlayerCategoryResponse>> allAnswers) {
+        roundService.updateAllAnswers(gameId, allAnswers);
+        return ResponseEntity.ok("All answers updated successfully");
+    }
+
+
     @GetMapping("/letters/{gameId}")
     public ResponseEntity<Character> getLetter(@PathVariable Long gameId) {
         char currentLetter = roundService.getCurrentRoundLetter(gameId);
@@ -79,6 +77,29 @@ public class RoundController {
             return new ResponseEntity<>(currentLetter, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    // Helper DTO
+    public static class PlayerAnswersUpdateRequest {
+        private String username;
+        private Map<String, String> categoryAnswers;
+
+        // Getters and setters
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public Map<String, String> getCategoryAnswers() {
+            return categoryAnswers;
+        }
+
+        public void setCategoryAnswers(Map<String, String> categoryAnswers) {
+            this.categoryAnswers = categoryAnswers;
         }
     }
 }
