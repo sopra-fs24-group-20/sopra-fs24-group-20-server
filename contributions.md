@@ -76,8 +76,10 @@ This markdown file logs the individual contributions of each team member through
 ## Week 4
 
 ### Giuliano Bernasconi
-- GitHub Issue Links:
-- Task1 :
+- GitHub Issue Links:[Issue 50](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/50), [Issue 52](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/52), [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/47)
+- Task1 : Identify unique answers and give points
+- Task2 : Being the only VALID answer be awarded bonus points
+- Task3 : Polishing of Answer structure (unknown errors)
 
 ### Joshua Stebler
 - GitHub Issue Links: [Issue 77](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/77), [Issue 59](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/59), [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/47), [Issue 7](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/7),[Issue 54](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/54)
