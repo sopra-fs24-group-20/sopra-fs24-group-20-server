@@ -70,7 +70,7 @@ This markdown file logs the individual contributions of each team member through
 
 ### Mirjam Alexandra Weibel
 - GitHub Issue Links: [Issue 17](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/17), [Issue 18](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/18), [Issue 21](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/21)
-- Task 1: game screen page 
+- Task 1: game screen page formatting
 - Task 2: bug fixes in frontend and consistency checks for frontend and backend
 
 ## Week 4
@@ -102,8 +102,10 @@ This markdown file logs the individual contributions of each team member through
 - Task 4: lobby page functionality handling with ws
 
 ### Mirjam Alexandra Weibel
-- GitHub Issue Links: 
-- Task 1: 
+- GitHub Issue Links: [Issue 16](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/16), [Issue 19](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/19), [Issue 20](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/20)
+- Task 1: connect gamescreen to backend with REST
+- Task 2: implemennt game functionality with ws
+- Task 3: debugging and clean up, consistency checks frontend / backend
 
 
 
