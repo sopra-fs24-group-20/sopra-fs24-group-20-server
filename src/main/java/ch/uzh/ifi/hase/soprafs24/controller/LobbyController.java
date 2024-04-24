@@ -109,15 +109,17 @@ public class LobbyController {
         // Return 200 OK with joined lobby data
         return ResponseEntity.ok(lobby);
     }
-    @GetMapping("/players")
-    public ResponseEntity<List<PlayerGetDTO>> getAllPlayers() {
-        List<Player> players = playerRepository.findAll();
-        List<PlayerGetDTO> playerDTOs = players.stream()
-                .map(this::convertToPlayerGetDTO)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(playerDTOs);
+    @GetMapping("/players/{lobbyId}") //accept body (lobbyName) return only player
+    public ResponseEntity<List<Player>> getAllPlayers(@PathVariable Long LobbyId) {
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(LobbyId);
+        if (optionalLobby.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Lobby lobby = optionalLobby.get();
+        List<Player> lobbyPlayers = lobby.getPlayers();
+        return ResponseEntity.ok(lobbyPlayers);
     }
+
 
     private PlayerGetDTO convertToPlayerGetDTO(Player player) {
         PlayerGetDTO dto = new PlayerGetDTO();
