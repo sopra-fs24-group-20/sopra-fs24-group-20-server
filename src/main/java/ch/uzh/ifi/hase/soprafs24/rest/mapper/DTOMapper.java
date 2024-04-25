@@ -53,6 +53,6 @@ public interface DTOMapper {
     @Mapping(target = "username", ignore = true)
     @Mapping(target = "token", ignore = true)
     @Mapping(target = "lobby", ignore = true)
-    @Mapping(source = "stats", target = "stats")
+    @Mapping(target = "stats",ignore = true)
     Player convertPlayerPutDTOtoEntity(PlayerPutDTO playerPutDTO);
 }

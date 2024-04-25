@@ -121,26 +121,6 @@ public class LobbyController {
     }
 
 
-    private PlayerGetDTO convertToPlayerGetDTO(Player player) {
-        PlayerGetDTO dto = new PlayerGetDTO();
-        dto.setReady(player.getReady());
-        dto.setUsername(player.getUsername());
-        dto.setPassword(player.getPassword());
-        dto.setStats(player.getStats().stream()
-                .map(this::convertToStatisticDTO)
-                .collect(Collectors.toList()));
-        // Ensure the password is not set
-        return dto;
-    }
-
-    private StatisticDTO convertToStatisticDTO(Statistic stat) {
-        StatisticDTO statDto = new StatisticDTO();
-        statDto.setAnswer(stat.getAnswer());
-        statDto.setPoints(stat.getPoints());
-        statDto.setVeto(stat.getVeto());
-        statDto.setBonus(stat.getBonus());
-        return statDto;
-    }
     @PutMapping("/settings/{LobbyId}")
     @Transactional
     public ResponseEntity<Lobby> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {
