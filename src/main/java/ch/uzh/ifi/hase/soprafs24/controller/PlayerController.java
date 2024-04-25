@@ -24,11 +24,11 @@ import java.util.List;
 @RestController
 public class PlayerController {
 
-  private final PlayerService PlayerService;
+    private final PlayerService PlayerService;
 
-  PlayerController(PlayerService PlayerService) {
-    this.PlayerService = PlayerService;
-  }
+    PlayerController(PlayerService PlayerService) {
+        this.PlayerService = PlayerService;
+    }
 
     @GetMapping("/players")
     @ResponseStatus(HttpStatus.OK)
@@ -44,6 +44,7 @@ public class PlayerController {
         }
         return playerGetDTOs;
     }
+
     @PutMapping("/players/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -78,7 +79,7 @@ public class PlayerController {
     public PlayerGetDTO getPlayerByUsername(@PathVariable String Username) {
         // fetch Player by Username
         Player Player = PlayerService.getPlayerByUsername(Username);
-        if (Player == null){
+        if (Player == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found with Username: " + Username);
         }
         // convert Player to the API representation
@@ -93,32 +94,39 @@ public class PlayerController {
         PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
         return ResponseEntity.ok(playerGetDTO);
     }
+    {/*
     @PostMapping("/player/answer/{username}")
     public ResponseEntity<?> addPlayerAnswer(@PathVariable String username, @RequestBody List<String> answers) {
         try {
             boolean updated = PlayerService.addAnswer(username, answers);
             if (updated) {
                 return ResponseEntity.ok().build();
-            } else {
+            }
+            else {
                 return ResponseEntity.badRequest().build();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @PutMapping("/player/answer/{username}")
     public ResponseEntity<?> addPlayerVotes(@PathVariable String username, @RequestBody List<Boolean> votes) {
         try {
             boolean updated = PlayerService.addVotes(username, votes);
             if (updated) {
                 return ResponseEntity.noContent().build();
-            } else {
+            }
+            else {
                 return ResponseEntity.badRequest().build();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+*/}
     {/*
   @PutMapping("/logout/{id}")
   @ResponseStatus(HttpStatus.OK)

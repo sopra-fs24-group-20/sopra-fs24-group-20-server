@@ -27,15 +27,6 @@ public class PlayerService {
         this.playerRepository = playerRepository;
     }
 
-    public int getPoints(String username) {
-        Player player = playerRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
-        // This method would need to calculate the points from the player's stats
-        // Example calculation, replace with actual logic
-        return player.getStats().stream()
-                .flatMapToInt(stats -> stats.getPoints().stream().mapToInt(Integer::intValue))
-                .sum();
-    }
 
     private static final Logger log = LoggerFactory.getLogger(PlayerService.class);
 
@@ -80,6 +71,7 @@ public class PlayerService {
                 .filter(player -> password.equals(player.getPassword()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password Incorrect"));
     }
+    /*
     public boolean addAnswer(String username, List<String> answers) {
         // Using Optional to handle possible null value for player
         Optional<Player> optionalPlayer = playerRepository.findByUsername(username);
@@ -113,6 +105,6 @@ public class PlayerService {
             }
         }
         return false;
-    }
+    }*/
 
 }
