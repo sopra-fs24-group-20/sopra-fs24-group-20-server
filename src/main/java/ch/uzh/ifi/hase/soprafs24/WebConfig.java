@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // Adjust this to be more restrictive as needed
-                .allowedOrigins("http://localhost:8080", "http://127.0.0.1:8000") // Update to match your client URL
+                .allowedOrigins("http://localhost:8080", "http://127.0.0.1:8000","https://sopra-fs24-group-20-server.oa.r.appspot.com/") // Update to match your client URL
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
