@@ -66,7 +66,7 @@ public class LobbyController {
 
         gameRepository.save(game);
         //start Websocket
-        WebSocketService.startWebSocket(createdLobby.getLobbyId());
+        //WebSocketService.startWebSocket(createdLobby.getLobbyId());
         // Convert created lobby entity to DTO and return it
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(DTOMapper.INSTANCE.convertEntityToLobbyGetDTO(createdLobby));

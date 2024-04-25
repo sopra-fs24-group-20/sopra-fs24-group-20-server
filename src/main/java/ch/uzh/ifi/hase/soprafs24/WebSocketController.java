@@ -62,15 +62,25 @@ public class WebSocketController {
     @SendTo("/topic/ready-count") // Specify the destination for the response
     public String readyUp(@Payload Map<String, String> payload) {
         String username = payload.get("username");
+        String lobbyIdStr = payload.get("lobbyId"); // Get the lobby ID from the payload
+        long lobbyId = 0; // Initialize lobby ID
+        try {
+            lobbyId = Long.parseLong(lobbyIdStr); // Parse the lobby ID
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing lobby ID: " + lobbyIdStr);
+            return "{\"error\":\"Invalid lobby ID\"}"; // Return an error message if parsing fails
+        }
+
         if (connectedPlayers.contains(username)) {
             readyPlayers.add(username);
             sendOnlineAndReadyCount(username);
-            if (checkAndStartGame()){
-                roundService.startNewRound(1L);
-                return"{\"command\":\"start\"}"; }
-            else {return sendOnlineAndReadyCount(username);}
-        }
-        else {
+            if (checkAndStartGame()) {
+                roundService.startNewRound(lobbyId); // Start new round with the parsed lobby ID
+                return "{\"command\":\"start\"}";
+            } else {
+                return sendOnlineAndReadyCount(username);
+            }
+        } else {
             // Player not found in connected players
             return sendOnlineAndReadyCount(username);
         }
