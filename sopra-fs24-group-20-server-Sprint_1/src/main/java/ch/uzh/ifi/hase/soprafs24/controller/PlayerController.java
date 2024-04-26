@@ -119,33 +119,4 @@ public class PlayerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    {/*
-  @PutMapping("/logout/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-    public void logout(@PathVariable Long id){
-      PlayerService.updatePlayerStatus(id, PlayerStatus.OFFLINE);
-
-  }
-
-
-    @PutMapping("/Players/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public void setPlayernameBirthdate(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
-
-      String Playername = (String) requestBody.get("Playername");
-        String birthdateString = (String) requestBody.get("birthdate");
-
-        LocalDate birthdate = null;
-        if (birthdateString != null && !birthdateString.isEmpty()) {
-            birthdate = LocalDate.parse(birthdateString);
-        }
-        Player Player = PlayerService.getPlayerById(id);
-        if (Player == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found with id: " + id);}
-
-        PlayerService.updatePlayernameBirthdate(id, Playername, birthdate);
-    }
-*/}
 }
