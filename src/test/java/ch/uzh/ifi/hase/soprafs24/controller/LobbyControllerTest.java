@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -101,12 +102,26 @@ class LobbyControllerTest {
     @Test
     void updateLobbySettings_ShouldUpdateSettings() {
         Long lobbyId = 1L;
+
         LobbyPutDTO settings = new LobbyPutDTO();
         settings.setRoundDuration(90);
+        settings.setRounds(10);
+        settings.setExcludedChars(Arrays.asList('a', 'b'));
+        settings.setLobbyStatus(LobbyStatus.ONGOING);
+        settings.setCategories(Arrays.asList("a","b"));
+        settings.setAutoCorrectMode(Boolean.TRUE);
+        settings.setGameMode("1");
 
+        // Initial setting
         Lobby lobby = new Lobby();
         lobby.setLobbyId(lobbyId);
-        lobby.setRoundDuration(60); // Initial setting
+        lobby.setRoundDuration(60);
+        lobby.setRounds(5);
+        lobby.setExcludedChars(Arrays.asList('c', 'd'));
+        lobby.setLobbyStatus(LobbyStatus.WAITING);
+        lobby.setCategories(Arrays.asList("c","d"));
+        lobby.setAutoCorrectMode(Boolean.FALSE);
+        lobby.setGameMode("2");
 
         when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.of(lobby));
 
@@ -115,6 +130,12 @@ class LobbyControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(lobbyRepository).save(lobby);
         assertEquals(90, lobby.getRoundDuration());
+        assertEquals(10, lobby.getRounds());
+        assertEquals(LobbyStatus.ONGOING, lobby.getLobbyStatus());
+        assertEquals(Arrays.asList('a', 'b'), lobby.getExcludedChars());
+        assertEquals(Arrays.asList("a", "b"), lobby.getCategories());
+        assertEquals(Boolean.TRUE, lobby.getAutoCorrectMode());
+        assertEquals("1", lobby.getGameMode());
     }
     @Test
     void leaveLobby_ShouldReturnOkOnSuccess() {
@@ -199,6 +220,44 @@ class LobbyControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
     }
+    @Test
+    void getAllPlayers_WhenLobbyExists_ShouldReturnPlayers() {
+        // Arrange
+        Long lobbyId = 1L;
+        Player player1 = new Player();
+        player1.setUsername("player1");
+        Player player2 = new Player();
+        player2.setUsername("player2");
+        List<Player> players = Arrays.asList(player1, player2);
 
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(lobbyId);
+        lobby.setPlayers(players);
+
+        when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.of(lobby));
+
+        // Act
+        ResponseEntity<List<Player>> response = lobbyController.getAllPlayers(lobbyId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().size());
+        assertTrue(response.getBody().containsAll(players));
+    }
+
+    @Test
+    void getAllPlayers_WhenLobbyDoesNotExist_ShouldReturnNotFound() {
+        // Arrange
+        Long lobbyId = 1L;
+        when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.empty());
+
+        // Act
+        ResponseEntity<List<Player>> response = lobbyController.getAllPlayers(lobbyId);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
 
 }
