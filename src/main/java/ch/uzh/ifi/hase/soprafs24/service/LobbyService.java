@@ -105,18 +105,6 @@ public class LobbyService {
         return true;  // Return true as the operation is expected to always succeed if no exceptions were thrown
     }
 
-
-    @Transactional
-    public void checkAndStartGame(Lobby lobby) {
-        if (areAllPlayersReady(lobby)) {
-            Game game = lobby.getGame(); // This assumes the Lobby entity has a getGame() method
-            if (game != null && game.getStatus() != GameStatus.ANSWER) {
-                game.setStatus(GameStatus.ANSWER);
-                gameRepository.save(game);
-            }
-        }
-    }
-
     private boolean areAllPlayersReady(Lobby lobby) {
         return lobby.getPlayers().stream().allMatch(Player::getReady);
     }
