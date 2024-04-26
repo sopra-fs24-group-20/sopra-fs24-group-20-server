@@ -102,12 +102,26 @@ class LobbyControllerTest {
     @Test
     void updateLobbySettings_ShouldUpdateSettings() {
         Long lobbyId = 1L;
+
         LobbyPutDTO settings = new LobbyPutDTO();
         settings.setRoundDuration(90);
+        settings.setRounds(10);
+        settings.setExcludedChars(Arrays.asList('a', 'b'));
+        settings.setLobbyStatus(LobbyStatus.ONGOING);
+        settings.setCategories(Arrays.asList("a","b"));
+        settings.setAutoCorrectMode(Boolean.TRUE);
+        settings.setGameMode("1");
 
+        // Initial setting
         Lobby lobby = new Lobby();
         lobby.setLobbyId(lobbyId);
-        lobby.setRoundDuration(60); // Initial setting
+        lobby.setRoundDuration(60);
+        lobby.setRounds(5);
+        lobby.setExcludedChars(Arrays.asList('c', 'd'));
+        lobby.setLobbyStatus(LobbyStatus.WAITING);
+        lobby.setCategories(Arrays.asList("c","d"));
+        lobby.setAutoCorrectMode(Boolean.FALSE);
+        lobby.setGameMode("2");
 
         when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.of(lobby));
 
@@ -116,6 +130,12 @@ class LobbyControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(lobbyRepository).save(lobby);
         assertEquals(90, lobby.getRoundDuration());
+        assertEquals(10, lobby.getRounds());
+        assertEquals(LobbyStatus.ONGOING, lobby.getLobbyStatus());
+        assertEquals(Arrays.asList('a', 'b'), lobby.getExcludedChars());
+        assertEquals(Arrays.asList("a", "b"), lobby.getCategories());
+        assertEquals(Boolean.TRUE, lobby.getAutoCorrectMode());
+        assertEquals("1", lobby.getGameMode());
     }
     @Test
     void leaveLobby_ShouldReturnOkOnSuccess() {
