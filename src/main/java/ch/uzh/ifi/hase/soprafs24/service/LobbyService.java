@@ -56,6 +56,7 @@ public class LobbyService {
 
     }
 
+
     @Transactional
     public void deleteLobbyById(long lobbyId) {
         // Find the lobby by its ID
@@ -105,7 +106,7 @@ public class LobbyService {
         return true;  // Return true as the operation is expected to always succeed if no exceptions were thrown
     }
 
-
+    /*
     @Transactional
     public void checkAndStartGame(Lobby lobby) {
         if (areAllPlayersReady(lobby)) {
@@ -120,5 +121,5 @@ public class LobbyService {
     private boolean areAllPlayersReady(Lobby lobby) {
         return lobby.getPlayers().stream().allMatch(Player::getReady);
     }
-
+    */
 }

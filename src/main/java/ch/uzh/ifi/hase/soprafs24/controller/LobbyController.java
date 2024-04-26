@@ -116,6 +116,7 @@ public class LobbyController {
         return ResponseEntity.ok(lobbyPlayers);
     }
 
+
     private PlayerGetDTO convertToPlayerGetDTO(Player player) {
         PlayerGetDTO dto = new PlayerGetDTO();
         dto.setReady(player.getReady());
@@ -136,6 +137,9 @@ public class LobbyController {
         statDto.setBonus(stat.getBonus());
         return statDto;
     }
+
+
+
     @PutMapping("/settings/{LobbyId}")
     @Transactional
     public ResponseEntity<Lobby> updateLobbySettings(@PathVariable Long LobbyId, @RequestBody LobbyPutDTO settings) {
@@ -196,6 +200,7 @@ public class LobbyController {
         return ResponseEntity.ok(lobbyGetDTO);
     }
 
+
     @PutMapping("/leave/{lobbyId}")
     public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestParam String username) {
         boolean leftSuccessfully = lobbyService.leaveLobby(lobbyId, username);
@@ -205,4 +210,6 @@ public class LobbyController {
             return ResponseEntity.badRequest().body("Player is not in the lobby.");
         }
     }
+
+
 }
