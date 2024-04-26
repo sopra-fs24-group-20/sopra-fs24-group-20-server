@@ -56,7 +56,9 @@ public class LobbyController {
 
         // Call service method to create lobby
         Lobby createdLobby = lobbyService.createLobby(lobbyInput.getLobbyName(), lobbyInput.getLobbyPassword(), ownerPlayer);
-
+        if (createdLobby == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
         lobbyRepository.save(createdLobby); // Update the lobby with the game link
         Game game = new Game();
         game.setStatus(GameStatus.VOTE);
