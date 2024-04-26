@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -199,6 +200,44 @@ class LobbyControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
     }
+    @Test
+    void getAllPlayers_WhenLobbyExists_ShouldReturnPlayers() {
+        // Arrange
+        Long lobbyId = 1L;
+        Player player1 = new Player();
+        player1.setUsername("player1");
+        Player player2 = new Player();
+        player2.setUsername("player2");
+        List<Player> players = Arrays.asList(player1, player2);
 
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(lobbyId);
+        lobby.setPlayers(players);
+
+        when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.of(lobby));
+
+        // Act
+        ResponseEntity<List<Player>> response = lobbyController.getAllPlayers(lobbyId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().size());
+        assertTrue(response.getBody().containsAll(players));
+    }
+
+    @Test
+    void getAllPlayers_WhenLobbyDoesNotExist_ShouldReturnNotFound() {
+        // Arrange
+        Long lobbyId = 1L;
+        when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.empty());
+
+        // Act
+        ResponseEntity<List<Player>> response = lobbyController.getAllPlayers(lobbyId);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
 
 }
