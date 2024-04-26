@@ -18,6 +18,11 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -138,7 +143,46 @@ class RoundServiceTest {
         when(roundService.getCurrentRoundByGameId(999L)).thenReturn(null);
         assertThrows(RuntimeException.class, () -> roundService.calculateLeaderboard(999L));
     }
+    /*
+    @Test
+    void calculateLeaderboard_withValidGameId_shouldReturnSortedScores() throws Exception {
+        // Arrange
+        Round currentRound = new Round();
+        currentRound.setAssignedLetter('A');
+        // Ensure the stub returns a Round object or an Optional of Round if that's the expected method signature.
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(currentRound);
 
+        // Assuming the calculateScoresCategory returns the following complex structure
+        Map<String, Map<String, Map<String, Object>>> scoresByCategory = new HashMap<>();
+        Map<String, Object> userDetails1 = new HashMap<>();
+        userDetails1.put("score", 50);
+        Map<String, Object> userDetails2 = new HashMap<>();
+        userDetails2.put("score", 70);
+
+        Map<String, Map<String, Object>> categoryScores = new HashMap<>();
+        categoryScores.put("user1", userDetails1);
+        categoryScores.put("user2", userDetails2);
+
+        scoresByCategory.put("category1", categoryScores);
+
+        // Stubbing calculateScoresCategory to return the complex map structure
+        when(roundService.calculateScoresCategory(1L)).thenReturn(scoresByCategory);
+
+        // Act
+        Map<String, Integer> result = roundService.calculateLeaderboard(1L);
+
+        // Assert
+        assertEquals(2, result.size());
+        List<Map.Entry<String, Integer>> sortedEntries = new ArrayList<>(result.entrySet());
+        sortedEntries.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+        // Check for proper sorting
+        assertEquals("user2", sortedEntries.get(0).getKey());
+        assertEquals(Integer.valueOf(70), sortedEntries.get(0).getValue());
+        assertEquals("user1", sortedEntries.get(1).getKey());
+        assertEquals(Integer.valueOf(50), sortedEntries.get(1).getValue());
+    }
+*/
 
     // Add more tests for other methods such as calculateScoresCategory, getCurrentRoundByGameId, etc.
 }
