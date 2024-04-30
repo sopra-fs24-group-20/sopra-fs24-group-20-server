@@ -178,6 +178,7 @@ public class LobbyController {
         lobbyGetDTO.setGameMode(lobby.getGameMode());
         lobbyGetDTO.setAutoCorrectMode(lobby.getAutoCorrectMode());
         lobbyGetDTO.setLobbyStatus(lobby.getLobbyStatus());
+        lobbyGetDTO.setExcludedChars(lobby.getExcludedChars());
 
         // Return the LobbyGetDTO with the settings
         return ResponseEntity.ok(lobbyGetDTO);

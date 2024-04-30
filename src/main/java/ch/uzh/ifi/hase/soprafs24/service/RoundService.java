@@ -45,12 +45,23 @@ public class RoundService {
 
         Round newRound = new Round();
         newRound.setGame(game);
+        char roundLetter = generateRandomLetter(lobby.getExcludedChars());
+        newRound.setAssignedLetter(roundLetter);
         game.getRounds().add(newRound);  // Add new round to the list of rounds in the game
 
         roundRepository.save(newRound);
         gameRepository.save(game);  // Save changes to the game
     }
 
+    private char generateRandomLetter(List<Character> excludedChars) {
+        Random random = new Random();
+        char randomLetter;
+        do {
+            // Generate a random uppercase letter between 'A' and 'Z'
+            randomLetter = (char) ('A' + random.nextInt(26));
+        } while (excludedChars.contains(randomLetter)); // Check against excluded characters
+        return randomLetter;
+    }
 
     public char getCurrentRoundLetter(Long gameId) {
         Game game = gameRepository.findById(gameId).orElse(null);

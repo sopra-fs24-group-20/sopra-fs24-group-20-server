@@ -13,6 +13,7 @@ public class LobbyGetDTO {
     private String gameMode;
     private Boolean autoCorrectMode;
     private LobbyStatus lobbyStatus;
+    private List<Character> excludedChars;
 
     // Getter-Funktionen
     public String getLobbyName() {
@@ -38,6 +39,9 @@ public class LobbyGetDTO {
 
     public LobbyStatus getLobbyStatus() {
         return lobbyStatus;
+    }
+    public List<Character> getExcludedChars() {
+        return excludedChars;
     }
 
     public boolean isAutoCorrectMode() {
@@ -68,6 +72,9 @@ public class LobbyGetDTO {
     }
     public void setLobbyStatus(LobbyStatus lobbyStatus) {
         this.lobbyStatus = lobbyStatus;
+    }
+    public void setExcludedChars(List<Character> excludedChars) {
+        this.excludedChars = excludedChars;
     }
 }
 
