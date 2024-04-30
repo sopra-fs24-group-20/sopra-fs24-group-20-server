@@ -174,8 +174,9 @@ public class RoundService {
         });
         ObjectMapper objectMapper = new ObjectMapper();
         String scoresJson = objectMapper.writeValueAsString(categoryScores);
+        if(currentRound.getRoundPoints()==null||currentRound.getRoundPoints().isEmpty()){
         currentRound.setRoundPoints(scoresJson);
-        roundRepository.save(currentRound);
+        roundRepository.save(currentRound);}
         return categoryScores;
     }
 
