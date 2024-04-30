@@ -75,26 +75,30 @@ public class RoundService {
     }
 
     //sum up the scores from the function below
+    @Transactional
     public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
 
-        // Get scores
-        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = calculateScoresCategory(gameId);
+        // Reload the round to ensure it reflects the latest changes
+
+        // Now, fetch the scores
+        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = objectMapper.readValue(currentRound.getRoundPoints(),
+                new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
 
         Map<String, Integer> finalScores = new HashMap<>();
 
-        // Sum up
+        // Aggregate scores
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
                 Integer score = (Integer) details.get("score");
-                finalScores.merge(username, score, Integer::sum); // Adds scores for the same username across categories
+                finalScores.merge(username, score, Integer::sum);
             });
         });
 
-        // Sorting
+        // Return sorted scores
         return finalScores.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -103,6 +107,7 @@ public class RoundService {
                         (e1, e2) -> e1,
                         LinkedHashMap::new));
     }
+
 
 
     public Map<String, Map<String, Map<String, Object>>> calculateScoresCategory(Long gameId) throws Exception {
