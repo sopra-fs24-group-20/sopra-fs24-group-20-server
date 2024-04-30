@@ -202,8 +202,6 @@ public class RoundService {
             return false;
         }
     }
-    /* Working function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    commented out because not part of m3 and not shure if it adds bugs
     public Map<String, Map<String, Map<String, Object>>> adjustScores(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
@@ -258,6 +256,5 @@ public class RoundService {
 
         return currentScores;
     }
-    */
     }
 

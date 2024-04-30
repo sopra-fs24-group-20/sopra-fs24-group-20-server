@@ -86,8 +86,6 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-        /* Working function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    commented out because not part of m3 and not shure if it adds bugs
     @PostMapping("/rounds/{gameId}/submitVotes")
     public ResponseEntity<?> submitVotes(@PathVariable Long gameId, @RequestBody String rawJson) {
         try {
@@ -111,5 +109,4 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    */
 }
