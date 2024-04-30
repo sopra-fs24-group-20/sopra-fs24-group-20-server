@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -46,14 +47,14 @@ public class LobbyService {
 
         // Set default values for other properties
         lobby.setRoundDuration(60); // Default round duration of 60 seconds
+        lobby.setRounds(5);
         lobby.setAutoCorrectMode(true);
-        lobby.setCategories(new ArrayList<>()); // Empty list of categories by default
+        lobby.setCategories(new ArrayList<>());
+        lobby.setCategories(Arrays.asList("country", "city", "profession", "celebrity"));
         lobby.setExcludedChars(new ArrayList<>()); // Empty list of excluded characters by default
         lobby.setGameMode("1");
         lobby.setLobbyStatus(LobbyStatus.SETUP);
         return lobbyRepository.save(lobby);
-
-
     }
 
     @Transactional
