@@ -110,6 +110,8 @@ public class RoundService {
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
+
+        boolean autoCorrectEnabled = currentRound.getGame().getLobby().getAutoCorrectMode() != null && currentRound.getGame().getLobby().getAutoCorrectMode();
         // get the assigned letter of the round
         char assignedLetter = currentRound.getAssignedLetter();
         String answersJson = currentRound.getPlayerAnswers();
@@ -148,14 +150,23 @@ public class RoundService {
                 int points = 0;
                 //if word beginns with right letter
                 if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
-                    if (checkWordExists(value)) {
+                    if (autoCorrectEnabled) {
+                        if (checkWordExists(value)) {
+                            if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
+                                points = 10;//word unique
+                            }
+                            else {
+                                points = 5;//word duplicated
+                            }
+                        }
+                    }
+                    else {
                         if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
                             points = 10;//word unique
-                        } else {
+                        }
+                        else {
                             points = 5;//word duplicated
                         }
-                    } else {//word not exist
-                        points = 0;
                     }
                 }
 
@@ -202,8 +213,6 @@ public class RoundService {
             return false;
         }
     }
-    /* Working function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    commented out because not part of m3 and not shure if it adds bugs
     public Map<String, Map<String, Map<String, Object>>> adjustScores(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
@@ -258,6 +267,5 @@ public class RoundService {
 
         return currentScores;
     }
-    */
-    }
+}
 
