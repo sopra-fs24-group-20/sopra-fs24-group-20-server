@@ -8,11 +8,11 @@ public class PlayerPutDTO {
     private Boolean ready;
 
 
-    public boolean getReady() {
+    public Boolean getReady() {
         return ready;
     }
 
-    public void setReady(boolean ready) {
+    public void setReady(Boolean ready) {
         this.ready = ready;
     }
 
