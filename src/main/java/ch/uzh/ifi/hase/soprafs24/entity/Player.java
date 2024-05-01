@@ -3,7 +3,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
@@ -27,9 +26,6 @@ public class Player implements Serializable {
     @Column(nullable = false)
     private Boolean ready;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Statistic> stats;
-
 
     @Column(nullable = true)
     private String token;
@@ -50,13 +46,6 @@ public class Player implements Serializable {
         this.ready = ready;
     }
 
-    public List<Statistic> getStats() {
-        return stats;
-    }
-
-    public void setStats(List<Statistic> stats) {
-        this.stats = stats;
-    }
 
     public String getUsername() {
         return username;

@@ -35,7 +35,6 @@ public interface DTOMapper {
     @Mapping(source = "lobbyPassword",target = "lobbyPassword") // Ignore players list in the lobby DTO
     Lobby convertLobbyPostDTOtoEntity(LobbyPostDTO lobbyPostDTO); // New method for conversion
     @Mapping(target = "ready", ignore = true)
-    @Mapping(target = "stats", ignore = true)
     @Mapping(target = "token", ignore = true)
     @Mapping(target = "lobby", ignore = true)
     @Mapping(source = "username", target = "username")
@@ -44,7 +43,6 @@ public interface DTOMapper {
 
     @Mapping(source = "username", target = "username")
     @Mapping(source = "ready", target = "ready")
-    @Mapping(source = "stats", target = "stats")
     PlayerGetDTO convertEntityToPlayerGetDTO(Player player);
 
     // Mapping for updating player profile
@@ -53,6 +51,5 @@ public interface DTOMapper {
     @Mapping(target = "username", ignore = true)
     @Mapping(target = "token", ignore = true)
     @Mapping(target = "lobby", ignore = true)
-    @Mapping(target = "stats",ignore = true)
     Player convertPlayerPutDTOtoEntity(PlayerPutDTO playerPutDTO);
 }

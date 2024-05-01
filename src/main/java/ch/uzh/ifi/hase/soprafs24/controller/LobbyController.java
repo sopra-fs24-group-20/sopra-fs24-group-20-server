@@ -3,18 +3,13 @@ import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
-import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
-import ch.uzh.ifi.hase.soprafs24.websocket.WebSocketService;
-import org.apache.catalina.Store;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -25,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/lobby")
@@ -38,6 +32,8 @@ public class LobbyController {
     private LobbyService lobbyService;
     @Autowired
     private GameRepository gameRepository;
+    @Autowired
+    private RoundRepository roundRepository;
 
 
     @PostMapping("/create")
@@ -192,5 +188,18 @@ public class LobbyController {
         } else {
             return ResponseEntity.badRequest().body("Player is not in the lobby.");
         }
+    }
+
+    @DeleteMapping("/delete-all")
+    public ResponseEntity<?> deleteAllLobbiesAndRelatedData() {
+        playerRepository.findAll().forEach(player -> {
+            player.setLobby(null);
+            playerRepository.save(player);
+        });
+        roundRepository.deleteAll();  // Deletes all rounds
+        gameRepository.deleteAll();  // Deletes all games
+        lobbyRepository.deleteAll();  // Deletes all lobbies
+
+        return ResponseEntity.ok().build();  // Returns an HTTP 200 response on successful deletion
     }
 }
