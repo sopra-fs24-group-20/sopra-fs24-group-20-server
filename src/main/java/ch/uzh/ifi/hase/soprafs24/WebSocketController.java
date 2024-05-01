@@ -127,6 +127,7 @@ public class WebSocketController {
     @MessageMapping("/stop-game")
     @SendTo("/topic/game-control")
     public String stopGame() {
+        readyPlayers.clear();
         return "{\"command\":\"stop\"}";
     }
 

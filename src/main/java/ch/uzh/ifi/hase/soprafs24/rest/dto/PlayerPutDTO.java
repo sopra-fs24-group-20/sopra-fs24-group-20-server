@@ -1,9 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
-import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
-import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
-
-import java.time.LocalDate;
 import java.util.List;
 
 public class PlayerPutDTO {
