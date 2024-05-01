@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -172,6 +173,7 @@ public class Lobby {
         this.categories.clear();
         if (categories != null) {
             this.categories.addAll(categories);
+            Collections.sort(this.categories);
         }
     }
 

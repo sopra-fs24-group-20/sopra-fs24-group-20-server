@@ -43,7 +43,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     runtimeOnly 'mysql:mysql-connector-java:8.0.29'
-
+    implementation 'net.minidev:json-smart:2.4.7' // Ensure to use the latest or a compatible version
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     //runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql:1.2.8.RELEASE'

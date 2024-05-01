@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -140,7 +141,12 @@ public class WebSocketController {
     private String sendOnlineAndReadyCount() {
         int onlineCount = connectedPlayers.size();
         int readyCount = readyPlayers.size();
-        return String.format("{\"onlinePlayers\": %d, \"readyPlayers\": %d}", onlineCount, readyCount);
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("onlinePlayers", onlineCount);
+        jsonObject.put("readyPlayers", readyCount);
+
+        return jsonObject.toString();
     }
     @MessageMapping("/game-entries")
     @SendTo("/topic/game-over")
