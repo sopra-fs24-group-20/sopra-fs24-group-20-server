@@ -128,10 +128,12 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: 
 
 ### Joshua Weder
-- GitHub Issue Links: 
-- Task 1: 
-- Task 2:
-- Task 3: 
+- GitHub Issue Links: [Issue 64](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/64)
+  [Issue 64](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/64)
+- Task 1: Added complete functionality of the voting buttons. (can't vote on own answers, can only give either a bonus or a veto etc.)
+- Task 2: Completed Layout of the evaluation screen except for some minor, possible changes
+- Task 3: Fixed some bugs regarding the game page and the evaluation screen
+- Task 4: Completed routing of the evaluation screen to be compatible with a variable amount of rounds.
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 62](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/62), [Issue 50](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/50)
