@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
+import java.util.TreeMap;
 import javax.transaction.Transactional;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
@@ -121,36 +121,37 @@ public class RoundService {
 
 
 
+
     public Map<String, Map<String, Map<String, Object>>> calculateScoresCategory(Long gameId) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
-        // get the assigned letter of the round
+
+        boolean autoCorrectEnabled = currentRound.getGame().getLobby().getAutoCorrectMode() != null && currentRound.getGame().getLobby().getAutoCorrectMode();
         char assignedLetter = currentRound.getAssignedLetter();
         String answersJson = currentRound.getPlayerAnswers();
         if (answersJson == null || answersJson.isEmpty()) {
-            return new HashMap<>();
+            return new TreeMap<>();
         }
-
 
         List<Map<String, String>> answers = objectMapper.readValue(
                 "[" + answersJson + "]", new TypeReference<List<Map<String, String>>>() {});
 
-        Map<String, Map<String, String>> answersByCategory = new HashMap<>();
+        Map<String, Map<String, String>> answersByCategory = new TreeMap<>();
 
-        // Collect and parse jsoen
+        // Collect and parse json
         answers.forEach(answer -> answer.keySet().forEach(key -> {
             if (!key.equals("username")) {
                 String value = answer.getOrDefault(key, "");
-                answersByCategory.computeIfAbsent(key, k -> new HashMap<>())
+                answersByCategory.computeIfAbsent(key, k -> new TreeMap<>())
                         .put(answer.get("username"), value);
             }
         }));
 
-        Map<String, Map<String, Map<String, Object>>> categoryScores = new HashMap<>();
+        Map<String, Map<String, Map<String, Object>>> categoryScores = new TreeMap<>();
         answersByCategory.forEach((category, userAnswers) -> {
-            Map<String, Set<String>> uniqueCheck = new HashMap<>();
+            Map<String, Set<String>> uniqueCheck = new TreeMap<>();
 
             // Check answer
             userAnswers.forEach((username, value) -> {
@@ -159,23 +160,28 @@ public class RoundService {
                 }
             });
 
-            Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
+            Map<String, Map<String, Object>> userScoresAndAnswers = new TreeMap<>();
             userAnswers.forEach((username, value) -> {
                 int points = 0;
-                //if word beginns with right letter
                 if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
-                    if (checkWordExists(value)) {
-                        if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
-                            points = 10;//word unique
-                        } else {
-                            points = 5;//word duplicated
+                    if (autoCorrectEnabled) {
+                        if (checkWordExists(value)) {
+                            if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
+                                points = 10; // word unique
+                            } else {
+                                points = 5; // word duplicated
+                            }
                         }
-                    } else {//word not exist
-                        points = 0;
+                    } else {
+                        if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
+                            points = 10; // word unique
+                        } else {
+                            points = 5; // word duplicated
+                        }
                     }
                 }
 
-                Map<String, Object> scoreAndAnswer = new HashMap<>();
+                Map<String, Object> scoreAndAnswer = new TreeMap<>();
                 scoreAndAnswer.put("score", points);
                 scoreAndAnswer.put("answer", value);
                 userScoresAndAnswers.put(username, scoreAndAnswer);
@@ -183,13 +189,15 @@ public class RoundService {
 
             categoryScores.put(category, userScoresAndAnswers);
         });
+
         ObjectMapper objectMapper = new ObjectMapper();
         String scoresJson = objectMapper.writeValueAsString(categoryScores);
         if(currentRound.getRoundPoints()==null||currentRound.getRoundPoints().isEmpty()){
-        currentRound.setRoundPoints(scoresJson);
-        roundRepository.save(currentRound);}
+            currentRound.setRoundPoints(scoresJson);
+            roundRepository.save(currentRound);}
         return categoryScores;
     }
+
 
     public boolean checkWordExists(String word) {
         try {
@@ -273,5 +281,4 @@ public class RoundService {
 
         return currentScores;
     }
-    }
-
+}

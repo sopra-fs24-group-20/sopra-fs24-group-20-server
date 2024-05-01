@@ -5,7 +5,7 @@ runtime: java17
 instance_class: F2
 env_variables:
   SPRING_PROFILES_ACTIVE: 'gcp'
-  APP_PLAYER_DATASOURCE_URL: 'jdbc:mysql://<35.204.19.36>:3306/playerdb'
+  APP_PLAYER_DATASOURCE_URL: 'jdbc:mysql://<34.147.109.173>:3306/playerdb'
   APP_PLAYER_DATASOURCE_USERNAME: '<username>'
   APP_PLAYER_DATASOURCE_PASSWORD: '<password>'
 
