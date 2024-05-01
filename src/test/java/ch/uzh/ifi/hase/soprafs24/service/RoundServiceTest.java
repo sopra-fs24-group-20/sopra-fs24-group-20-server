@@ -9,11 +9,14 @@ import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,6 +42,8 @@ class RoundServiceTest {
 
     @InjectMocks
     private RoundService roundService;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
@@ -142,7 +147,67 @@ class RoundServiceTest {
     void calculateLeaderboard_withNoCurrentRound_shouldThrowException() {
         when(roundService.getCurrentRoundByGameId(999L)).thenReturn(null);
         assertThrows(RuntimeException.class, () -> roundService.calculateLeaderboard(999L));
+
+
     }
+    @Test
+    void testCalculateScoresCategoryWithAutoCorrectDisabled() throws Exception {
+        // Mocking the Round object and its dependencies
+        Lobby lobby = new Lobby();
+        lobby.setAutoCorrectMode(false); // Set autoCorrectMode to false
+        Game game = new Game();
+        game.setLobby(lobby);
+        Round currentRound = new Round();
+        currentRound.setAssignedLetter('A'); // Set the assigned letter
+        // Multiple scenarios in player answers
+        currentRound.setPlayerAnswers("[{\"username\": \"user1\", \"category1\": \"apple\"}, {\"username\": \"user2\", \"category1\": \"avocado\"}, {\"username\": \"user3\", \"category1\": \"Axe\"}, {\"username\": \"user4\", \"category1\": \"axe\"}, {\"username\": \"user5\", \"category1\": \"banana\"}]");
+        currentRound.setGame(game);
+
+        // Mocking findTopByGameIdOrderByIdDesc
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(currentRound);
+
+        //Mocking objectMapper.readValue to accommodate the extended player answers
+        when(objectMapper.readValue(Mockito.anyString(), Mockito.<TypeReference<List<Map<String, String>>>>any()))
+                .thenReturn(Arrays.asList(
+                        Map.of("username", "user1", "category1", "apple"),
+                        Map.of("username", "user2", "category1", "avocado"),
+                        Map.of("username", "user3", "category1", "Axe"),
+                        Map.of("username", "user4", "category1", "axe"),
+                        Map.of("username", "user5", "category1", "banana")
+                ));
+
+        // Call the method under test
+        Map<String, Map<String, Map<String, Object>>> result = roundService.calculateScoresCategory(1L);
+
+        // Assert the result
+        Map<String, Map<String, Map<String, Object>>> expectedScores = new HashMap<>();
+        Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
+        Map<String, Object> user1ScoreAndAnswer = new HashMap<>();
+        user1ScoreAndAnswer.put("score", 10);
+        user1ScoreAndAnswer.put("answer", "apple");
+        Map<String, Object> user2ScoreAndAnswer = new HashMap<>();
+        user2ScoreAndAnswer.put("score", 10);
+        user2ScoreAndAnswer.put("answer", "avocado");
+        Map<String, Object> user3ScoreAndAnswer = new HashMap<>();
+        user3ScoreAndAnswer.put("score", 5);  // Score reduced due to duplication
+        user3ScoreAndAnswer.put("answer", "Axe");
+        Map<String, Object> user4ScoreAndAnswer = new HashMap<>();
+        user4ScoreAndAnswer.put("score", 5);  // Score reduced due to duplication
+        user4ScoreAndAnswer.put("answer", "axe");
+        Map<String, Object> user5ScoreAndAnswer = new HashMap<>();
+        user5ScoreAndAnswer.put("score", 0);  // Wrong starting letter
+        user5ScoreAndAnswer.put("answer", "banana");
+        userScoresAndAnswers.put("user1", user1ScoreAndAnswer);
+        userScoresAndAnswers.put("user2", user2ScoreAndAnswer);
+        userScoresAndAnswers.put("user3", user3ScoreAndAnswer);
+        userScoresAndAnswers.put("user4", user4ScoreAndAnswer);
+        userScoresAndAnswers.put("user5", user5ScoreAndAnswer);
+        expectedScores.put("category1", userScoresAndAnswers);
+
+        // Assert the result matches the expected scores
+        assertEquals(expectedScores, result);
+    }
+
     /*
     @Test
     void calculateLeaderboard_withValidGameId_shouldReturnSortedScores() throws Exception {

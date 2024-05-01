@@ -129,6 +129,7 @@ public class RoundService {
         }
 
         boolean autoCorrectEnabled = currentRound.getGame().getLobby().getAutoCorrectMode() != null && currentRound.getGame().getLobby().getAutoCorrectMode();
+
         char assignedLetter = currentRound.getAssignedLetter();
         String answersJson = currentRound.getPlayerAnswers();
         if (answersJson == null || answersJson.isEmpty()) {
@@ -180,6 +181,7 @@ public class RoundService {
                         }
                     }
                 }
+
 
                 Map<String, Object> scoreAndAnswer = new TreeMap<>();
                 scoreAndAnswer.put("score", points);
