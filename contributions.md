@@ -77,9 +77,9 @@ This markdown file logs the individual contributions of each team member through
 
 ### Giuliano Bernasconi
 - GitHub Issue Links:[Issue 50](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/50), [Issue 52](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/52), [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/47)
-- Task1 : Identify unique answers and give points
-- Task2 : Being the only VALID answer be awarded bonus points
-- Task3 : Polishing of Answer structure (unknown errors)
+- Task 1 : Identify unique answers and give points
+- Task 2 : Being the only VALID answer be awarded bonus points
+- Task 3 : Polishing of Answer structure (unknown errors)
 
 ### Joshua Stebler
 - GitHub Issue Links: [Issue 77](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/77), [Issue 59](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/59), [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/47), [Issue 7](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/7),[Issue 54](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/54)
@@ -112,6 +112,39 @@ This markdown file logs the individual contributions of each team member through
 - Task 1: connect game meaningfully to backend with REST 
 - Task 2: implement game functionality with ws
 - Task 3: debugging and clean up, consistency checks frontend / backend
+
+## Week 5
+
+### Giuliano Bernasconi
+- GitHub Issue Links:[Issue 106](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/106), [Issue 109](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/109)
+- Task 1 : Adding multiple tests to reach coverage 50%
+- Task 2 : Enabling functionalities for autoCorrectMode
+- Task 3 : Cleaning up code (A LOT)
+
+### Joshua Stebler
+- GitHub Issue Links: 
+- Task 1: 
+- Task 2:
+- Task 3: 
+
+### Joshua Weder
+- GitHub Issue Links: 
+- Task 1: 
+- Task 2:
+- Task 3: 
+
+### Leonora Horvatic
+- GitHub Issue Links: 
+- Task 1: 
+- Task 2:
+- Task 3: 
+
+
+### Mirjam Alexandra Weibel
+- GitHub Issue Links: 
+- Task 1: 
+- Task 2:
+- Task 3: 
 
 
 
