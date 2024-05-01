@@ -134,9 +134,9 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: 
 
 ### Leonora Horvatic
-- GitHub Issue Links: [Issue 62](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/62)
-- Task 1: 
-- Task 2:
+- GitHub Issue Links: [Issue 62](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/62), [Issue 50](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/50)
+- Task 1: intermediate leaderboard
+- Task 2: refine authentication pages
 
 ### Mirjam Alexandra Weibel
 - GitHub Issue Links: 
