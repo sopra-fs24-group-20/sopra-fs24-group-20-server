@@ -1,12 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
 import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 
 import java.util.List;
 
 
 public class LobbyGetDTO {
     private String lobbyName;
+    private Player lobbyOwner;
     private Integer roundDuration;
     private List<String> categories;
     private Integer rounds;
@@ -19,6 +21,7 @@ public class LobbyGetDTO {
         return lobbyName;
     }
 
+    public Player getLobbyOwner(){return lobbyOwner;}
 
     public int getRoundDuration() {
         return roundDuration;
@@ -46,6 +49,8 @@ public class LobbyGetDTO {
     public void setLobbyName(String lobbyName) {
         this.lobbyName = lobbyName;
     }
+
+    public void setLobbyOwner(Player lobbyOwner){ this.lobbyOwner = lobbyOwner;}
 
     public void setRoundDuration(int roundDuration) {
         this.roundDuration = roundDuration;

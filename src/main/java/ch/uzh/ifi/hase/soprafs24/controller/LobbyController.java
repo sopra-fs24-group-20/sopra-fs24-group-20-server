@@ -172,6 +172,7 @@ public class LobbyController {
         // Convert the Lobby entity to LobbyGetDTO
         LobbyGetDTO lobbyGetDTO = new LobbyGetDTO();
         lobbyGetDTO.setLobbyName(lobby.getLobbyName());
+        lobbyGetDTO.setLobbyOwner(lobby.getLobbyOwner());
         lobbyGetDTO.setRoundDuration(lobby.getRoundDuration());
         lobbyGetDTO.setCategories(lobby.getCategories());
         lobbyGetDTO.setRounds(lobby.getRounds());
