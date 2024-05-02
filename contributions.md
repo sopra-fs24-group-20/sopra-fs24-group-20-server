@@ -123,7 +123,7 @@ This markdown file logs the individual contributions of each team member through
 
 ### Joshua Stebler
 - GitHub Issue Links: [Issue 106](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/106),[Issue 105](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/105),[Issue 95](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/95),[Issue 104](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/104),[Issue 103](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/103),[Issue 93](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/93),[Issue 89](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/89)
-- Task 1:Ading, refining functinoality for calculating the points, leaderboard, voting, Api request and Sort the cathegories alphabetially as per frontend request
+- Task 1: Adding, refining functinoality for calculating the points, leaderboard, voting, Api request and Sort the cathegories alphabetially as per frontend request
 - Task 2:Create a Sql database on google,configure it, conect it, remove the h2 database, change conflicting code
 - Task 3: Create testing for round,Game,Player and parts of lobby,Fix issues continuously and clean up code like remove the statisctic entity
 - Task 4: Implement cleanup functinoality that clears the tables that should not persist like lobby,round,game
@@ -138,9 +138,11 @@ This markdown file logs the individual contributions of each team member through
 - Task 4: Completed routing of the evaluation screen to be compatible with a variable amount of rounds.
 
 ### Leonora Horvatic
-- GitHub Issue Links: [Issue 62](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/62), [Issue 50](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/50)
-- Task 1: intermediate leaderboard
-- Task 2: refine authentication pages
+- GitHub Issue Links: [Issue 62](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/62), 
+[Issue 50](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/50),
+[Issue 48](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/48)
+- Task 1: intermediate leaderboard layout and logic
+- Task 2: refine all authentication pages
 
 ### Mirjam Alexandra Weibel
 - GitHub Issue Links: [Issue 66](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/66)
