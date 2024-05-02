@@ -149,7 +149,7 @@ This markdown file logs the individual contributions of each team member through
   [Issue 67](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/67)
 - Task 1: fix submitting answers (an edge case we did not notice before did not work)
 - Task 2: fix websocket problems for game and lobby screen for now
-- Task 3: research and tinkering on websockets functionalities to be the driving force behind the decision to refactor as much as possible without websockets
+- Task 3: research and tinkering on websockets functionalities to then decide to remove websockets as much as possible
 
 
 
