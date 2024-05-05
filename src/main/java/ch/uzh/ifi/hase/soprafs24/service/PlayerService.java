@@ -66,6 +66,18 @@ public class PlayerService {
                 .filter(player -> password.equals(player.getPassword()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password Incorrect"));
     }
+    public Player LogOutPlayer(String username) {
+        Player player = playerRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Player not found with username: " + username));
+
+        if (username.startsWith("Guest:")) {
+            // Delete the player from the database if the username starts with "Guest:"
+            playerRepository.delete(player);
+            return null;  // Return null to indicate that the player has been deleted
+        } else {
+            return playerRepository.save(player);
+        }
+    }
     /*
     public boolean addAnswer(String username, List<String> answers) {
         // Using Optional to handle possible null value for player

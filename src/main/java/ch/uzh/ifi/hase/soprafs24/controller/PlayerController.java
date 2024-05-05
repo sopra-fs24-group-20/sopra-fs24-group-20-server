@@ -13,8 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Player Controller
@@ -73,13 +72,28 @@ public class PlayerController {
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
     public PlayerGetDTO createPlayer(@RequestBody PlayerPostDTO playerPostDTO) {
-        if (playerPostDTO.getUsername() == null || playerPostDTO.getUsername().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty");
+        String username = playerPostDTO.getUsername();
+
+        // Check if a non-system-generated username starts with "Guest:"
+        if (username != null && username.trim().startsWith("Guest:")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usernames starting with 'Guest:' are reserved and cannot be manually set.");
+        }
+
+        // Generate a guest username if no username is provided
+        if (username == null || username.trim().isEmpty()) {
+            username = generateGuestUsername();
         }
 
         Player playerInput = DTOMapper.INSTANCE.convertPlayerPostDTOtoEntity(playerPostDTO);
+        playerInput.setUsername(username);
         Player createdPlayer = PlayerService.createPlayer(playerInput.getUsername(), playerInput.getPassword());
         return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(createdPlayer);
+    }
+
+    private String generateGuestUsername() {
+        List<String> names = Arrays.asList("Curious Panda", "Sleepy Koala", "Happy Squirrel", "Wise Owl");
+        String descriptor = names.get(new Random().nextInt(names.size()));
+        return "Guest: " + descriptor;
     }
 
 
@@ -101,6 +115,13 @@ public class PlayerController {
     @ResponseBody
     public ResponseEntity<PlayerGetDTO> login(@RequestBody PlayerPostDTO loginDTO) {
         Player player = PlayerService.LogInPlayer(loginDTO.getUsername(), loginDTO.getPassword());
+        PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
+        return ResponseEntity.ok(playerGetDTO);
+    }
+    @PostMapping("/players/logout")
+    @ResponseBody
+    public ResponseEntity<PlayerGetDTO> logout(@RequestBody PlayerPostDTO loginDTO) {
+        Player player = PlayerService.LogOutPlayer(loginDTO.getUsername());
         PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
         return ResponseEntity.ok(playerGetDTO);
     }

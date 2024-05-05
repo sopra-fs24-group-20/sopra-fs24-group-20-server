@@ -185,4 +185,5 @@ public class LobbyServiceTest {
 
         assertEquals(HttpStatus.NOT_FOUND, thrown.getStatus());
     }
+
 }

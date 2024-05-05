@@ -14,10 +14,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,6 +97,45 @@ class PlayerControllerTest {
         assertEquals("newUser", result.getUsername());
         assertTrue(result.getReady());
     }
+    @Test
+    void createPlayer_WithoutUsername_ShouldCreatePlayerWithFunnyGuestUsername() {
+        PlayerPostDTO playerPostDTO = new PlayerPostDTO(); // No username set
+        playerPostDTO.setPassword("password123");
+
+        Player player = new Player();
+        player.setPassword("password123");
+        player.setReady(true); // Initialize ready
+
+        when(playerService.createPlayer(anyString(), anyString())).thenAnswer(invocation -> {
+            String username = invocation.getArgument(0, String.class);
+            if (username.startsWith("Guest:")) {
+                player.setUsername(username);
+            }
+            return player;
+        });
+
+        PlayerGetDTO result = playerController.createPlayer(playerPostDTO);
+
+        assertNotNull(result);
+        assertTrue(result.getUsername().startsWith("Guest:"));
+        assertTrue(Arrays.asList("Curious Panda", "Sleepy Koala", "Happy Squirrel", "Wise Owl").stream()
+                .anyMatch(name -> result.getUsername().contains(name)));
+        assertTrue(result.getReady());
+    }
+    @Test
+    void createPlayer_WithProhibitedGuestPrefix_ShouldFail() {
+        PlayerPostDTO playerPostDTO = new PlayerPostDTO();
+        playerPostDTO.setUsername("Guest: Hacker");
+
+        // Expect the controller to throw an exception due to an invalid prefix
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            playerController.createPlayer(playerPostDTO);
+        });
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Usernames starting with 'Guest:' are reserved and cannot be manually set.", exception.getReason());
+    }
+
 
     @Test
     void getPlayerByUsername_ShouldReturnPlayer() {
