@@ -73,7 +73,7 @@ public class PlayerController {
     @ResponseBody
     public PlayerGetDTO createPlayer(@RequestBody PlayerPostDTO playerPostDTO) {
         String username = playerPostDTO.getUsername();
-
+        String password = playerPostDTO.getPassword();
         // Check if a non-system-generated username starts with "Guest:"
         if (username != null && username.trim().startsWith("Guest:")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usernames starting with 'Guest:' are reserved and cannot be manually set.");
@@ -82,10 +82,12 @@ public class PlayerController {
         // Generate a guest username if no username is provided
         if (username == null || username.trim().isEmpty()) {
             username = generateGuestUsername();
+            password = username;
         }
 
         Player playerInput = DTOMapper.INSTANCE.convertPlayerPostDTOtoEntity(playerPostDTO);
         playerInput.setUsername(username);
+        playerInput.setPassword(password);
         Player createdPlayer = PlayerService.createPlayer(playerInput.getUsername(), playerInput.getPassword());
         return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(createdPlayer);
     }
