@@ -143,6 +143,8 @@ class RoundControllerTest {
                         .content("{}"))
                 .andExpect(status().isNotFound());
     }
+
+
     @Test
     void getLetter_ShouldReturnNotFound_WhenLetterIsNotAssigned() throws Exception {
         when(roundService.getCurrentRoundLetter(1L)).thenReturn('\0');
@@ -162,7 +164,23 @@ class RoundControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user1").value(150));
     }
+    @Test
+    void getLeaderboard_ShouldReturnNotFound_WhenRuntimeExceptionThrown() throws Exception {
+        when(roundService.calculateLeaderboard(1L)).thenThrow(new RuntimeException());
 
+        mockMvc.perform(get("/rounds/leaderboard/{gameId}", 1L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    void getLeaderboard_ShouldReturnInternalServerError_WhenExceptionThrown() throws Exception {
+        when(roundService.calculateLeaderboard(1L)).thenThrow(new Exception());
+
+        mockMvc.perform(get("/rounds/leaderboard/{gameId}", 1L))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$").doesNotExist());
+    }
     @Test
     void getScoresByCategory_ShouldReturnScores_WhenDataExists() throws Exception {
         Map<String, Map<String, Map<String, Object>>> scores = new HashMap<>();

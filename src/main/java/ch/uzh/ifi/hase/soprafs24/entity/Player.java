@@ -55,9 +55,7 @@ public class Player implements Serializable {
         this.username = username;
     }
 
-    public String getToken() {
-        return token;
-    }
+
 
     public void setToken(String token) {
         this.token = token;

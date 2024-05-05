@@ -172,4 +172,23 @@ class PlayerControllerTest {
         assertEquals("user", response.getBody().getUsername());
         assertTrue(response.getBody().getReady());
     }
+    @Test
+    void logoutTest() {
+        // Given
+        PlayerPostDTO playerPostDTO = new PlayerPostDTO();
+        playerPostDTO.setUsername("test_username");
+
+        Player player = new Player();
+        player.setUsername("test_username");
+
+        when(playerService.LogOutPlayer("test_username")).thenReturn(player);
+
+        // When
+        ResponseEntity<PlayerGetDTO> response = playerController.logout(playerPostDTO);
+
+        // Then
+        assertSame(player.getUsername(), response.getBody().getUsername());
+        verify(playerService).LogOutPlayer("test_username");
+        verifyNoMoreInteractions(playerService);
+    }
 }

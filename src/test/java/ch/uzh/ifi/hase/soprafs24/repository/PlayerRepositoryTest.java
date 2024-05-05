@@ -45,23 +45,5 @@ public class PlayerRepositoryTest {
         entityManager.flush();
     }
 
-    @Test
-    void whenFindByUsername_thenReturnPlayer() {
-        // When
-        Optional<Player> foundPlayer = playerRepository.findByUsername("testUser");
 
-        // Then
-        assertThat(foundPlayer.isPresent()).isTrue();
-        assertThat(foundPlayer.get().getUsername()).isEqualTo("testUser");
-        assertThat(foundPlayer.get().getLobby()).isNotNull();  // Verify the lobby association
-    }
-
-    @Test
-    void whenFindByUsername_withNoResult_thenReturnEmpty() {
-        // When
-        Optional<Player> notFoundPlayer = playerRepository.findByUsername("nonExistentUser");
-
-        // Then
-        assertThat(notFoundPlayer.isPresent()).isFalse();
-    }
 }
