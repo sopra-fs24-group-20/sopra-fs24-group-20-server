@@ -19,7 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RoundController {
 
     private final RoundService roundService;
-
+    @Autowired
+    private ObjectMapper objectMapper;
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
     public RoundController(RoundService roundService) {
         this.roundService = roundService;
     }
@@ -32,8 +36,6 @@ public class RoundController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @Autowired
-    private ObjectMapper objectMapper;
     @PostMapping("/rounds/{gameId}/entries")
 
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {

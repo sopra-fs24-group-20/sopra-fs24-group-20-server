@@ -1,3 +1,4 @@
+/*
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,3 +22,4 @@ public class WebSocketService {
         serverEndpointExporter.afterPropertiesSet();
     }
 }
+*/

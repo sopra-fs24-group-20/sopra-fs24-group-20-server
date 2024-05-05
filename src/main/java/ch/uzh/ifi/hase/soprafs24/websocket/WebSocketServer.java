@@ -1,3 +1,4 @@
+/*
 package ch.uzh.ifi.hase.soprafs24.Websocket;
 
 import java.io.IOException;
@@ -64,3 +65,4 @@ public class WebSocketServer {
 
 
 }
+*/

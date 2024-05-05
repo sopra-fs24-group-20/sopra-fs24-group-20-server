@@ -1,3 +1,4 @@
+/*
 package ch.uzh.ifi.hase.soprafs24.Websocket;
 
 import org.springframework.context.ApplicationContext;
@@ -22,3 +23,4 @@ public class ApplicationContextProvider implements ApplicationContextAware {
         return context.getBean(beanClass);
     }
 }
+*/

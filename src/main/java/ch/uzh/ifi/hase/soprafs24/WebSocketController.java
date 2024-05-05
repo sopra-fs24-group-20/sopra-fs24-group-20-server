@@ -21,10 +21,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Controller
 public class WebSocketController {
 
-    private final Set<String> readyPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final Set<String> connectedPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    public final Set<String> readyPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    public final Set<String> connectedPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final SimpMessagingTemplate messagingTemplate;
-    private final List<String> allPlayerAnswers = Collections.synchronizedList(new ArrayList<>());
+    public final List<String> allPlayerAnswers = Collections.synchronizedList(new ArrayList<>());
     private final RoundService roundService;
     private final RoundRepository roundRepository;
     private final ObjectMapper objectMapper;

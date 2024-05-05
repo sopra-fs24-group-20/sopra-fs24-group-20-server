@@ -1,7 +1,4 @@
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -16,7 +13,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableJpaRepositories(
-        basePackages = "com.example.repository", // Ensure all your repositories are within this package
+        basePackages = "ch.uzh.ifi.hase.soprafs24.repository", // Adjust to your actual repository package
         entityManagerFactoryRef = "entityManagerFactory",
         transactionManagerRef = "transactionManager"
 )
@@ -25,6 +22,7 @@ public class DatabaseConfig {
     public JdbcTemplate jdbcTemplate(@Qualifier("dataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
+
     @Primary
     @Bean
     public DataSource dataSource() {
@@ -33,16 +31,14 @@ public class DatabaseConfig {
         dataSource.setUrl("jdbc:mysql://35.204.19.36:3306/categories-db");
         dataSource.setUsername("sa");
         dataSource.setPassword("");
-
         return dataSource;
     }
 
     @Bean(name = "entityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
-            @Qualifier("dataSource") DataSource dataSource) {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("dataSource") DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan(new String[] { "com.example.entity" }); // Adjust to your entity package
+        em.setPackagesToScan(new String[] { "ch.uzh.ifi.hase.soprafs24.entity" }); // Ensure this matches the package where your entities are located
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         return em;

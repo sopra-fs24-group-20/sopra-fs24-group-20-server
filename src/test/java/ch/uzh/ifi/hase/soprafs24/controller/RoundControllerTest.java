@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -21,6 +23,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -40,7 +43,9 @@ class RoundControllerTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.initMocks(this); // Initialize mocks
+        this.objectMapper = new ObjectMapper(); // Create a new ObjectMapper
+        roundController.setObjectMapper(objectMapper); // Manually inject ObjectMapper
         mockMvc = MockMvcBuilders.standaloneSetup(roundController).build();
     }
 
@@ -191,7 +196,81 @@ class RoundControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    void submitVotes_ValidRequest_ShouldReturnUpdatedScores() throws Exception {
+        String rawJson = "{\"category1\":{\"user1\":{\"score\": 10}}}";
+        HashMap<String, HashMap<String, HashMap<String, Object>>> votes = new HashMap<>();
+        HashMap<String, HashMap<String, Object>> userDetails = new HashMap<>();
+        HashMap<String, Object> scoreDetails = new HashMap<>();
+        scoreDetails.put("score", 10);
+        userDetails.put("user1", scoreDetails);
+        votes.put("category1", userDetails);
 
+        given(roundService.adjustScores(1L, votes)).willReturn(new HashMap<>());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/1/submitVotes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(rawJson))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void submitVotes_InvalidJson_ShouldReturnBadRequest() throws Exception {
+        String rawJson = "{\"category1\":{\"user1\":{\"score\":}}"; // Malformed JSON
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/1/submitVotes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(rawJson))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void submitVotes_ServiceThrowsRuntimeException_ShouldReturnNotFound() throws Exception {
+        String rawJson = "{\"category1\":{\"user1\":{\"score\": 10}}}";
+        given(roundService.adjustScores(anyLong(), any())).willThrow(new RuntimeException("Game not found"));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/1/submitVotes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(rawJson))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string("Game not found"));
+    }
+
+    @Test
+    void addGameEntry_ExistingRound_ShouldAddSuccessfully() throws Exception {
+        Long gameId = 1L;
+        Map<String, String> gameEntry = Map.of("playerId", "123", "answer", "apple");
+        String entryJson = objectMapper.writeValueAsString(gameEntry);
+        Round mockRound = new Round();
+        mockRound.setPlayerAnswers(null);  // Simulating no existing answers
+
+        given(roundService.getCurrentRoundByGameId(gameId)).willReturn(mockRound);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/{gameId}/entries", gameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(entryJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("{\"message\":\"Entry added successfully.\"}"));
+
+        verify(roundService, times(1)).saveRound(any(Round.class));
+    }
+
+    @Test
+    void addGameEntry_RoundNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        Map<String, String> gameEntry = Map.of("playerId", "123", "answer", "apple");
+        String entryJson = objectMapper.writeValueAsString(gameEntry);
+
+        given(roundService.getCurrentRoundByGameId(gameId)).willReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/{gameId}/entries", gameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(entryJson))
+                .andExpect(status().isNotFound());
+
+    }
+
+}
 
     // Additional tests for getLetter, getLeaderboard, getScoresByCategory should follow similar patterns
-}
+
