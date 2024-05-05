@@ -152,4 +152,15 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: research and tinkering on websockets functionalities to then decide to remove websockets as much as possible
 
 
+## Week 6
+### Joshua Stebler
+- GitHub Issue Links: [Issue 107](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/107),[Issue 80](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/80)
+- Task 1: Refactor code, fix issues especially when working with multiple games and rounds
+- Task 2: Add testing for Linecoverage 80 %
+- Task 3: Add a Guest Login that gives a Username to whomever did a Post without a username specified
 
+## Week 7
+### Joshua Stebler
+- GitHub Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/81)
+- Task 1: Add logout functionality
+- Task 2: Remove Guest Players form Repository when they logout
