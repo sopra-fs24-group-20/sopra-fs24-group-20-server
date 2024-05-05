@@ -147,14 +147,15 @@ public class WebSocketController {
     public String receiveGameEntries(@Payload Map<String, String> gameEntry) {
         String playerIdentifier = gameEntry.remove("username");
         String answer = gameEntry.get("answer"); // Assuming each entry includes an "answer" key
-
+        String SgameId = gameEntry.get ("gameId");
+        Long gameId =Long.parseLong(SgameId);
         if (!readyPlayers.contains(playerIdentifier)) {
             System.out.println("Received submission from unready or unknown player: " + playerIdentifier);
             return "{\"command\":\"entities\"}";
         }
 
         allPlayerAnswers.add(answer); // Append answer to the list
-        updateRoundWithAnswers();
+        updateRoundWithAnswers(gameId);
         return "{\"command\":\"entities\"}";
     }
 
@@ -165,8 +166,8 @@ public class WebSocketController {
         return "{\"command\":\"Leaderboard\"}"; // You can customize this JSON message as needed.
     }
 
-    private void updateRoundWithAnswers() {
-        Round currentRound = roundService.getCurrentRound(); // Assuming you have a method to get the current round
+    private void updateRoundWithAnswers(Long gameId) {
+        Round currentRound = roundService.getCurrentRound(gameId); // Assuming you have a method to get the current round
         try {
             // Convert current list of answers to JSON string
             String jsonAnswers = objectMapper.writeValueAsString(allPlayerAnswers);

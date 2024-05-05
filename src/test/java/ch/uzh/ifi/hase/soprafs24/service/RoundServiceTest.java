@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.Optional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
@@ -94,15 +95,15 @@ class RoundServiceTest {
     @Test
     void getCurrentRound_shouldReturnLatestRound() {
         Round latestRound = new Round();
-        when(roundRepository.findTopByOrderByIdDesc()).thenReturn(Optional.of(latestRound));
-        Round result = roundService.getCurrentRound();
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(latestRound));
+        Round result = roundService.getCurrentRound(1L);
         assertEquals(latestRound, result);
     }
 
     @Test
     void getCurrentRound_whenNoRoundsExist_shouldReturnNull() {
-        when(roundRepository.findTopByOrderByIdDesc()).thenReturn(Optional.empty());
-        Round result = roundService.getCurrentRound();
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.empty());
+        Round result = roundService.getCurrentRound(1L);
         assertNull(result);
     }
     @Test
@@ -116,21 +117,21 @@ class RoundServiceTest {
 
     @Test
     void getRoundByGameId_withNoRoundsFound_shouldReturnEmptyList() {
-        when(roundRepository.findByGameId(999L)).thenReturn(Collections.emptyList());
-        List<Round> result = roundService.getRoundByGameId(999L);
+        when(roundRepository.findByGameId(1L)).thenReturn(Collections.emptyList());
+        List<Round> result = roundService.getRoundByGameId(1L);
         assertTrue(result.isEmpty());
     }
     @Test
     void getCurrentRoundByGameId_withExistingGameId_shouldReturnCurrentRound() {
         Round currentRound = new Round();
-        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(currentRound); // Directly return a Round object
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(currentRound)); // Directly return a Round object
         Round result = roundService.getCurrentRoundByGameId(1L);
         assertEquals(currentRound, result);
     }
 
     @Test
     void getCurrentRoundByGameId_withInvalidGameId_shouldReturnNull() {
-        when(roundRepository.findTopByGameIdOrderByIdDesc(999L)).thenReturn(null); // Return null for an invalid ID
+        when(roundRepository.findTopByGameIdOrderByIdDesc(999L)).thenReturn(Optional.empty());
         Round result = roundService.getCurrentRoundByGameId(999L);
         assertNull(result);
     }
@@ -164,7 +165,7 @@ class RoundServiceTest {
         currentRound.setGame(game);
 
         // Mocking findTopByGameIdOrderByIdDesc
-        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(currentRound);
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(currentRound));
 
         //Mocking objectMapper.readValue to accommodate the extended player answers
         when(objectMapper.readValue(Mockito.anyString(), Mockito.<TypeReference<List<Map<String, String>>>>any()))
@@ -207,8 +208,71 @@ class RoundServiceTest {
         // Assert the result matches the expected scores
         assertEquals(expectedScores, result);
     }
+/*
+    @Test
+    void calculateLeaderboard_ShouldCalculateAndSortScores() throws Exception {
+        Long gameId = 1L;
+        Game currentGame =new Game();
+        Round currentRound = new Round();
+        String jsonScores = "{\"cat1\": {\"user1\": {\"score\": 10}, \"user2\": {\"score\": 5}}, \"cat2\": {\"user1\": {\"score\": 20}, \"user2\": {\"score\": 15}}}";
+        currentRound.setRoundPoints(jsonScores);
+        when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(currentRound));
 
-    /*
+        TypeReference<Map<String, Map<String, Map<String, Object>>>> typeRef = new TypeReference<>() {};
+        lenient().when(objectMapper.readValue(eq(jsonScores), eq(typeRef))).thenReturn(buildScores());
+
+        Map<String, Integer> leaderboard = roundService.calculateLeaderboard(gameId);
+
+        assertEquals(Map.of("user1", 60, "user2", 40), leaderboard);
+        assertTrue(leaderboard.get("user1") > leaderboard.get("user2"));
+    }
+
+    private Map<String, Map<String, Map<String, Object>>> buildScores() {
+        Map<String, Map<String, Map<String, Object>>> scores = new HashMap<>();
+        Map<String, Object> scoreDetails = new HashMap<>();
+        scoreDetails.put("score", 30);
+        scores.put("user1", Map.of("cat1", scoreDetails, "cat2", scoreDetails));
+        scores.put("user2", Map.of("cat1", Map.of("score", 20), "cat2", Map.of("score", 20)));
+        return scores;
+    }
+
+    @Test
+    void adjustScores_ShouldApplyAdjustmentsCorrectly() throws Exception {
+        Long gameId = 1L;
+        Round currentRound = new Round();
+        String originalScores = "{\"cat1\": {\"user1\": {\"score\": 10}, \"user2\": {\"score\": 5}}}";
+        currentRound.setRoundPoints(originalScores);
+        when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(currentRound));
+
+        HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments = new HashMap<>();
+        HashMap<String, Object> user1Adjustments = new HashMap<>();
+        user1Adjustments.put("veto", false);
+        user1Adjustments.put("bonus", true);
+        adjustments.put("cat1", new HashMap<>() {{
+            put("user1", user1Adjustments);
+        }});
+
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(buildInitialScores());
+        when(objectMapper.writeValueAsString(any())).thenReturn("updatedScores");
+
+        Map<String, Map<String, Map<String, Object>>> adjustedScores = roundService.adjustScores(gameId, adjustments);
+
+        assertNotNull(adjustedScores);
+        assertEquals(13, adjustedScores.get("cat1").get("user1").get("score")); // Initial 10 + bonus 3
+    }
+
+    private Map<String, Map<String, Map<String, Object>>> buildInitialScores() {
+        Map<String, Map<String, Map<String, Object>>> scores = new HashMap<>();
+        Map<String, Object> user1Scores = new HashMap<>();
+        user1Scores.put("score", 10);
+        scores.put("cat1", new HashMap<>() {{
+            put("user1", user1Scores);
+        }});
+        return scores;
+    }
+
+
+
     @Test
     void calculateLeaderboard_withValidGameId_shouldReturnSortedScores() throws Exception {
         // Arrange

@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPutDTO;
@@ -38,6 +39,8 @@ class LobbyControllerTest {
     private LobbyService lobbyService;
     @Mock
     private GameRepository gameRepository;
+    @Mock
+    private RoundRepository roundRepository;
 
     @InjectMocks
     private LobbyController lobbyController;
@@ -259,5 +262,38 @@ class LobbyControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
     }
+    @Test
+    void deleteAllLobbiesAndRelatedData_ShouldClearAllDataSuccessfully() {
+        // Mock data setup
+        Player player1 = new Player();
+        player1.setUsername("player1");
+        Player player2 = new Player();
+        player2.setUsername("player2");
+        List<Player> allPlayers = Arrays.asList(player1, player2);
+
+        when(playerRepository.findAll()).thenReturn(allPlayers);
+
+        // Mock repository calls
+        doNothing().when(roundRepository).deleteAll();
+        doNothing().when(gameRepository).deleteAll();
+        doNothing().when(lobbyRepository).deleteAll();
+
+        // Action
+        ResponseEntity<?> response = lobbyController.deleteAllLobbiesAndRelatedData();
+
+        // Verification
+        allPlayers.forEach(player -> {
+            assertNull(player.getLobby());
+            verify(playerRepository).save(player);
+        });
+        verify(roundRepository).deleteAll();
+        verify(gameRepository).deleteAll();
+        verify(lobbyRepository).deleteAll();
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
 
 }

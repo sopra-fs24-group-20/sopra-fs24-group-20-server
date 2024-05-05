@@ -72,14 +72,14 @@ public class RoundService {
         }
         return '\0';
     }
-    public Round getCurrentRound() {
-        return roundRepository.findTopByOrderByIdDesc().orElse(null);
+    public Round getCurrentRound(Long gameId) {
+        return roundRepository.findTopByGameIdOrderByIdDesc(gameId).orElse(null);
     }
     public List<Round> getRoundByGameId(Long gameId) {
         return roundRepository.findByGameId(gameId);
     }
     public Round getCurrentRoundByGameId(Long gameId) {
-        return roundRepository.findTopByGameIdOrderByIdDesc(gameId);
+        return roundRepository.findTopByGameIdOrderByIdDesc(gameId).orElse(null);
     }
     public void saveRound(Round round) {
         roundRepository.save(round);

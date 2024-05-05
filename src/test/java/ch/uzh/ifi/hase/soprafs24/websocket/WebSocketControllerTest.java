@@ -116,6 +116,7 @@ class WebSocketControllerTest {
         Map<String, String> gameEntry = new HashMap<>();
         gameEntry.put("username", "user1");
         gameEntry.put("answer", "SomeAnswer");
+        gameEntry.put("gameId", "1");
 
         String result = webSocketController.receiveGameEntries(gameEntry);
 
@@ -127,11 +128,12 @@ class WebSocketControllerTest {
         Map<String, String> gameEntry = new HashMap<>();
         gameEntry.put("username", "user1");
         gameEntry.put("answer", "SomeAnswer");
+        gameEntry.put("gameId", "1");
         webSocketController.readyPlayers.add("user1"); // Mark user as ready
 
         // Assuming you have a method getCurrentRound in RoundService
         Round mockRound = new Round();
-        when(roundService.getCurrentRound()).thenReturn(mockRound);
+        when(roundService.getCurrentRound(1L)).thenReturn(mockRound);
         when(objectMapper.writeValueAsString(any())).thenReturn("jsonAnswers");
 
         String result = webSocketController.receiveGameEntries(gameEntry);
@@ -146,11 +148,12 @@ class WebSocketControllerTest {
         Map<String, String> gameEntry = new HashMap<>();
         gameEntry.put("username", "user1");
         gameEntry.put("answer", "SomeAnswer");
+        gameEntry.put("gameId", "1");
         webSocketController.readyPlayers.add("user1"); // Mark user as ready
 
         // Assuming you have a method getCurrentRound in RoundService
         Round mockRound = new Round();
-        when(roundService.getCurrentRound()).thenReturn(mockRound);
+        when(roundService.getCurrentRound(1L)).thenReturn(mockRound);
         doThrow(new JsonProcessingException("Test Exception") {}).when(objectMapper).writeValueAsString(any());
 
         String result = webSocketController.receiveGameEntries(gameEntry);
