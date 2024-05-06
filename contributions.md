@@ -159,6 +159,13 @@ This markdown file logs the individual contributions of each team member through
 - Task 2: Add testing for Linecoverage 80 %
 - Task 3: Add a Guest Login that gives a Username to whomever did a Post without a username specified
 
+### Giuliano Bernasconi
+- GitHub Issue Links:[Issue 116](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/116), [Issue 115](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/115)
+- Task 1 : Level system logic in the backend 
+- Task 2 : Tracking stats of players (persistent)
+- Task 3 : 
+
+
 ## Week 7
 ### Joshua Stebler
 - GitHub Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/81)
