@@ -36,9 +36,12 @@ public class PlayerService {
         Player player = new Player();
         player.setUsername(username);
         player.setPassword(password);
-        player.setToken("1234");
         player.setReady(false);
-
+        player.setTotalPoints(0);
+        player.setRoundsPlayed(0);
+        player.setLevel(1);
+        player.setAveragePointsPerRound(0);
+        player.setVictories(0);
         return playerRepository.save(player);
     }
     public List<Player> getPlayers() {
@@ -52,7 +55,7 @@ public class PlayerService {
             }
             player.setReady(updatedPlayer.getReady());
             // Add other fields you wish to update.
-            //LobbyService.checkAndStartGame();
+            // LobbyService.checkAndStartGame();
             return playerRepository.save(player);
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found with username: " + username));
     }
@@ -78,40 +81,11 @@ public class PlayerService {
             return playerRepository.save(player);
         }
     }
-    /*
-    public boolean addAnswer(String username, List<String> answers) {
-        // Using Optional to handle possible null value for player
-        Optional<Player> optionalPlayer = playerRepository.findByUsername(username);
-        if (optionalPlayer.isPresent()) {
-            Player player = optionalPlayer.get();
-            //if (player.getLobby().getGame().getStatus() == GameStatus.ANSWER) {
-                if(true){
-                Statistic stat = new Statistic();
-                stat.setAnswer(answers);
-                player.getStats().add(stat);
-                playerRepository.save(player);
-                return true;
-            }
+    public int calculateLevel(int totalPoints) {
+        int level = 1;
+        while (25 * Math.pow(level, 2) <= totalPoints) {
+            level++;
         }
-        return false;
+        return level - 1;  // Subtract 1 because level increments once more after the last valid level
     }
-    public boolean addVotes(String username, List<Boolean> votes) {
-        // Using the Optional to safely check if the player exists
-        Optional<Player> optionalPlayer = playerRepository.findByUsername(username);
-        if (optionalPlayer.isPresent()) {
-            Player player = optionalPlayer.get();
-            if (player.getLobby().getGame().getStatus() == GameStatus.VOTE) {
-                List<Statistic> statistics = player.getStats();
-                if (!statistics.isEmpty()) {
-                    Statistic lastStat = statistics.get(statistics.size() - 1);
-                    List<Integer> vetoUpdates = votes.stream().map(vote -> vote ? 1 : 0).collect(Collectors.toList());
-                    lastStat.setVeto(vetoUpdates);
-                    playerRepository.save(player);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }*/
-
 }

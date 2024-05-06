@@ -201,4 +201,12 @@ class PlayerServiceTest {
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatus());
         assertTrue(exception.getReason().contains("Username or Password Incorrect"));
     }
+
+    @Test
+    void calculateLevelTest() {
+        int points = 125;
+        int level = playerService.calculateLevel(points);
+
+        assertEquals(level, 2);
+    }
 }

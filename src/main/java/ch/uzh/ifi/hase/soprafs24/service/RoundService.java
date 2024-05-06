@@ -12,9 +12,11 @@ import javax.transaction.Transactional;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +33,10 @@ public class RoundService {
     private LobbyRepository lobbyRepository;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private PlayerService playerService;
+    @Autowired
+    private PlayerRepository playerRepository;
 
     @Transactional  // Ensures the entire method is run in a single transaction
     public void startNewRound(Long lobbyId) {
@@ -84,6 +90,9 @@ public class RoundService {
     public void saveRound(Round round) {
         roundRepository.save(round);
     }
+    public void savePlayer(Player player) {
+        playerRepository.save(player);
+    }
 
     //sum up the scores from the function below
     @Transactional
@@ -100,14 +109,26 @@ public class RoundService {
                 new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
 
         Map<String, Integer> finalScores = new HashMap<>();
+        Map<String, Player> playersToUpdate = new HashMap<>();
 
         // Aggregate scores
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
                 Integer score = (Integer) details.get("score");
                 finalScores.merge(username, score, Integer::sum);
+
+                // Fetch the player (mock method, replace with actual)
+                Player player = playerService.getPlayerByUsername(username);
+                if (player != null) {
+                    playersToUpdate.putIfAbsent(username, player);
+                    player.setTotalPoints(player.getTotalPoints() + score);
+                    player.setRoundsPlayed(player.getRoundsPlayed() + 1);
+                }
             });
         });
+
+        // Persist the updates
+        playersToUpdate.values().forEach(this::savePlayer);
 
         // Return sorted scores
         return finalScores.entrySet().stream()
