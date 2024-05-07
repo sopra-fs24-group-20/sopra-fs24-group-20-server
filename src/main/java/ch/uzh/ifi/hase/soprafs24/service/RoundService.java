@@ -98,6 +98,15 @@ public class RoundService {
     @Transactional
     public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
+        Optional<Game> currentGameOptional = gameRepository.findByGameId(gameId);
+        if (currentGameOptional.isEmpty()) {
+            throw new RuntimeException("No current game for game ID: " + gameId);
+        }
+
+        Game currentGame = currentGameOptional.get();  // Get the Game object from Optional
+        Lobby lobby = currentGame.getLobby();
+        int totalRounds = lobby.getRounds();
+
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
@@ -122,14 +131,41 @@ public class RoundService {
                 if (player != null) {
                     playersToUpdate.putIfAbsent(username, player);
                     player.setTotalPoints(player.getTotalPoints() + score);
-                    player.setRoundsPlayed(player.getRoundsPlayed() + 1);
+
+                    // Note: We are not updating roundsPlayed or calculating the average here
                 }
             });
         });
 
-        // Persist the updates
-        playersToUpdate.values().forEach(this::savePlayer);
+        // Now, update roundsPlayed and calculate the average points per round for each player
+        playersToUpdate.values().forEach(player -> {
+            player.setRoundsPlayed(player.getRoundsPlayed() + 1);  // Increment rounds first
+            if (player.getRoundsPlayed() > 0) {
+                double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
+                double roundedAverage = Math.round(average * 100) / 100.0;
+                player.setAveragePointsPerRound(roundedAverage);
+            } else {
+                player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
+            }
+            savePlayer(player);  // Save the player with updated stats
+        });
 
+        // Check if this is the final round
+        if (currentGame.getRounds().size() == totalRounds) {
+            // This is the final round
+            final String winner = finalScores.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+
+            if (winner != null) {
+                Player winningPlayer = playerService.getPlayerByUsername(winner);
+                if (winningPlayer != null) {
+                    winningPlayer.setVictories(winningPlayer.getVictories() + 1);
+                    savePlayer(winningPlayer);  // Ensure victory is recorded
+                }
+            }
+        }
         // Return sorted scores
         return finalScores.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))

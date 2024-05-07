@@ -105,9 +105,7 @@ public class Player implements Serializable {
     }
 
     public double getAveragePointsPerRound() {
-        BigDecimal bd = new BigDecimal(averagePointsPerRound);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+        return averagePointsPerRound;
     }
 
     public void setAveragePointsPerRound(double averagePointsPerRound) {

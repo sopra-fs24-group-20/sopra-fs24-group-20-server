@@ -180,6 +180,16 @@ public class LobbyController {
         return ResponseEntity.ok(lobbyGetDTO);
     }
 
+    @PutMapping("/end/{lobbyId}")
+    public ResponseEntity<?> updatePlayerStats(@PathVariable Long lobbyId) {
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        if (optionalLobby.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/leave/{lobbyId}")
     public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestParam String username) {
         boolean leftSuccessfully = lobbyService.leaveLobby(lobbyId, username);
