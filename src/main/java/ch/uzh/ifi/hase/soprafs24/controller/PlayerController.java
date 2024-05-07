@@ -81,7 +81,7 @@ public class PlayerController {
 
         // Generate a guest username if no username is provided
         if (username == null || username.trim().isEmpty()) {
-            username = generateGuestUsername();
+            username = generateUniqueGuestUsername();
             password = username;
         }
 
@@ -91,7 +91,13 @@ public class PlayerController {
         Player createdPlayer = PlayerService.createPlayer(playerInput.getUsername(), playerInput.getPassword());
         return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(createdPlayer);
     }
-
+    private String generateUniqueGuestUsername() {
+        String username;
+        do {
+            username = generateGuestUsername();
+        } while (playerRepository.existsByUsername(username)); // Properly use the repository method
+        return username;
+    }
     private String generateGuestUsername() {
         List<String> names = Arrays.asList("Curious Panda", "Sleepy Koala", "Happy Squirrel", "Wise Owl");
         String descriptor = names.get(new Random().nextInt(names.size()));
