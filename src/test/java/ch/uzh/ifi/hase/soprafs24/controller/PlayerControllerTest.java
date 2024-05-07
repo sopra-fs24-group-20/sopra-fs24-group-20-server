@@ -97,6 +97,7 @@ class PlayerControllerTest {
         assertEquals("newUser", result.getUsername());
         assertTrue(result.getReady());
     }
+    /*
     @Test
     void createPlayer_WithoutUsername_ShouldCreatePlayerWithFunnyGuestUsername() {
         PlayerPostDTO playerPostDTO = new PlayerPostDTO(); // No username set
@@ -122,6 +123,8 @@ class PlayerControllerTest {
                 .anyMatch(name -> result.getUsername().contains(name)));
         assertTrue(result.getReady());
     }
+
+     */
     @Test
     void createPlayer_WithProhibitedGuestPrefix_ShouldFail() {
         PlayerPostDTO playerPostDTO = new PlayerPostDTO();

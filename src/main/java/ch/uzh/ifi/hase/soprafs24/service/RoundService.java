@@ -98,7 +98,7 @@ public class RoundService {
     @Transactional
     public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
-        Optional<Game> currentGameOptional = gameRepository.findByGameId(gameId);
+        Optional<Game> currentGameOptional = gameRepository.findById(gameId);
         if (currentGameOptional.isEmpty()) {
             throw new RuntimeException("No current game for game ID: " + gameId);
         }

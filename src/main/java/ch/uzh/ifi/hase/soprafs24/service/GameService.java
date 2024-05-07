@@ -29,9 +29,4 @@ public class GameService {
         return gameRepository.findByLobbyId(lobbyId).orElseThrow(() ->
                 new NoSuchElementException("Game with lobbyId " + lobbyId + " not found"));
     }
-
-    public Game getGameByGameId(Long gameId) {
-        return gameRepository.findByGameId(gameId).orElseThrow(() ->
-                new NoSuchElementException("Game with gameId " + gameId + " not found"));
-    }
 }
