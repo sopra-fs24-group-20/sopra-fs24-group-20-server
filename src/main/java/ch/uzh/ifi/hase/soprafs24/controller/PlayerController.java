@@ -81,7 +81,7 @@ public class PlayerController {
 
         // Generate a guest username if no username is provided
         if (username == null || username.trim().isEmpty()) {
-            username = generateGuestUsername();
+            username = generateUniqueGuestUsername();
             password = username;
         }
 
@@ -91,10 +91,36 @@ public class PlayerController {
         Player createdPlayer = PlayerService.createPlayer(playerInput.getUsername(), playerInput.getPassword());
         return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(createdPlayer);
     }
+    private String generateUniqueGuestUsername() {
+        String username;
+        do {
+            username = generateGuestUsername();
+        } while (playerRepository.existsByUsername(username)); // Properly use the repository method
+        return username;
+    }
+    public static String generateGuestUsername() {
+        // List of animal nouns
+        List<String> nounList = Arrays.asList(
+                "Platypus", "Sasquatch", "Narwhal", "Penguin", "Koala", "Quokka",
+                "Squirrel", "Giraffe", "Cheetah", "Hedgehog", "Octopus", "Llama",
+                "Wombat", "Lemur", "Otter", "Gazelle", "Zebra"
+        );
 
-    private String generateGuestUsername() {
-        List<String> names = Arrays.asList("Curious Panda", "Sleepy Koala", "Happy Squirrel", "Wise Owl");
-        String descriptor = names.get(new Random().nextInt(names.size()));
+        // List of adjectives
+        List<String> adjectiveList = Arrays.asList(
+                "Cute", "Quirky", "Dramatic", "Chubby", "Fluffy", "Silly", "Dizzy",
+                "Big", "Small", "Smart", "Prickly", "Funky", "Sassy", "Happy", "Sad",
+                "Kind", "Criminal"
+        );
+
+        // Random generator
+        Random random = new Random();
+
+        // Combine a random adjective and noun
+        String descriptor = adjectiveList.get(random.nextInt(adjectiveList.size())) +
+                " " +
+                nounList.get(random.nextInt(nounList.size()));
+
         return "Guest: " + descriptor;
     }
 

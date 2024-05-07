@@ -58,7 +58,7 @@ public class LobbyController {
         lobbyRepository.save(createdLobby); // Update the lobby with the game link
         Game game = new Game();
         game.setStatus(GameStatus.VOTE);
-        game.setRoundCount(1); // Ensure this is never null, set a default or calculated value
+        game.setRoundCount(1);
         game.setLobby(createdLobby);
         createdLobby.setGame(game);
 
@@ -180,7 +180,6 @@ public class LobbyController {
         // Return the LobbyGetDTO with the settings
         return ResponseEntity.ok(lobbyGetDTO);
     }
-
     @PutMapping("/leave/{lobbyId}")
     public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestParam String username) {
         boolean leftSuccessfully = lobbyService.leaveLobby(lobbyId, username);
