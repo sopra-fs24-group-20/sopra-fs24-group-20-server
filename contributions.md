@@ -165,6 +165,11 @@ This markdown file logs the individual contributions of each team member through
 - Task 2 : Tracking stats of players (persistent)
 - Task 3 : 
 
+### Leonora Horvatic
+- GitHub Issue Links: [Issue 52](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/52),
+  [Issue 51](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/51)
+- Task 1: setting screen with all functionalities
+- Task 2: refine all authentication pages, debugging
 
 ## Week 7
 ### Joshua Stebler
