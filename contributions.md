@@ -171,6 +171,14 @@ This markdown file logs the individual contributions of each team member through
 - Task 1: setting screen with all functionalities
 - Task 2: refine all authentication pages, debugging
 
+### Joshua Weder
+- GitHub Issue Links: [Issue 45](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/45),
+  [Issue 46](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/46)
+- Task 1: Enabled the Guest Login
+- Task 2: Added the stats to the profile page
+- Task 3: Added that stats are only shown when the player isn't using a guest login
+- Task 4: Debugging
+
 ## Week 7
 ### Joshua Stebler
 - GitHub Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/81)
