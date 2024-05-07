@@ -5,9 +5,11 @@ import static org.mockito.Mockito.*;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,10 +38,16 @@ class RoundServiceTest {
     private GameRepository gameRepository;
 
     @Mock
+    private PlayerRepository playerRepository;
+
+    @Mock
     private LobbyRepository lobbyRepository;
 
     @InjectMocks
     private RoundService roundService;
+    @Mock
+    private PlayerService playerService;
+
     @Mock
     private ObjectMapper objectMapper;
 
@@ -225,4 +233,97 @@ class RoundServiceTest {
         assertThrows(RuntimeException.class, () -> roundService.adjustScores(gameId, new HashMap<>()));
     }
 
+    @Test
+    public void testCalculateLeaderboard() throws Exception {
+        // Setup
+        Game game = new Game();
+        Lobby lobby = new Lobby();
+        Round round = new Round();
+        lobby.setRounds(1);  // Assuming this is the final round
+        game.setLobby(lobby);
+        List<Round> rounds = new ArrayList<>();
+        rounds.add(round);
+        game.setRounds(rounds);
+        round.setGame(game);
+
+        Player player1 = new Player();
+        player1.setUsername("player1");
+        player1.setRoundsPlayed(0);
+        player1.setLevel(1);
+        player1.setTotalPoints(20);
+        player1.setVictories(0);
+        Player player2 = new Player();
+        player2.setUsername("player2");
+        player2.setRoundsPlayed(0);
+        player2.setLevel(1);
+        player2.setTotalPoints(0);
+        player2.setVictories(0);
+
+        Long gameId = 1L;
+
+        round.setRoundPoints("{\"category1\":{\"player1\":{\"score\":100},\"player2\":{\"score\":150}}}");
+
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(round));
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(playerService.getPlayerByUsername("player1")).thenReturn(player1);
+        when(playerService.getPlayerByUsername("player2")).thenReturn(player2);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenReturn(Map.of(
+                        "category1", Map.of(
+                                "player1", Map.of("score", 100),
+                                "player2", Map.of("score", 150)
+                        )
+                ));
+
+        // Execute
+        Map<String, Integer> leaderboard = roundService.calculateLeaderboard(gameId);
+
+        // Verify
+        assertEquals(2, leaderboard.size());
+        assertTrue(leaderboard.containsKey("player1") && leaderboard.get("player1") == 100);
+        assertTrue(leaderboard.containsKey("player2") && leaderboard.get("player2") == 150);
+        assertEquals(Integer.valueOf(150), leaderboard.get("player2")); // Player 2 should be the highest scorer
+
+
+        assertEquals(120, player1.getTotalPoints());
+        assertEquals(1, player2.getRoundsPlayed());
+        // Verify final round victory increment
+        assertEquals(1, player2.getVictories());
+        assertEquals(0, player1.getVictories());
+    }
+
+    @Test
+    public void testAdjustScores() throws Exception {
+        // Setup
+        Long gameId = 1L;
+        Round currentRound = new Round();
+        currentRound.setRoundPoints("{\"category1\":{\"player1\":{\"score\":10}, \"player2\":{\"score\":5}}}");
+
+        // Mocking getCurrentRoundByGameId to return our round
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(currentRound));
+
+        // Creating adjustments
+        HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments = new HashMap<>();
+        HashMap<String, HashMap<String, Object>> userAdjustments = new HashMap<>();
+        HashMap<String, Object> player1Adjustments = new HashMap<>();
+        player1Adjustments.put("veto", true); // This should flip the score
+        player1Adjustments.put("bonus", false);
+        HashMap<String, Object> player2Adjustments = new HashMap<>();
+        player2Adjustments.put("veto", false);
+        player2Adjustments.put("bonus", true); // This should add 3 points
+        userAdjustments.put("player1", player1Adjustments);
+        userAdjustments.put("player2", player2Adjustments);
+        adjustments.put("category1", userAdjustments);
+
+        // Execute
+        Map<String, Map<String, Map<String, Object>>> adjustedScores = roundService.adjustScores(gameId, adjustments);
+
+        // Verify the changes
+        assertEquals(0, adjustedScores.get("category1").get("player1").get("score")); // Score should be flipped from 10 to 0
+        assertEquals(8, adjustedScores.get("category1").get("player2").get("score")); // Score should be increased by 3 from 5 to 8
+
+        // Verify that the round points are updated and saved
+        verify(roundRepository).save(any(Round.class));
+    }
 }
+
