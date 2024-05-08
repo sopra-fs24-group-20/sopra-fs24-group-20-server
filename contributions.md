@@ -179,6 +179,14 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: Added that stats are only shown when the player isn't using a guest login
 - Task 4: Debugging
 
+### Mirjam Weibel
+- Github Issue Links: [Issue 71](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/71),
+  [Issue 74](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/74), [Issue 77](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/77)
+- Task 1: adjust game, so it takes the categories from the backend
+- Task 2: set default categories (city, country, profession, celebrity) if no others are specified in the settings on the lobby page
+- Task 3: replace websockets on lobbypage with useeffect hooks and dependencies
+- Task 4: fix redirection to evaluation page to take dynamically from backend
+
 ## Week 7
 ### Joshua Stebler
 - GitHub Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/81)
