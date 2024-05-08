@@ -8,12 +8,7 @@ env_variables:
   APP_PLAYER_DATASOURCE_URL: 'jdbc:mysql://35.204.19.36:3306/playerdb'
   APP_PLAYER_DATASOURCE_USERNAME: 'sa'
   APP_PLAYER_DATASOURCE_PASSWORD: ''
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: shutdown
+  ENABLE_SHUTDOWN_ENDPOINT: 'true'
 
 spring:
   datasource:
