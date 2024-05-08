@@ -3,3 +3,31 @@
 
 runtime: java17
 instance_class: F2
+env_variables:
+  SPRING_PROFILES_ACTIVE: 'gcp'
+  APP_PLAYER_DATASOURCE_URL: 'jdbc:mysql://35.204.19.36:3306/playerdb'
+  APP_PLAYER_DATASOURCE_USERNAME: 'sa'
+  APP_PLAYER_DATASOURCE_PASSWORD: ''
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: shutdown
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true

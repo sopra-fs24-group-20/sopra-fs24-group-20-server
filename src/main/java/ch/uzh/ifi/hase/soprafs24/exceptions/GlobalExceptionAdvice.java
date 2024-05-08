@@ -22,7 +22,7 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
   private final Logger log = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
 
   @ExceptionHandler(value = { IllegalArgumentException.class, IllegalStateException.class })
-  protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
+  public ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
     String bodyOfResponse = "This should be application specific";
     return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
   }

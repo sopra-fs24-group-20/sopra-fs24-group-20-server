@@ -1,18 +1,19 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPutDTO;
 import ch.uzh.ifi.hase.soprafs24.service.PlayerService;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Player Controller
@@ -25,9 +26,15 @@ import java.util.List;
 public class PlayerController {
 
     private final PlayerService PlayerService;
+    @Autowired
+    private PlayerRepository playerRepository;
 
-    PlayerController(PlayerService PlayerService) {
+
+
+    @Autowired
+    public PlayerController(PlayerService PlayerService, PlayerRepository playerRepository) {
         this.PlayerService = PlayerService;
+        this.playerRepository = playerRepository;
     }
 
     @GetMapping("/players")
@@ -48,28 +55,73 @@ public class PlayerController {
     @PutMapping("/players/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public PlayerGetDTO updatePlayer(@PathVariable String username, @RequestBody PlayerPutDTO playerPutDTO) {
+    public ResponseEntity<Void> updatePlayer(@PathVariable String username, @RequestBody PlayerPutDTO playerPutDTO) {
         // Convert DTO to entity
         Player updatedPlayerInfo = DTOMapper.INSTANCE.convertPlayerPutDTOtoEntity(playerPutDTO);
 
         // Call service to update player
         Player updatedPlayer = PlayerService.updatePlayer(username, updatedPlayerInfo);
 
+        playerRepository.save(updatedPlayer);
+
         // Convert updated entity back to DTO
-        return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(updatedPlayer);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/players")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
     public PlayerGetDTO createPlayer(@RequestBody PlayerPostDTO playerPostDTO) {
-        if (playerPostDTO.getUsername() == null || playerPostDTO.getUsername().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty");
+        String username = playerPostDTO.getUsername();
+        String password = playerPostDTO.getPassword();
+        // Check if a non-system-generated username starts with "Guest:"
+        if (username != null && username.trim().startsWith("Guest:")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usernames starting with 'Guest:' are reserved and cannot be manually set.");
+        }
+
+        // Generate a guest username if no username is provided
+        if (username == null || username.trim().isEmpty()) {
+            username = generateUniqueGuestUsername();
+            password = username;
         }
 
         Player playerInput = DTOMapper.INSTANCE.convertPlayerPostDTOtoEntity(playerPostDTO);
+        playerInput.setUsername(username);
+        playerInput.setPassword(password);
         Player createdPlayer = PlayerService.createPlayer(playerInput.getUsername(), playerInput.getPassword());
         return DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(createdPlayer);
+    }
+    private String generateUniqueGuestUsername() {
+        String username;
+        do {
+            username = generateGuestUsername();
+        } while (playerRepository.existsByUsername(username)); // Properly use the repository method
+        return username;
+    }
+    public static String generateGuestUsername() {
+        // List of animal nouns
+        List<String> nounList = Arrays.asList(
+                "Platypus", "Sasquatch", "Narwhal", "Penguin", "Koala", "Quokka",
+                "Squirrel", "Giraffe", "Cheetah", "Hedgehog", "Octopus", "Llama",
+                "Wombat", "Lemur", "Otter", "Gazelle", "Zebra"
+        );
+
+        // List of adjectives
+        List<String> adjectiveList = Arrays.asList(
+                "Cute", "Quirky", "Dramatic", "Chubby", "Fluffy", "Silly", "Dizzy",
+                "Big", "Small", "Smart", "Prickly", "Funky", "Sassy", "Happy", "Sad",
+                "Kind", "Criminal"
+        );
+
+        // Random generator
+        Random random = new Random();
+
+        // Combine a random adjective and noun
+        String descriptor = adjectiveList.get(random.nextInt(adjectiveList.size())) +
+                " " +
+                nounList.get(random.nextInt(nounList.size()));
+
+        return "Guest: " + descriptor;
     }
 
 
@@ -94,66 +146,11 @@ public class PlayerController {
         PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
         return ResponseEntity.ok(playerGetDTO);
     }
-    {/*
-    @PostMapping("/player/answer/{username}")
-    public ResponseEntity<?> addPlayerAnswer(@PathVariable String username, @RequestBody List<String> answers) {
-        try {
-            boolean updated = PlayerService.addAnswer(username, answers);
-            if (updated) {
-                return ResponseEntity.ok().build();
-            }
-            else {
-                return ResponseEntity.badRequest().build();
-            }
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PutMapping("/player/answer/{username}")
-    public ResponseEntity<?> addPlayerVotes(@PathVariable String username, @RequestBody List<Boolean> votes) {
-        try {
-            boolean updated = PlayerService.addVotes(username, votes);
-            if (updated) {
-                return ResponseEntity.noContent().build();
-            }
-            else {
-                return ResponseEntity.badRequest().build();
-            }
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-*/}
-    {/*
-  @PutMapping("/logout/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-    public void logout(@PathVariable Long id){
-      PlayerService.updatePlayerStatus(id, PlayerStatus.OFFLINE);
-
-  }
-
-
-    @PutMapping("/Players/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/players/logout")
     @ResponseBody
-    public void setPlayernameBirthdate(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
-
-      String Playername = (String) requestBody.get("Playername");
-        String birthdateString = (String) requestBody.get("birthdate");
-
-        LocalDate birthdate = null;
-        if (birthdateString != null && !birthdateString.isEmpty()) {
-            birthdate = LocalDate.parse(birthdateString);
-        }
-        Player Player = PlayerService.getPlayerById(id);
-        if (Player == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found with id: " + id);}
-
-        PlayerService.updatePlayernameBirthdate(id, Playername, birthdate);
+    public ResponseEntity<PlayerGetDTO> logout(@RequestBody PlayerPostDTO loginDTO) {
+        Player player = PlayerService.LogOutPlayer(loginDTO.getUsername());
+        PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
+        return ResponseEntity.ok(playerGetDTO);
     }
-*/}
 }

@@ -19,7 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RoundController {
 
     private final RoundService roundService;
-
+    @Autowired
+    private ObjectMapper objectMapper;
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
     public RoundController(RoundService roundService) {
         this.roundService = roundService;
     }
@@ -32,8 +36,6 @@ public class RoundController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @Autowired
-    private ObjectMapper objectMapper;
     @PostMapping("/rounds/{gameId}/entries")
 
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
@@ -86,8 +88,6 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-        /* Working function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    commented out because not part of m3 and not shure if it adds bugs
     @PostMapping("/rounds/{gameId}/submitVotes")
     public ResponseEntity<?> submitVotes(@PathVariable Long gameId, @RequestBody String rawJson) {
         try {
@@ -111,5 +111,4 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    */
 }

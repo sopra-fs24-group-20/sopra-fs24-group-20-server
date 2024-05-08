@@ -21,10 +21,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Controller
 public class WebSocketController {
 
-    private final Set<String> readyPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final Set<String> connectedPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    public final Set<String> readyPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    public final Set<String> connectedPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final SimpMessagingTemplate messagingTemplate;
-    private final List<String> allPlayerAnswers = Collections.synchronizedList(new ArrayList<>());
+    public final List<String> allPlayerAnswers = Collections.synchronizedList(new ArrayList<>());
     private final RoundService roundService;
     private final RoundRepository roundRepository;
     private final ObjectMapper objectMapper;
@@ -127,6 +127,7 @@ public class WebSocketController {
     @MessageMapping("/stop-game")
     @SendTo("/topic/game-control")
     public String stopGame() {
+        readyPlayers.clear();
         return "{\"command\":\"stop\"}";
     }
 
@@ -146,14 +147,15 @@ public class WebSocketController {
     public String receiveGameEntries(@Payload Map<String, String> gameEntry) {
         String playerIdentifier = gameEntry.remove("username");
         String answer = gameEntry.get("answer"); // Assuming each entry includes an "answer" key
-
+        String SgameId = gameEntry.get ("gameId");
+        Long gameId =Long.parseLong(SgameId);
         if (!readyPlayers.contains(playerIdentifier)) {
             System.out.println("Received submission from unready or unknown player: " + playerIdentifier);
             return "{\"command\":\"entities\"}";
         }
 
         allPlayerAnswers.add(answer); // Append answer to the list
-        updateRoundWithAnswers();
+        updateRoundWithAnswers(gameId);
         return "{\"command\":\"entities\"}";
     }
 
@@ -164,8 +166,8 @@ public class WebSocketController {
         return "{\"command\":\"Leaderboard\"}"; // You can customize this JSON message as needed.
     }
 
-    private void updateRoundWithAnswers() {
-        Round currentRound = roundService.getCurrentRound(); // Assuming you have a method to get the current round
+    private void updateRoundWithAnswers(Long gameId) {
+        Round currentRound = roundService.getCurrentRound(gameId); // Assuming you have a method to get the current round
         try {
             // Convert current list of answers to JSON string
             String jsonAnswers = objectMapper.writeValueAsString(allPlayerAnswers);

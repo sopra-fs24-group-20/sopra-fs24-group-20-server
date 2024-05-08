@@ -53,13 +53,7 @@ public class Round {
     public void setPlayerAnswers(String playerAnswers) {
         this.playerAnswers = playerAnswers;
     }
-    public Round() {
-        this.assignedLetter = generateRandomLetter();
-    }
 
-    private char generateRandomLetter() {
-        return (char) ('A' + new Random().nextInt(26));
-    }
 
     public Long getId() {
         return id;

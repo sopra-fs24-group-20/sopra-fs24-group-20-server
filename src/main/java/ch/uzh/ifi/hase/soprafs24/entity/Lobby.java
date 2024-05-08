@@ -127,17 +127,13 @@ public class Lobby {
         return categories;
     }
 
-    public void setCategories(List<String> categories) {
-        this.categories = categories;
-    }
+
 
     public List<Character> getExcludedChars() {
         return excludedChars;
     }
 
-    public void setExcludedChars(List<Character> excludedChars) {
-        this.excludedChars = excludedChars;
-    }
+
     {/*
     public GameStatus getGameStatus() {
         return gameStatus;
@@ -151,9 +147,7 @@ public class Lobby {
         return players;
     }
 
-    public void setPlayers(List<Player> players) {
-        this.players = players;
-    }
+
     // In Lobby class
     public Game getGame() {
         return this.game;
@@ -174,4 +168,24 @@ public class Lobby {
         this.lobbyStatus = lobbyStatus;
     }
 
+    public void setCategories(List<String> categories) {
+        this.categories.clear();
+        if (categories != null) {
+            this.categories.addAll(categories);
+        }
+    }
+
+    public void setExcludedChars(List<Character> excludedChars) {
+        this.excludedChars.clear();
+        if (excludedChars != null) {
+            this.excludedChars.addAll(excludedChars);
+        }
+    }
+
+    public void setPlayers(List<Player> players) {
+        this.players.clear();
+        if (players != null) {
+            this.players.addAll(players);
+        }
+    }
 }

@@ -1,9 +1,10 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
@@ -27,35 +28,32 @@ public class Player implements Serializable {
     @Column(nullable = false)
     private Boolean ready;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Statistic> stats;
-
-
-    @Column(nullable = true)
-    private String token;
-
     @Column(nullable = false)
     private String password;
 
+    // Stats fields
+    @Column(nullable = false)
+    private int totalPoints;
+
+    @Column(nullable = false)
+    private int level;
+
+    @Column(nullable = false)
+    private int roundsPlayed;
+
+    @Column(nullable = false)
+    private double averagePointsPerRound;
+
+    @Column(nullable = false)
+    private int victories;
+
     // Getters and Setters
-
-
-
-
-    public boolean getReady() {
+    public Boolean getReady() {
         return ready;
     }
 
-    public void setReady(boolean ready) {
+    public void setReady(Boolean ready) {
         this.ready = ready;
-    }
-
-    public List<Statistic> getStats() {
-        return stats;
-    }
-
-    public void setStats(List<Statistic> stats) {
-        this.stats = stats;
     }
 
     public String getUsername() {
@@ -64,14 +62,6 @@ public class Player implements Serializable {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     public String getPassword() {
@@ -85,8 +75,48 @@ public class Player implements Serializable {
     public Lobby getLobby() {
         return this.lobby;
     }
+
     public void setLobby(Lobby lobby) {
         this.lobby = lobby;
     }
 
+    public int getTotalPoints() {
+        return this.totalPoints;
+    }
+
+    public void setTotalPoints(int totalpoints) {
+        this.totalPoints = totalpoints;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int getRoundsPlayed() {
+        return roundsPlayed;
+    }
+
+    public void setRoundsPlayed(int rounds) {
+        this.roundsPlayed = rounds;
+    }
+
+    public double getAveragePointsPerRound() {
+        return averagePointsPerRound;
+    }
+
+    public void setAveragePointsPerRound(double averagePointsPerRound) {
+        this.averagePointsPerRound = averagePointsPerRound;
+    }
+
+    public int getVictories() {
+        return victories;
+    }
+
+    public void setVictories(int victories) {
+        this.victories = victories;
+    }
 }

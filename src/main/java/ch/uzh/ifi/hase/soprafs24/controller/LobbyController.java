@@ -3,18 +3,13 @@ import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
-import ch.uzh.ifi.hase.soprafs24.entity.Statistic;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
-import ch.uzh.ifi.hase.soprafs24.websocket.WebSocketService;
-import org.apache.catalina.Store;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -25,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/lobby")
@@ -38,6 +32,8 @@ public class LobbyController {
     private LobbyService lobbyService;
     @Autowired
     private GameRepository gameRepository;
+    @Autowired
+    private RoundRepository roundRepository;
 
 
     @PostMapping("/create")
@@ -62,7 +58,7 @@ public class LobbyController {
         lobbyRepository.save(createdLobby); // Update the lobby with the game link
         Game game = new Game();
         game.setStatus(GameStatus.VOTE);
-        game.setRoundCount(1); // Ensure this is never null, set a default or calculated value
+        game.setRoundCount(1);
         game.setLobby(createdLobby);
         createdLobby.setGame(game);
 
@@ -172,17 +168,18 @@ public class LobbyController {
         // Convert the Lobby entity to LobbyGetDTO
         LobbyGetDTO lobbyGetDTO = new LobbyGetDTO();
         lobbyGetDTO.setLobbyName(lobby.getLobbyName());
+        lobbyGetDTO.setLobbyOwner(lobby.getLobbyOwner());
         lobbyGetDTO.setRoundDuration(lobby.getRoundDuration());
         lobbyGetDTO.setCategories(lobby.getCategories());
         lobbyGetDTO.setRounds(lobby.getRounds());
         lobbyGetDTO.setGameMode(lobby.getGameMode());
         lobbyGetDTO.setAutoCorrectMode(lobby.getAutoCorrectMode());
         lobbyGetDTO.setLobbyStatus(lobby.getLobbyStatus());
+        lobbyGetDTO.setExcludedChars(lobby.getExcludedChars());
 
         // Return the LobbyGetDTO with the settings
         return ResponseEntity.ok(lobbyGetDTO);
     }
-
     @PutMapping("/leave/{lobbyId}")
     public ResponseEntity<Object> leaveLobby(@PathVariable Long lobbyId, @RequestParam String username) {
         boolean leftSuccessfully = lobbyService.leaveLobby(lobbyId, username);
@@ -191,5 +188,18 @@ public class LobbyController {
         } else {
             return ResponseEntity.badRequest().body("Player is not in the lobby.");
         }
+    }
+
+    @DeleteMapping("/delete-all")
+    public ResponseEntity<?> deleteAllLobbiesAndRelatedData() {
+        playerRepository.findAll().forEach(player -> {
+            player.setLobby(null);
+            playerRepository.save(player);
+        });
+        roundRepository.deleteAll();  // Deletes all rounds
+        gameRepository.deleteAll();  // Deletes all games
+        lobbyRepository.deleteAll();  // Deletes all lobbies
+
+        return ResponseEntity.ok().build();  // Returns an HTTP 200 response on successful deletion
     }
 }

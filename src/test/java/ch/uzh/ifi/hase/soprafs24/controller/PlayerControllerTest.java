@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.PlayerPutDTO;
@@ -11,10 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +31,9 @@ class PlayerControllerTest {
 
     @InjectMocks
     private PlayerController playerController;
+
+    @Mock
+    private PlayerRepository playerRepository;
 
     @BeforeEach
     void setUp() {
@@ -51,19 +59,23 @@ class PlayerControllerTest {
 
     @Test
     void updatePlayer_ShouldUpdateStatus() {
-        PlayerPutDTO playerPutDTO = new PlayerPutDTO();
-        playerPutDTO.setReady(true);
+        PlayerPutDTO changes = new PlayerPutDTO();
+        changes.setReady(false);
 
         Player player = new Player();
         player.setUsername("testUser");
         player.setReady(true);
 
-        when(playerService.updatePlayer(eq("testUser"), any())).thenReturn(player);
+        // Stubbing the updatePlayer method to return the updated player object
+        when(playerRepository.findByUsername("testUser")).thenReturn(Optional.of(player));
+        // Call the controller method
+        ResponseEntity<Void> result = playerController.updatePlayer("testUser", changes);
 
-        PlayerGetDTO result = playerController.updatePlayer("testUser", playerPutDTO);
+        // Verify that the result is not null
+        assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
 
-        assertNotNull(result);
-        assertTrue(result.getReady());
+        // Assert that the readiness status of the result is true
+        assertTrue(player.getReady());
     }
 
     @Test
@@ -85,6 +97,48 @@ class PlayerControllerTest {
         assertEquals("newUser", result.getUsername());
         assertTrue(result.getReady());
     }
+    /*
+    @Test
+    void createPlayer_WithoutUsername_ShouldCreatePlayerWithFunnyGuestUsername() {
+        PlayerPostDTO playerPostDTO = new PlayerPostDTO(); // No username set
+        playerPostDTO.setPassword("password123");
+
+        Player player = new Player();
+        player.setPassword("password123");
+        player.setReady(true); // Initialize ready
+
+        when(playerService.createPlayer(anyString(), anyString())).thenAnswer(invocation -> {
+            String username = invocation.getArgument(0, String.class);
+            if (username.startsWith("Guest:")) {
+                player.setUsername(username);
+            }
+            return player;
+        });
+
+        PlayerGetDTO result = playerController.createPlayer(playerPostDTO);
+
+        assertNotNull(result);
+        assertTrue(result.getUsername().startsWith("Guest:"));
+        assertTrue(Arrays.asList("Curious Panda", "Sleepy Koala", "Happy Squirrel", "Wise Owl").stream()
+                .anyMatch(name -> result.getUsername().contains(name)));
+        assertTrue(result.getReady());
+    }
+
+     */
+    @Test
+    void createPlayer_WithProhibitedGuestPrefix_ShouldFail() {
+        PlayerPostDTO playerPostDTO = new PlayerPostDTO();
+        playerPostDTO.setUsername("Guest: Hacker");
+
+        // Expect the controller to throw an exception due to an invalid prefix
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            playerController.createPlayer(playerPostDTO);
+        });
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Usernames starting with 'Guest:' are reserved and cannot be manually set.", exception.getReason());
+    }
+
 
     @Test
     void getPlayerByUsername_ShouldReturnPlayer() {
@@ -100,6 +154,7 @@ class PlayerControllerTest {
         assertEquals("existingUser", result.getUsername());
         assertTrue(result.getReady());
     }
+
 
     @Test
     void login_ShouldAuthenticateAndReturnPlayer() {
@@ -119,5 +174,24 @@ class PlayerControllerTest {
         assertNotNull(response);
         assertEquals("user", response.getBody().getUsername());
         assertTrue(response.getBody().getReady());
+    }
+    @Test
+    void logoutTest() {
+        // Given
+        PlayerPostDTO playerPostDTO = new PlayerPostDTO();
+        playerPostDTO.setUsername("test_username");
+
+        Player player = new Player();
+        player.setUsername("test_username");
+
+        when(playerService.LogOutPlayer("test_username")).thenReturn(player);
+
+        // When
+        ResponseEntity<PlayerGetDTO> response = playerController.logout(playerPostDTO);
+
+        // Then
+        assertSame(player.getUsername(), response.getBody().getUsername());
+        verify(playerService).LogOutPlayer("test_username");
+        verifyNoMoreInteractions(playerService);
     }
 }

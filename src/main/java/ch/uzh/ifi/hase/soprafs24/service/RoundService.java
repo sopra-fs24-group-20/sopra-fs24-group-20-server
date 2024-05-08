@@ -12,9 +12,11 @@ import javax.transaction.Transactional;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +33,10 @@ public class RoundService {
     private LobbyRepository lobbyRepository;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private PlayerService playerService;
+    @Autowired
+    private PlayerRepository playerRepository;
 
     @Transactional  // Ensures the entire method is run in a single transaction
     public void startNewRound(Long lobbyId) {
@@ -45,12 +51,23 @@ public class RoundService {
 
         Round newRound = new Round();
         newRound.setGame(game);
+        char roundLetter = generateRandomLetter(lobby.getExcludedChars());
+        newRound.setAssignedLetter(roundLetter);
         game.getRounds().add(newRound);  // Add new round to the list of rounds in the game
 
         roundRepository.save(newRound);
         gameRepository.save(game);  // Save changes to the game
     }
 
+    private char generateRandomLetter(List<Character> excludedChars) {
+        Random random = new Random();
+        char randomLetter;
+        do {
+            // Generate a random uppercase letter between 'A' and 'Z'
+            randomLetter = (char) ('A' + random.nextInt(26));
+        } while (excludedChars.contains(randomLetter)); // Check against excluded characters
+        return randomLetter;
+    }
 
     public char getCurrentRoundLetter(Long gameId) {
         Game game = gameRepository.findById(gameId).orElse(null);
@@ -61,40 +78,95 @@ public class RoundService {
         }
         return '\0';
     }
-    public Round getCurrentRound() {
-        return roundRepository.findTopByOrderByIdDesc().orElse(null);
+    public Round getCurrentRound(Long gameId) {
+        return roundRepository.findTopByGameIdOrderByIdDesc(gameId).orElse(null);
     }
     public List<Round> getRoundByGameId(Long gameId) {
         return roundRepository.findByGameId(gameId);
     }
     public Round getCurrentRoundByGameId(Long gameId) {
-        return roundRepository.findTopByGameIdOrderByIdDesc(gameId);
+        return roundRepository.findTopByGameIdOrderByIdDesc(gameId).orElse(null);
     }
     public void saveRound(Round round) {
         roundRepository.save(round);
     }
+    public void savePlayer(Player player) {
+        playerRepository.save(player);
+    }
 
     //sum up the scores from the function below
+    @Transactional
     public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
+        Optional<Game> currentGameOptional = gameRepository.findById(gameId);
+        if (currentGameOptional.isEmpty()) {
+            throw new RuntimeException("No current game for game ID: " + gameId);
+        }
+
+        Game currentGame = currentGameOptional.get();  // Get the Game object from Optional
+        Lobby lobby = currentGame.getLobby();
+        int totalRounds = lobby.getRounds();
+
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
 
-        // Get scores
-        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = calculateScoresCategory(gameId);
+        // Reload the round to ensure it reflects the latest changes
+
+        // Now, fetch the scores
+        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = objectMapper.readValue(currentRound.getRoundPoints(),
+                new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
 
         Map<String, Integer> finalScores = new HashMap<>();
+        Map<String, Player> playersToUpdate = new HashMap<>();
 
-        // Sum up
+        // Aggregate scores
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
                 Integer score = (Integer) details.get("score");
-                finalScores.merge(username, score, Integer::sum); // Adds scores for the same username across categories
+                finalScores.merge(username, score, Integer::sum);
+
+                // Fetch the player (mock method, replace with actual)
+                Player player = playerService.getPlayerByUsername(username);
+                if (player != null) {
+                    playersToUpdate.putIfAbsent(username, player);
+                    player.setTotalPoints(player.getTotalPoints() + score);
+
+                    // Note: We are not updating roundsPlayed or calculating the average here
+                }
             });
         });
 
-        // Sorting
+        // Now, update roundsPlayed and calculate the average points per round for each player
+        playersToUpdate.values().forEach(player -> {
+            player.setRoundsPlayed(player.getRoundsPlayed() + 1);  // Increment rounds first
+            if (player.getRoundsPlayed() > 0) {
+                double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
+                double roundedAverage = Math.round(average * 100) / 100.0;
+                player.setAveragePointsPerRound(roundedAverage);
+            } else {
+                player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
+            }
+            savePlayer(player);  // Save the player with updated stats
+        });
+
+        // Check if this is the final round
+        if (currentGame.getRounds().size() == totalRounds) {
+            // This is the final round
+            final String winner = finalScores.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+
+            if (winner != null) {
+                Player winningPlayer = playerService.getPlayerByUsername(winner);
+                if (winningPlayer != null) {
+                    winningPlayer.setVictories(winningPlayer.getVictories() + 1);
+                    savePlayer(winningPlayer);  // Ensure victory is recorded
+                }
+            }
+        }
+        // Return sorted scores
         return finalScores.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -105,11 +177,14 @@ public class RoundService {
     }
 
 
+
     public Map<String, Map<String, Map<String, Object>>> calculateScoresCategory(Long gameId) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
+
+        boolean autoCorrectEnabled = currentRound.getGame().getLobby().getAutoCorrectMode() != null && currentRound.getGame().getLobby().getAutoCorrectMode();
         // get the assigned letter of the round
         char assignedLetter = currentRound.getAssignedLetter();
         String answersJson = currentRound.getPlayerAnswers();
@@ -148,14 +223,23 @@ public class RoundService {
                 int points = 0;
                 //if word beginns with right letter
                 if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
-                    if (checkWordExists(value)) {
+                    if (autoCorrectEnabled) {
+                        if (checkWordExists(value)) {
+                            if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
+                                points = 10;//word unique
+                            }
+                            else {
+                                points = 5;//word duplicated
+                            }
+                        }
+                    }
+                    else {
                         if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
                             points = 10;//word unique
-                        } else {
+                        }
+                        else {
                             points = 5;//word duplicated
                         }
-                    } else {//word not exist
-                        points = 0;
                     }
                 }
 
@@ -169,8 +253,9 @@ public class RoundService {
         });
         ObjectMapper objectMapper = new ObjectMapper();
         String scoresJson = objectMapper.writeValueAsString(categoryScores);
+        if(currentRound.getRoundPoints()==null||currentRound.getRoundPoints().isEmpty()){
         currentRound.setRoundPoints(scoresJson);
-        roundRepository.save(currentRound);
+        roundRepository.save(currentRound);}
         return categoryScores;
     }
 
@@ -202,8 +287,6 @@ public class RoundService {
             return false;
         }
     }
-    /* Working function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    commented out because not part of m3 and not shure if it adds bugs
     public Map<String, Map<String, Map<String, Object>>> adjustScores(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
@@ -258,6 +341,4 @@ public class RoundService {
 
         return currentScores;
     }
-    */
-    }
-
+}

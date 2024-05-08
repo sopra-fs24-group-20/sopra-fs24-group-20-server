@@ -5,17 +5,22 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 
+import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -29,7 +34,8 @@ public class LobbyService {
     private GameRepository gameRepository; // Corrected to instance call
     @Autowired
     private PlayerRepository playerRepository; // Added this field
-
+    @Autowired
+    private RoundRepository roundRepository; // Corrected to instance call
 
     @Transactional
     public Lobby createLobby(String lobbyName, String lobbyPassword, Player owner) {
@@ -46,14 +52,14 @@ public class LobbyService {
 
         // Set default values for other properties
         lobby.setRoundDuration(60); // Default round duration of 60 seconds
+        lobby.setRounds(5);
         lobby.setAutoCorrectMode(true);
-        lobby.setCategories(new ArrayList<>()); // Empty list of categories by default
+        lobby.setCategories(new ArrayList<>());
+        lobby.setCategories(Arrays.asList("country", "city", "profession", "celebrity"));
         lobby.setExcludedChars(new ArrayList<>()); // Empty list of excluded characters by default
         lobby.setGameMode("1");
         lobby.setLobbyStatus(LobbyStatus.SETUP);
         return lobbyRepository.save(lobby);
-
-
     }
 
     @Transactional
@@ -91,6 +97,10 @@ public class LobbyService {
         if (isOwnerLeaving) {
             if (lobby.getPlayers().isEmpty()) {
                 // No players left, delete the lobby if owner leaves and no one else is there
+                for (Round round : lobby.getGame().getRounds()) {
+                    roundRepository.delete(round);
+                }
+                gameRepository.delete(lobby.getGame());  // Example method
                 lobbyRepository.delete(lobby);
             } else {
                 // Assign a new owner from remaining players and update the lobby

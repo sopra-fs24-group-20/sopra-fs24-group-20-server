@@ -1,11 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +36,8 @@ public class LobbyServiceTest {
     private GameRepository gameRepository;
     @Mock
     private PlayerRepository playerRepository;
+    @Mock
+    private RoundRepository roundRepository;
 
     @InjectMocks
     private LobbyService lobbyService;
@@ -124,14 +129,20 @@ public class LobbyServiceTest {
         Lobby lobby = new Lobby();
         lobby.setLobbyOwner(owner);
         lobby.setPlayers(new ArrayList<>(Arrays.asList(owner))); // Wrapping with ArrayList for mutability
+        Game game = new Game(); // Ensure game is initialized
+        game.setRounds(new ArrayList<>()); // Initialize rounds to avoid null
+        lobby.setGame(game); // Set game to lobby
 
         when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.of(lobby));
 
         boolean result = lobbyService.leaveLobby(lobbyId, owner.getUsername());
 
         assertTrue(result);
-        verify(lobbyRepository).delete(lobby); // This will check if the delete method is correctly invoked
+        verify(lobbyRepository).delete(lobby); // Verify if delete method is correctly invoked
+        verify(gameRepository).delete(game); // Verify if game is deleted
+        verify(roundRepository, never()).delete(any(Round.class)); // Verify that no rounds are deleted as there are none
     }
+
 
     @Test
     void leaveLobby_WhenOwnerLeavesAndOthersRemain_ShouldTransferOwnership() {
@@ -174,4 +185,5 @@ public class LobbyServiceTest {
 
         assertEquals(HttpStatus.NOT_FOUND, thrown.getStatus());
     }
+
 }
