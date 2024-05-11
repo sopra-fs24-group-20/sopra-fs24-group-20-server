@@ -91,7 +91,7 @@ This markdown file logs the individual contributions of each team member through
 
 ### Joshua Weder
 - GitHub Issue Links: [Issue 23](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/23)
-  [Issue 91](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/91)
+  [Issue 60](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/60)
 - Task 1: Button that navigates between the individual categories and navigates to the final Leaderboard screen in the end.
   Generally fixed the routing.
 - Task 2: First implementation of the Veto and Bonus buttons.
@@ -131,7 +131,7 @@ This markdown file logs the individual contributions of each team member through
 
 ### Joshua Weder
 - GitHub Issue Links: [Issue 64](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/64)
-  [Issue 64](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/64)
+  [Issue 68](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/68)
 - Task 1: Added complete functionality of the voting buttons. (can't vote on own answers, can only give either a bonus or a veto etc.)
 - Task 2: Completed Layout of the evaluation screen except for some minor, possible changes
 - Task 3: Fixed some bugs regarding the game page and the evaluation screen
