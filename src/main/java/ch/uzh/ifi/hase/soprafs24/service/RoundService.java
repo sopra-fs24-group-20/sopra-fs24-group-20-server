@@ -53,10 +53,33 @@ public class RoundService {
         newRound.setGame(game);
         char roundLetter = generateRandomLetter(lobby.getExcludedChars());
         newRound.setAssignedLetter(roundLetter);
-        game.getRounds().add(newRound);  // Add new round to the list of rounds in the game
 
+        // Set letter position based on lobby difficulty
+        newRound.setLetterPosition(determineLetterPosition(lobby.getGameMode()));
+
+        game.getRounds().add(newRound);  // Add new round to the list of rounds in the game
         roundRepository.save(newRound);
         gameRepository.save(game);  // Save changes to the game
+    }
+
+    private int determineLetterPosition(String difficulty) {
+        if (Objects.equals(difficulty, "0")) {
+            return 0; // Always the first position for easy mode
+        }
+        else {
+            Random random = new Random();
+            int[] possiblePositions = {0, 1, 2, -1}; // Last position is denoted by -1
+            return possiblePositions[random.nextInt(possiblePositions.length)];
+        }
+    }
+    public int getCurrentRoundLetterPosition(Long gameId) {
+        Game game = gameRepository.findById(gameId).orElse(null);
+        if (game != null && !game.getRounds().isEmpty()) {
+            List<Round> rounds = game.getRounds();
+            Round lastRound = rounds.get(rounds.size() - 1);
+            return lastRound.getLetterPosition();
+        }
+        return -100; // Indicates that no valid round or game was found, distinct from -1 which is a valid position
     }
 
     private char generateRandomLetter(List<Character> excludedChars) {
@@ -185,20 +208,19 @@ public class RoundService {
         }
 
         boolean autoCorrectEnabled = currentRound.getGame().getLobby().getAutoCorrectMode() != null && currentRound.getGame().getLobby().getAutoCorrectMode();
-        // get the assigned letter of the round
+        String difficulty = currentRound.getGame().getLobby().getGameMode();
         char assignedLetter = currentRound.getAssignedLetter();
+        int letterPosition = currentRound.getLetterPosition();  // Assumed to be set in the round
         String answersJson = currentRound.getPlayerAnswers();
+
         if (answersJson == null || answersJson.isEmpty()) {
             return new HashMap<>();
         }
-
 
         List<Map<String, String>> answers = objectMapper.readValue(
                 "[" + answersJson + "]", new TypeReference<List<Map<String, String>>>() {});
 
         Map<String, Map<String, String>> answersByCategory = new HashMap<>();
-
-        // Collect and parse jsoen
         answers.forEach(answer -> answer.keySet().forEach(key -> {
             if (!key.equals("username")) {
                 String value = answer.getOrDefault(key, "");
@@ -209,37 +231,12 @@ public class RoundService {
 
         Map<String, Map<String, Map<String, Object>>> categoryScores = new HashMap<>();
         answersByCategory.forEach((category, userAnswers) -> {
-            Map<String, Set<String>> uniqueCheck = new HashMap<>();
-
-            // Check answer
-            userAnswers.forEach((username, value) -> {
-                if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
-                    uniqueCheck.computeIfAbsent(value.toLowerCase(), v -> new HashSet<>()).add(username);
-                }
-            });
-
             Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
             userAnswers.forEach((username, value) -> {
                 int points = 0;
-                //if word beginns with right letter
-                if (!value.isEmpty() && value.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter)) {
-                    if (autoCorrectEnabled) {
-                        if (checkWordExists(value)) {
-                            if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
-                                points = 10;//word unique
-                            }
-                            else {
-                                points = 5;//word duplicated
-                            }
-                        }
-                    }
-                    else {
-                        if (uniqueCheck.get(value.toLowerCase()).size() == 1) {
-                            points = 10;//word unique
-                        }
-                        else {
-                            points = 5;//word duplicated
-                        }
+                if (!value.isEmpty() && isLetterPositionValid(value, assignedLetter, letterPosition, difficulty)) {
+                    if (!autoCorrectEnabled || checkWordExists(value)) {
+                        points = 1;  // Word is valid
                     }
                 }
 
@@ -251,12 +248,27 @@ public class RoundService {
 
             categoryScores.put(category, userScoresAndAnswers);
         });
+
         ObjectMapper objectMapper = new ObjectMapper();
         String scoresJson = objectMapper.writeValueAsString(categoryScores);
-        if(currentRound.getRoundPoints()==null||currentRound.getRoundPoints().isEmpty()){
-        currentRound.setRoundPoints(scoresJson);
-        roundRepository.save(currentRound);}
+        if (currentRound.getRoundPoints() == null || currentRound.getRoundPoints().isEmpty()) {
+            currentRound.setRoundPoints(scoresJson);
+            roundRepository.save(currentRound);
+        }
         return categoryScores;
+    }
+
+    private boolean isLetterPositionValid(String word, char assignedLetter, int letterPosition, String difficulty) {
+        if (Objects.equals(difficulty, "0")) {  // Easy mode
+            return word.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter);
+        }
+        else {  // Normal mode
+            if (letterPosition == -1) {  // Last character check
+                return word.toLowerCase().charAt(word.length() - 1) == Character.toLowerCase(assignedLetter);
+            } else {
+                return word.length() > letterPosition && word.toLowerCase().charAt(letterPosition) == Character.toLowerCase(assignedLetter);
+            }
+        }
     }
 
     public boolean checkWordExists(String word) {
@@ -287,6 +299,7 @@ public class RoundService {
             return false;
         }
     }
+
     public Map<String, Map<String, Map<String, Object>>> adjustScores(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {

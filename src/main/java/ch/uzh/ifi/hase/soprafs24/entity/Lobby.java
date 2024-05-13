@@ -93,6 +93,7 @@ public class Lobby {
     public Player getLobbyOwner() {
         return lobbyOwner;
     }
+
     public void setLobbyOwner(Player lobbyOwner) {
         this.lobbyOwner = lobbyOwner;
     }
@@ -117,22 +118,17 @@ public class Lobby {
         return lobbyStatus;
     }
 
-
     public void rounds(int rounds) {
         this.rounds = rounds;
     }
-
 
     public List<String> getCategories() {
         return categories;
     }
 
-
-
     public List<Character> getExcludedChars() {
         return excludedChars;
     }
-
 
     {/*
     public GameStatus getGameStatus() {
@@ -147,8 +143,6 @@ public class Lobby {
         return players;
     }
 
-
-    // In Lobby class
     public Game getGame() {
         return this.game;
     }

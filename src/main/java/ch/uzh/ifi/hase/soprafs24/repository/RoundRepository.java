@@ -12,9 +12,6 @@ import java.util.Optional;
 public interface RoundRepository extends JpaRepository<Round, Long> {
     Optional<Round> findTopByOrderByIdDesc();
     List<Round> findByGameId(Long gameId);
-
-
     Optional<Round> findTopByGameIdOrderByIdDesc(Long gameId);
-
 }
 

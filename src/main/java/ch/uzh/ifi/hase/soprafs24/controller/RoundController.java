@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class RoundController {
-
     private final RoundService roundService;
     @Autowired
     private ObjectMapper objectMapper;
@@ -37,7 +36,6 @@ public class RoundController {
         }
     }
     @PostMapping("/rounds/{gameId}/entries")
-
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
         try {
             Round currentRound = roundService.getCurrentRoundByGameId(gameId);
@@ -62,6 +60,15 @@ public class RoundController {
         char currentLetter = roundService.getCurrentRoundLetter(gameId);
         if (currentLetter != '\0') {
             return new ResponseEntity<>(currentLetter, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/rounds/letterPosition/{gameId}")
+    public  ResponseEntity<Integer> getLetterPosition(@PathVariable Long gameId) {
+        int currentLetterPosition = roundService.getCurrentRoundLetterPosition(gameId);
+        if (currentLetterPosition != -100) {
+            return new ResponseEntity<>(currentLetterPosition, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

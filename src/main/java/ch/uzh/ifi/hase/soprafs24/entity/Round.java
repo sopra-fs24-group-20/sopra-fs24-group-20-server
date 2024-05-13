@@ -25,6 +25,9 @@ public class Round {
     @Column(nullable = false)
     private char assignedLetter;
 
+    @Column(nullable = false)
+    private int letterPosition;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_id", nullable = false)
     @JsonIgnore
@@ -46,6 +49,7 @@ public class Round {
     public void setRoundPoints(String pointsJson) {
         this.roundPoints = pointsJson;
     }
+
     public String getPlayerAnswers() {
         return playerAnswers;
     }
@@ -53,7 +57,6 @@ public class Round {
     public void setPlayerAnswers(String playerAnswers) {
         this.playerAnswers = playerAnswers;
     }
-
 
     public Long getId() {
         return id;
@@ -71,6 +74,9 @@ public class Round {
         this.assignedLetter = assignedLetter;
     }
 
+    public int getLetterPosition() { return letterPosition; }
+
+    public void setLetterPosition(int letterPosition) { this.letterPosition = letterPosition; }
 
     public Game getGame() {
         return game;
