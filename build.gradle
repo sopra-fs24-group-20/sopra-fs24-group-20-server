@@ -42,6 +42,7 @@ dependencies {
     implementation 'org.hibernate.validator:hibernate-validator'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
+    implementation 'com.google.cloud:google-cloud-secretmanager:1.6.0'
     runtimeOnly 'mysql:mysql-connector-java:8.0.29'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
