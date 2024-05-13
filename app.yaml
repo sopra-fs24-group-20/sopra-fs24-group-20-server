@@ -3,16 +3,21 @@
 
 runtime: java17
 instance_class: F2
+env: standard
+service_account: 'sopra-fs24-group-20-server@appspot.gserviceaccount.com'
+beta_settings:
+  cloud_sql_instances: 'sopra-fs24-group-20-server:us-central1:categories-db'
 env_variables:
   SPRING_PROFILES_ACTIVE: 'gcp'
-  APP_PLAYER_DATASOURCE_URL: 'jdbc:mysql://35.204.19.36:3306/playerdb'
+  APP_PLAYER_DATASOURCE_URL: 'jdbc:mysql://34.72.79.36:3306/playerdb'
   APP_PLAYER_DATASOURCE_USERNAME: 'sa'
   APP_PLAYER_DATASOURCE_PASSWORD: ''
   ENABLE_SHUTDOWN_ENDPOINT: 'true'
-  SPRING_DATASOURCE_URL: 'jdbc:mysql://35.204.19.36:3306/playerdb'
+  SPRING_DATASOURCE_URL: 'jdbc:mysql://34.72.79.36:3306/playerdb'
   SPRING_DATASOURCE_USERNAME: 'sa'
   SPRING_DATASOURCE_PASSWORD: ''
   SPRING_H2_CONSOLE_ENABLED: 'true'
   SPRING_JPA_HIBERNATE_DDL_AUTO: 'update'
   SPRING_JPA_SHOW_SQL: 'true'
   SPRING_HIBERNATE_DIALECT: 'org.hibernate.dialect.H2Dialect'
+  SPRING_CLOUD_GCP_SQL_INSTANCE_CONNECTION_NAME: 'sopra-fs24-group-20-server:us-central1:categories-db'
