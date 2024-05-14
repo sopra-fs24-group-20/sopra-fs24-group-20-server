@@ -189,9 +189,11 @@ This markdown file logs the individual contributions of each team member through
 
 ## Week 7
 ### Joshua Stebler
-- GitHub Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/81)
+- GitHub Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/81)[Issue 126](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/126),[Issue 127](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/127)
 - Task 1: Add logout functionality
 - Task 2: Remove Guest Players form Repository when they logout
+- Task 3:Change websocket to function with global websockets
+- Task 4:Change sql server to be on group server and make it work with appengine.
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 82](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/82),
