@@ -110,7 +110,7 @@ This markdown file logs the individual contributions of each team member through
 ### Mirjam Alexandra Weibel
 - GitHub Issue Links: [Issue 16](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/16), [Issue 19](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/19), [Issue 20](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/20)
 - Task 1: connect game meaningfully to backend with REST 
-- Task 2: implement game functionality with ws
+- Task 2: implement game functionality with websockets
 - Task 3: debugging and clean up, consistency checks frontend / backend
 
 ## Week 5
@@ -148,8 +148,8 @@ This markdown file logs the individual contributions of each team member through
 - GitHub Issue Links: [Issue 66](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/66)
   [Issue 67](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/67)
 - Task 1: fix submitting answers (an edge case we did not notice before did not work)
-- Task 2: fix websocket problems for game and lobby screen for now
-- Task 3: research and tinkering on websockets functionalities to then decide to remove websockets as much as possible
+- Task 2: fix websocket problems for game and lobby screen for now, not a perfect fix but it works
+- Task 3: research and tinkering on websockets functionalities to then decide to remove websockets as much as possible in the future
 
 
 ## Week 6
@@ -163,7 +163,6 @@ This markdown file logs the individual contributions of each team member through
 - GitHub Issue Links:[Issue 116](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/116), [Issue 115](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/115)
 - Task 1 : Level system logic in the backend 
 - Task 2 : Tracking stats of players (persistent)
-- Task 3 : 
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 52](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/52),
@@ -182,10 +181,10 @@ This markdown file logs the individual contributions of each team member through
 ### Mirjam Weibel
 - Github Issue Links: [Issue 71](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/71),
   [Issue 74](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/74), [Issue 77](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/77)
-- Task 1: adjust game, so it takes the categories from the backend
+- Task 1: adjust game ao it works for different categories than the default ones as well (it dynamically reacts and adapts according to categories received from backend)
 - Task 2: set default categories (city, country, profession, celebrity) if no others are specified in the settings on the lobby page
 - Task 3: replace websockets on lobbypage with useeffect hooks and dependencies
-- Task 4: fix redirection to evaluation page to take dynamically from backend
+- Task 4: fix redirection to evaluation page to automatically detect which evaluation page will come up first
 
 ## Week 7
 ### Joshua Stebler
