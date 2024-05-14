@@ -105,11 +105,17 @@ public class RoundController {
             HashMap<String, HashMap<String, HashMap<String, Object>>> votes = objectMapper.readValue(rawJson, typeRef);
 
             // Update the vote counts in the game's current round
-            Map<String, Map<String, Map<String, Object>>> voteUpdates = roundService.adjustScores(gameId, votes);
+            Map<String, Map<String, Map<String, Object>>> voteUpdates = roundService.prepareScoreAdjustments(gameId, votes);
 
-            // Respond with the updated vote counts; actual score calculation will be triggered by WebSocket communication
-            // when all players have submitted their votes
-            return ResponseEntity.ok(voteUpdates);
+            // Check if all players have submitted their votes
+            if (roundService.areAllVotesSubmitted(gameId)) {
+                // All votes submitted, calculate final scores
+                Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(gameId);
+                return ResponseEntity.ok(finalScores);
+            } else {
+                // Not all votes are in, return the current state without final scoring
+                return ResponseEntity.ok(voteUpdates);
+            }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
@@ -121,6 +127,7 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
 
 
 }

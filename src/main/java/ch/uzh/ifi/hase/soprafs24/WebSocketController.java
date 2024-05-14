@@ -1,5 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +28,15 @@ public class WebSocketController {
     private final RoundRepository roundRepository;
     private final ObjectMapper objectMapper;
 
+    private final LobbyRepository lobbyRepository;
+
     @Autowired
-    public WebSocketController(RoundService roundService, RoundRepository roundRepository, ObjectMapper objectMapper, SimpMessagingTemplate messagingTemplate) {
+    public WebSocketController(RoundService roundService, RoundRepository roundRepository, ObjectMapper objectMapper, LobbyRepository lobbyRepository,SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
         this.roundService = roundService;
         this.roundRepository = roundRepository;
         this.objectMapper = objectMapper;
+        this.lobbyRepository = lobbyRepository;
     }
 
     @MessageMapping("/connect")
@@ -162,6 +168,33 @@ public class WebSocketController {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             System.out.println("Failed to update round with answers");
+        }
+    }
+
+    @MessageMapping("/submit-votes")
+    public void handleVoteSubmission(@Payload Map<String, Object> payload) throws Exception {
+        Long lobbyId = Long.valueOf(payload.get("lobbyId").toString());
+        String username = payload.get("username").toString();
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        if (optionalLobby.isEmpty()) {
+            throw new RuntimeException("No current lobby for lobby ID: " + lobbyId);
+        }
+
+        Lobby lobby = optionalLobby.get();
+        Long gameId = lobby.getGame().getId();
+        HashMap<String, HashMap<String, HashMap<String, Object>>> votes = (HashMap<String, HashMap<String, HashMap<String, Object>>>) payload.get("votes");
+
+        // Process the incoming votes and update the server state
+        Map<String, Map<String, Map<String, Object>>> voteUpdates = roundService.prepareScoreAdjustments(gameId, votes);
+
+        // Check if all players have submitted their votes
+        if (roundService.areAllVotesSubmitted(gameId)) {
+            // All votes submitted, proceed to calculate final scores
+            Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(lobbyId);
+            messagingTemplate.convertAndSend("/topic/final-scores", finalScores);
+        } else {
+            // Not all votes are in, send an update to clients
+            messagingTemplate.convertAndSend("/topic/vote-updates", voteUpdates);
         }
     }
 

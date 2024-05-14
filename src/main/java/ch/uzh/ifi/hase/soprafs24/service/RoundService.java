@@ -18,6 +18,7 @@ import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,6 +161,8 @@ public class RoundService {
             });
         });
 
+
+
         // Now, update roundsPlayed and calculate the average points per round for each player
         playersToUpdate.values().forEach(player -> {
             player.setRoundsPlayed(player.getRoundsPlayed() + 1);  // Increment rounds first
@@ -199,6 +202,85 @@ public class RoundService {
                         LinkedHashMap::new));
     }
 
+
+    @Transactional
+    public Map<String, Map<String, Map<String, Object>>> calculateFinalScores(Long gameId) {
+        Round currentRound = getCurrentRoundByGameId(gameId);
+        if (currentRound == null) {
+            throw new RuntimeException("No current round found for game ID: " + gameId);
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Map<String, Map<String, Object>>> currentScores;
+        try {
+            currentScores = objectMapper.readValue(currentRound.getRoundPoints(),
+                    new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse round points", e);
+        }
+
+        currentScores.forEach((category, users) -> {
+            Map<String, List<String>> validAnswers = new HashMap<>(); // Track all valid answers for uniqueness checks
+
+            // First pass: Apply vetoes and count valid answers
+            users.forEach((username, scoreDetails) -> {
+                int submissionsCount = (int) scoreDetails.get("submissionsCount");
+                int vetoVotes = (int) scoreDetails.get("vetoVotes");
+                int score = (int) scoreDetails.get("score");
+
+                // Check if vetoes exceed half of the submissions count and flip the score if needed
+                if (vetoVotes > submissionsCount / 2) {
+                    score = score == 1 ? 0 : 1; // Flip the score from 1 to 0 or vice versa
+                }
+
+                // Update the score after veto check
+                scoreDetails.put("score", score);
+
+                // Track valid answers for uniqueness calculation
+                if (score == 1) { // only consider initially valid answers for uniqueness checks
+                    String answer = (String) scoreDetails.get("answer");
+                    validAnswers.computeIfAbsent(answer.toLowerCase(), k -> new ArrayList<>()).add(username);
+                }
+            });
+
+            // Second pass: Calculate points based on answer uniqueness and category validation
+            users.forEach((username, scoreDetails) -> {
+                int score = (int) scoreDetails.get("score");
+                if (score == 1) {
+                    String answer = (String) scoreDetails.get("answer");
+                    List<String> sameAnswerUsers = validAnswers.get(answer.toLowerCase());
+
+                    if (sameAnswerUsers.size() == 1) {
+                        // Check if this is the only valid answer in the category
+                        boolean isOnlyValid = validAnswers.values().stream()
+                                .allMatch(usersList -> usersList.contains(username) || usersList.isEmpty());
+
+                        score = isOnlyValid ? 15 : 10; // 15 points if it's the only valid answer in the category, 10 otherwise
+                    } else if (sameAnswerUsers.size() > 1) {
+                        score = 5; // Other identical valid answers exist
+                    }
+
+                    // Add bonuses
+                    int bonusVotes = (int) scoreDetails.get("bonusVotes");
+                    score += bonusVotes * 3; // Each bonus vote adds 3 points
+
+                    scoreDetails.put("score", score);
+                }
+            });
+
+        });
+
+        // Serialize and save the updated scores back to the round
+        try {
+            String scoresJson = objectMapper.writeValueAsString(currentScores);
+            currentRound.setRoundPoints(scoresJson);
+            roundRepository.save(currentRound);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize final scores", e);
+        }
+
+        return currentScores;
+    }
 
 
     public Map<String, Map<String, Map<String, Object>>> calculateScoresCategory(Long gameId) throws Exception {
@@ -300,7 +382,39 @@ public class RoundService {
         }
     }
 
-    public Map<String, Map<String, Map<String, Object>>> adjustScores(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
+    @Transactional
+    public boolean areAllVotesSubmitted(Long gameId) {
+        Round currentRound = getCurrentRoundByGameId(gameId);
+        if (currentRound == null) {
+            throw new RuntimeException("No current round found for game ID: " + gameId);
+        }
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String scoresJson = currentRound.getRoundPoints();
+            TypeReference<Map<String, Map<String, Map<String, Object>>>> typeRef = new TypeReference<>() {};
+            Map<String, Map<String, Map<String, Object>>> scores = objectMapper.readValue(scoresJson, typeRef);
+
+            // Calculate the total number of submissions across all categories and users
+            int totalSubmissions = scores.values().stream()
+                    .flatMap(categoryScores -> categoryScores.values().stream())
+                    .mapToInt(userScores -> (int) userScores.get("submissionsCount"))
+                    .sum();
+
+            // Fetch the lobby to know how many players should have submitted
+            Lobby lobby = currentRound.getGame().getLobby();
+            int numberOfPlayers = lobby.getPlayers().size(); // Assuming there's a method to get players in the lobby
+
+            // Check if the total submissions match the expected count (number of players * number of voting categories)
+            return totalSubmissions >= numberOfPlayers * scores.size();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public Map<String, Map<String, Map<String, Object>>> prepareScoreAdjustments(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
