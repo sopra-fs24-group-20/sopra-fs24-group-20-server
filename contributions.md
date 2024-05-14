@@ -199,3 +199,11 @@ This markdown file logs the individual contributions of each team member through
   [Issue #128](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/#128)
 - Task 1: collected 25 images, implemented a hash function and added the functionality to the profile page and lobby page
 - Task 2: debugging so server can be deployed on google cloud
+
+### Joshua Weder
+- GitHub Issue Links: [Issue 85](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/85),
+  [Issue 89](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/89),
+  [Issue 99](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/99)
+- Task 1: Implemented the loading screen and implemented it on all screens except for the game and lobby screen (to be done by others)
+- Task 2: Added a page for when a player enters a non-existent url.
+- Task 3: Added an explanation screen, accessible on the profile page. 
