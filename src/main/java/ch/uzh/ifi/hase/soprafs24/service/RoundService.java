@@ -306,52 +306,46 @@ public class RoundService {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
 
-        // Retrieve the current scores stored in the Round
-
         ObjectMapper objectMapper = new ObjectMapper();
         String answersJson = currentRound.getRoundPoints().toString();
         TypeReference<Map<String, Map<String, Map<String, Object>>>> typeRef = new TypeReference<>() {};
         Map<String, Map<String, Map<String, Object>>> currentScores = objectMapper.readValue(answersJson, typeRef);
 
-        // Prepare to aggregate vetoes and bonuses
-        Map<String, Map<String, Boolean>> hasVeto = new HashMap<>();
-        Map<String, Map<String, Integer>> bonusCounts = new HashMap<>();
+        // Initialize the structure for counting votes
+        currentScores.forEach((category, users) -> users.forEach((username, userScores) -> {
+            userScores.putIfAbsent("vetoVotes", 0);
+            userScores.putIfAbsent("bonusVotes", 0);
+            userScores.putIfAbsent("submissionsCount", 0);
+        }));
 
         // Count vetoes and bonuses
         adjustments.forEach((category, users) -> users.forEach((username, details) -> {
             boolean veto = (boolean) details.get("veto");
             boolean bonus = (boolean) details.get("bonus");
-            int bonusCount = bonus ? 3 : 0;  // Each bonus adds 3 points
 
-            hasVeto.computeIfAbsent(category, k -> new HashMap<>()).merge(username, veto, (a, b) -> a || b);
-            bonusCounts.computeIfAbsent(category, k -> new HashMap<>()).merge(username, bonusCount, Integer::sum);
+            Map<String, Object> userScores = currentScores.get(category).get(username);
+            if (userScores != null) {
+                int vetoVotes = (int) userScores.get("vetoVotes");
+                int bonusVotes = (int) userScores.get("bonusVotes");
+                int submissionsCount = (int) userScores.get("submissionsCount");
+
+                // Update counts based on the current adjustments
+                if (veto) {
+                    userScores.put("vetoVotes", vetoVotes + 1);
+                }
+                if (bonus) {
+                    userScores.put("bonusVotes", bonusVotes + 1);
+                }
+                userScores.put("submissionsCount", submissionsCount + 1);
+            }
         }));
 
-        // Apply vetoes and bonuses
-        currentScores.forEach((category, users) -> users.forEach((username, userScores) -> {
-            int currentScore = (int) userScores.get("score");
-
-            // Apply vetoes if any
-            Boolean veto = hasVeto.getOrDefault(category, new HashMap<>()).get(username);
-            if (veto != null && veto) {
-                currentScore = (currentScore == 10 ? 0 : 10);  // Flips score if veto is applied
-            }
-
-            // Apply bonuses
-            Integer bonusAddition = bonusCounts.getOrDefault(category, new HashMap<>()).get(username);
-            if (bonusAddition != null) {
-                currentScore += bonusAddition;
-            }
-
-            userScores.put("score", currentScore);
-        }));
-
-        // Serialize and save the updated scores back to the round
+        // Serialize and save the updated scores back to the round without applying scoring
         String scoresJson = objectMapper.writeValueAsString(currentScores);
         currentRound.setRoundPoints(scoresJson);
         roundRepository.save(currentRound);
-        currentRound.setPlayerAnswers(scoresJson);  // Assuming you need to update this field as well
 
         return currentScores;
     }
+
 }

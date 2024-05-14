@@ -98,15 +98,18 @@ public class RoundController {
     @PostMapping("/rounds/{gameId}/submitVotes")
     public ResponseEntity<?> submitVotes(@PathVariable Long gameId, @RequestBody String rawJson) {
         try {
-            // First, parse the raw JSON into a simpler structure or directly into the desired complex structure
+            // Parse the raw JSON into the structured format
             ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<HashMap<String, HashMap<String, HashMap<String, Object>>>> typeRef =
                     new TypeReference<>() {};
             HashMap<String, HashMap<String, HashMap<String, Object>>> votes = objectMapper.readValue(rawJson, typeRef);
 
-            // Proceed with using the parsed 'votes' as before
-            Map<String, Map<String, Map<String, Object>>> updatedScores = roundService.adjustScores(gameId, votes);
-            return ResponseEntity.ok(updatedScores);
+            // Update the vote counts in the game's current round
+            Map<String, Map<String, Map<String, Object>>> voteUpdates = roundService.adjustScores(gameId, votes);
+
+            // Respond with the updated vote counts; actual score calculation will be triggered by WebSocket communication
+            // when all players have submitted their votes
+            return ResponseEntity.ok(voteUpdates);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
@@ -118,4 +121,6 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
 }
