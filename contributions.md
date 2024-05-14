@@ -197,6 +197,6 @@ This markdown file logs the individual contributions of each team member through
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 82](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/82),
-  [Issue ##](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/##)
+  [Issue #128](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/#128)
 - Task 1: collected 25 images, implemented a hash function and added the functionality to the profile page and lobby page
-- Task 2: 
+- Task 2: debugging so server can be deployed on google cloud
