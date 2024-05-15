@@ -3,7 +3,14 @@
 
 runtime: java17
 instance_class: F2
-env: standard
+env: flex
+automatic_scaling:
+  max_num_instances: 1
+
+runtime_config:
+  operating_system: "ubuntu22"
+  runtime_version: "17"
+
 service_account: 'sopra-fs24-group-20-server@appspot.gserviceaccount.com'
 beta_settings:
   cloud_sql_instances: 'sopra-fs24-group-20-server:us-central1:categories-db'
