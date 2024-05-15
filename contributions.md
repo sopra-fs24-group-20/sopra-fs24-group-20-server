@@ -206,4 +206,14 @@ This markdown file logs the individual contributions of each team member through
   [Issue 99](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/99)
 - Task 1: Implemented the loading screen and implemented it on all screens except for the game and lobby screen (to be done by others)
 - Task 2: Added a page for when a player enters a non-existent url.
-- Task 3: Added an explanation screen, accessible on the profile page. 
+- Task 3: Added an explanation screen, accessible on the profile page.
+
+### Mirjam Weibel
+- GitHub Issue Links: [Issue 87](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/87),
+  [Issue 73](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/73),
+  [Issue 96](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/96), [Issue 97](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/97)
+- Task 1: adjust game, so user can play multiple rounds/games in a lobby
+- Task 2: global websocket implementation in frontent
+- Task 3: re introduce websockets (& adapt them to new global websocket) in game
+- Task 4: re introduce websockets (& adapt them to new global websocket) in lobbypage
+- Task 5: more meaningful error messages when joining lobby 
