@@ -194,6 +194,12 @@ This markdown file logs the individual contributions of each team member through
 - Task 3:Change websocket to function with global websockets
 - Task 4:Change sql server to be on group server and make it work with appengine.
 
+### Giuliano Bernasconi
+- GitHub Issue Links:[Issue 125](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/125), [Issue 52](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/52), [Issue 130](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/130)
+- Task 1 : Implementing different gamemode
+- Task 2 : Newly updated scoring methods especially for awarding 15 points
+- Task 3 : Implementing majority vote
+
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 82](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/82),
   [Issue #128](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/#128)
