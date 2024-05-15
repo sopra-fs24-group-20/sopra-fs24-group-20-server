@@ -33,7 +33,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 1: Created the start screen
 - Task 2: Made CSS, HTML additions and adjustments (Colors, Buttons, Background)
 
-### Mirjam Alexandra Weibel
+### Mirjam   Weibel
 - GitHub Issue Links: [Issue 5](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/5), [Issue 4](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/4), [Issue 8](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/8), [Issue 9](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/9), [Issue 10](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/10), [Issue 11](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/11), [Issue 12](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/12)
 - Task 1: Create lobby screen
 - Task 2: Join lobby screen
@@ -68,7 +68,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 1: Lobby screen
 - Task 2: Final leaderboard page format
 
-### Mirjam Alexandra Weibel
+### Mirjam   Weibel
 - GitHub Issue Links: [Issue 17](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/17), [Issue 18](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/18), [Issue 21](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/21)
 - Task 1: game screen page formatting
 - Task 2: bug fixes in frontend and consistency checks for frontend and backend
@@ -107,7 +107,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: final leaderboard functionality
 - Task 4: lobby page functionality handling with ws
 
-### Mirjam Alexandra Weibel
+### Mirjam   Weibel
 - GitHub Issue Links: [Issue 16](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/16), [Issue 19](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/19), [Issue 20](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/20)
 - Task 1: connect game meaningfully to backend with REST 
 - Task 2: implement game functionality with websockets
@@ -144,7 +144,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 1: intermediate leaderboard layout and logic
 - Task 2: refine all authentication pages
 
-### Mirjam Alexandra Weibel
+### Mirjam   Weibel
 - GitHub Issue Links: [Issue 66](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/66)
   [Issue 67](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/67)
 - Task 1: fix submitting answers (an edge case we did not notice before did not work)
