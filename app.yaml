@@ -3,7 +3,10 @@
 
 runtime: java17
 instance_class: F2
-env: standard
+env: flex
+entrypoint: 'java -jar build/libs/soprafs24.jar'
+manual_scaling:
+  instances: 1
 
 service_account: 'sopra-fs24-group-20-server@appspot.gserviceaccount.com'
 beta_settings:
