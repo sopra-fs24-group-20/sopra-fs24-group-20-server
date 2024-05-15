@@ -10,7 +10,6 @@ import java.util.Optional;
 @Repository("playerRepository")
 public interface PlayerRepository extends JpaRepository<Player, String> {
 
-
     Optional<Player> findByUsername(String username);
     Optional<Player> findByLobbyId(Long lobbyId);
     boolean existsByUsername(String username);

@@ -17,15 +17,18 @@ public class Game implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // If you want to auto-generate the ID
     private Long id;
+
     @OneToOne(mappedBy = "game")
     @JsonBackReference
     private Lobby lobby;
+
     @Enumerated(EnumType.STRING) // To store the enum as a string in the database
     @Column(nullable = false)
     private GameStatus status;
 
     @Column(name = "round_count", nullable = false)
     private Integer roundCount;
+
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     @JsonIgnore
@@ -33,7 +36,7 @@ public class Game implements Serializable {
 
 
 
-    // existing methods...
+    // Getters and Setters
 
     public List<Round> getRounds() {
         return rounds;
@@ -42,7 +45,6 @@ public class Game implements Serializable {
     public void setRounds(List<Round> rounds) {
         this.rounds = rounds;
     }
-    // Getters and Setters
 
     public Long getId() {
         return id;

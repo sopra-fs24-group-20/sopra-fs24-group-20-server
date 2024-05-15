@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class RoundController {
-
     private final RoundService roundService;
     @Autowired
     private ObjectMapper objectMapper;
@@ -37,7 +36,6 @@ public class RoundController {
         }
     }
     @PostMapping("/rounds/{gameId}/entries")
-
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
         try {
             Round currentRound = roundService.getCurrentRoundByGameId(gameId);
@@ -62,6 +60,15 @@ public class RoundController {
         char currentLetter = roundService.getCurrentRoundLetter(gameId);
         if (currentLetter != '\0') {
             return new ResponseEntity<>(currentLetter, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/rounds/letterPosition/{gameId}")
+    public  ResponseEntity<Integer> getLetterPosition(@PathVariable Long gameId) {
+        int currentLetterPosition = roundService.getCurrentRoundLetterPosition(gameId);
+        if (currentLetterPosition != -100) {
+            return new ResponseEntity<>(currentLetterPosition, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -91,15 +98,24 @@ public class RoundController {
     @PostMapping("/rounds/{gameId}/submitVotes")
     public ResponseEntity<?> submitVotes(@PathVariable Long gameId, @RequestBody String rawJson) {
         try {
-            // First, parse the raw JSON into a simpler structure or directly into the desired complex structure
+            // Parse the raw JSON into the structured format
             ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<HashMap<String, HashMap<String, HashMap<String, Object>>>> typeRef =
                     new TypeReference<>() {};
             HashMap<String, HashMap<String, HashMap<String, Object>>> votes = objectMapper.readValue(rawJson, typeRef);
 
-            // Proceed with using the parsed 'votes' as before
-            Map<String, Map<String, Map<String, Object>>> updatedScores = roundService.adjustScores(gameId, votes);
-            return ResponseEntity.ok(updatedScores);
+            // Update the vote counts in the game's current round
+            Map<String, Map<String, Map<String, Object>>> voteUpdates = roundService.prepareScoreAdjustments(gameId, votes);
+
+            // Check if all players have submitted their votes
+            if (roundService.areAllVotesSubmitted(gameId)) {
+                // All votes submitted, calculate final scores
+                Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(gameId);
+                return ResponseEntity.ok(finalScores);
+            } else {
+                // Not all votes are in, return the current state without final scoring
+                return ResponseEntity.ok(voteUpdates);
+            }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
@@ -111,4 +127,7 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
+
 }

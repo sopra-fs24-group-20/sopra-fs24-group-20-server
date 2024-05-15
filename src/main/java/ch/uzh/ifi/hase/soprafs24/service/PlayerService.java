@@ -23,7 +23,6 @@ public class PlayerService {
         this.playerRepository = playerRepository;
     }
 
-
     private static final Logger log = LoggerFactory.getLogger(PlayerService.class);
 
     public Player createPlayer(String username, String password) {
@@ -44,6 +43,7 @@ public class PlayerService {
         player.setVictories(0);
         return playerRepository.save(player);
     }
+
     public List<Player> getPlayers() {
         return playerRepository.findAll();
     }
@@ -64,11 +64,13 @@ public class PlayerService {
         return playerRepository.findByUsername(username)
                 .orElseThrow(() ->  new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found with username: " + username));
     }
+
     public Player LogInPlayer(String username, String password) {
         return playerRepository.findByUsername(username)
                 .filter(player -> password.equals(player.getPassword()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password Incorrect"));
     }
+
     public Player LogOutPlayer(String username) {
         Player player = playerRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found with username: " + username));
@@ -81,6 +83,7 @@ public class PlayerService {
             return playerRepository.save(player);
         }
     }
+
     public int calculateLevel(int totalPoints) {
         int level = 1;
         while (25 * Math.pow(level, 2) <= totalPoints) {

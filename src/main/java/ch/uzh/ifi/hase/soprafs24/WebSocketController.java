@@ -1,8 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24;
 
-// Corrected import for TypeReference
-import com.fasterxml.jackson.core.type.TypeReference;
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,161 +21,187 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Controller
 public class WebSocketController {
 
-    public final Set<String> readyPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    public final Set<String> connectedPlayers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    public final Map<Long, Set<String>> readyPlayers = new ConcurrentHashMap<>();
+    public final Map<Long, Set<String>> connectedPlayers = new ConcurrentHashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
-    public final List<String> allPlayerAnswers = Collections.synchronizedList(new ArrayList<>());
     private final RoundService roundService;
     private final RoundRepository roundRepository;
     private final ObjectMapper objectMapper;
 
-    // Autowired constructor for injecting services and repositories
+    private final LobbyRepository lobbyRepository;
+
     @Autowired
-    public WebSocketController(RoundService roundService, RoundRepository roundRepository, ObjectMapper objectMapper, SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate; // Ensure messagingTemplate is initialized
-        this.roundService = roundService;
-        this.roundRepository = roundRepository;
-        this.objectMapper = objectMapper;
-    }
-    public WebSocketController(SimpMessagingTemplate messagingTemplate, RoundService roundService, RoundRepository roundRepository, ObjectMapper objectMapper) {
+    public WebSocketController(RoundService roundService, RoundRepository roundRepository, ObjectMapper objectMapper, LobbyRepository lobbyRepository,SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
         this.roundService = roundService;
         this.roundRepository = roundRepository;
         this.objectMapper = objectMapper;
+        this.lobbyRepository = lobbyRepository;
     }
 
     @MessageMapping("/connect")
-    public void connectPlayer(@Payload Map<String, String> payload) {
-        String username = payload.get("username");
-        connectedPlayers.add(username);
+    public void connect(@Payload Map<String, String> payload) {
+        // Handle connection logic if needed
     }
 
     @MessageMapping("/disconnect")
-    public void disconnectPlayer(@Payload Map<String, String> payload) {
+    public void disconnect(@Payload Map<String, String> payload) {
+        // Handle disconnection logic if needed
+    }
+
+    @MessageMapping("/join")
+    public void joinLobby(@Payload Map<String, String> payload) {
         String username = payload.get("username");
-        connectedPlayers.remove(username);
-        readyPlayers.remove(username);
-        sendOnlineAndReadyCount(); // Update all clients when a player disconnects
+        Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        connectedPlayers.computeIfAbsent(lobbyId, k -> new HashSet<>()).add(username);
+        sendOnlineAndReadyCount(lobbyId);
+    }
+
+    @MessageMapping("/leave")
+    public void leaveLobby(@Payload Map<String, String> payload) {
+        String username = payload.get("username");
+        Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
+        readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
+        sendOnlineAndReadyCount(lobbyId);
     }
 
     @MessageMapping("/ready-up")
-    @SendTo("/topic/ready-count") // Specify the destination for the response
+    @SendTo("/topic/ready-count")
     public String readyUp(@Payload Map<String, String> payload) {
         String username = payload.get("username");
-        String lobbyIdStr = payload.get("lobbyId"); // Get the lobby ID from the payload
-        long lobbyId = 0; // Initialize lobby ID
+        Long lobbyId;
+
         try {
-            lobbyId = Long.parseLong(lobbyIdStr); // Parse the lobby ID
+            lobbyId = Long.parseLong(payload.get("lobbyId"));
         } catch (NumberFormatException e) {
-            System.out.println("Error parsing lobby ID: " + lobbyIdStr);
-            return "{\"error\":\"Invalid lobby ID\"}"; // Return an error message if parsing fails
+            System.out.println("Error parsing lobby ID from: " + payload.get("lobbyId") + ", Error: " + e.getMessage());
+            return "{\"error\":\"Invalid lobby ID\"}";
         }
 
-        if (connectedPlayers.contains(username)) {
-            readyPlayers.add(username);
-            sendOnlineAndReadyCount(username);
-            if (checkAndStartGame()) {
-                roundService.startNewRound(lobbyId); // Start new round with the parsed lobby ID
-                return "{\"command\":\"start\"}";
-            } else {
-                return sendOnlineAndReadyCount(username);
+        Set<String> lobbyConnected = connectedPlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
+        Set<String> lobbyReady = readyPlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
+
+        if (!lobbyConnected.contains(username)) {
+            System.out.println("User " + username + " not found in lobby " + lobbyId);
+            return "{\"error\":\"User " + username + " not found in lobby " + lobbyId + "\"}";
+        }
+
+        lobbyReady.add(username);
+        if (checkAndStartGame(lobbyId)) {
+            try {
+                roundService.startNewRound(lobbyId);
+                return "{\"command\":\"start\", \"lobbyId\":" + lobbyId + "}";
+            } catch (Exception e) {
+                System.out.println("Failed to start new round for lobby " + lobbyId + ": " + e.getMessage());
+                return "{\"error\":\"Failed to start game for lobby " + lobbyId + ": " + e.getMessage() + "\"}";
             }
         } else {
-            // Player not found in connected players
-            return sendOnlineAndReadyCount(username);
+            return sendOnlineAndReadyCount(lobbyId);
         }
     }
 
 
-    private Boolean checkAndStartGame() {
-        // Check if all connected players are ready
-        if (connectedPlayers.size() == readyPlayers.size()) {
-            // If all players are ready, start the game
-            return true;
-        }
-        else {
-            // Not all players are ready, send online and ready count to the player
-
-            return false;
-        }
+    private Boolean checkAndStartGame(Long lobbyId) {
+        Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
+        Set<String> lobbyReady = readyPlayers.getOrDefault(lobbyId, Collections.emptySet());
+        // Start the game if all connected players are ready, or if there is only one player who is ready.
+        return lobbyConnected.equals(lobbyReady) || (lobbyConnected.size() == 1 && lobbyReady.size() == 1);
     }
 
-    private String  sendOnlineAndReadyCount(String username) {
-        // Send a message to the specified player with online and ready count
-        int onlineCount = connectedPlayers.size();
-        int readyCount = readyPlayers.size();
-        String countMessage = "Online players: " + onlineCount + ", Ready players: " + readyCount;
-       return  countMessage;
+    private String sendOnlineAndReadyCount(Long lobbyId) {
+        int onlineCount = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).size();
+        int readyCount = readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).size();
+        String countMessage = String.format("{\"onlinePlayers\": %d, \"readyPlayers\": %d, \"lobbyId\": %d}", onlineCount, readyCount, lobbyId);
+        messagingTemplate.convertAndSend("/topic/online-players", countMessage);
+        return countMessage;
     }
 
     @MessageMapping("/start-game")
     @SendTo("/topic/game-control")
-    public String startGame(){
-        if (connectedPlayers.size() == readyPlayers.size()) {
-            return "{\"command\":\"start\"}";
+    public String startGame(@Payload Map<String, String> payload) {
+        Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        if (checkAndStartGame(lobbyId)) {
+            return String.format("{\"command\":\"start\", \"lobbyId\":%d}", lobbyId);
         } else {
-            return "{\"error\":\"Not all connected players are ready\"}";
+            return String.format("{\"error\":\"Not all connected players are ready\", \"lobbyId\":%d}", lobbyId);
         }
-    }
-
-    @MessageMapping("/refresh")
-    @SendTo("/topic/lobby-refresh")
-    public String lobbyJoin(){
-        return "{\"command\":\"refresh\"}";
     }
 
     @MessageMapping("/stop-game")
     @SendTo("/topic/game-control")
-    public String stopGame() {
-        readyPlayers.clear();
-        return "{\"command\":\"stop\"}";
+    public String stopGame(@Payload Map<String, String> payload) {
+        Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        readyPlayers.remove(lobbyId);
+        return String.format("{\"command\":\"stop\", \"lobbyId\":%d}", lobbyId);
     }
 
     @MessageMapping("/not-ready")
     public void notReady(@Payload Map<String, String> payload) {
         String username = payload.get("username");
-        readyPlayers.remove(username);
+        Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
+        sendOnlineAndReadyCount(lobbyId);
     }
 
-    private String sendOnlineAndReadyCount() {
-        int onlineCount = connectedPlayers.size();
-        int readyCount = readyPlayers.size();
-        return String.format("{\"onlinePlayers\": %d, \"readyPlayers\": %d}", onlineCount, readyCount);
-    }
     @MessageMapping("/game-entries")
     @SendTo("/topic/game-over")
     public String receiveGameEntries(@Payload Map<String, String> gameEntry) {
-        String playerIdentifier = gameEntry.remove("username");
-        String answer = gameEntry.get("answer"); // Assuming each entry includes an "answer" key
-        String SgameId = gameEntry.get ("gameId");
-        Long gameId =Long.parseLong(SgameId);
-        if (!readyPlayers.contains(playerIdentifier)) {
-            System.out.println("Received submission from unready or unknown player: " + playerIdentifier);
-            return "{\"command\":\"entities\"}";
+        String username = gameEntry.remove("username");
+        Long lobbyId = Long.parseLong(gameEntry.get("lobbyId"));
+        Long gameId = Long.parseLong(gameEntry.get("gameId"));
+        if (!readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).contains(username)) {
+            return String.format("{\"command\":\"entities\", \"lobbyId\":%d}", lobbyId);
         }
-
-        allPlayerAnswers.add(answer); // Append answer to the list
-        updateRoundWithAnswers(gameId);
-        return "{\"command\":\"entities\"}";
+        // Assume allPlayerAnswers is a Map<Long, List<String>> keyed by lobbyId
+        updateRoundWithAnswers(gameId, lobbyId);
+        return String.format("{\"command\":\"entities\", \"lobbyId\":%d}", lobbyId);
     }
 
-    // Method to get all player answers
-    @MessageMapping("/leaderboard")
-    @SendTo("/topic/leaderboard")
-    public String getLeaderboard() {
-        return "{\"command\":\"Leaderboard\"}"; // You can customize this JSON message as needed.
-    }
-
-    private void updateRoundWithAnswers(Long gameId) {
-        Round currentRound = roundService.getCurrentRound(gameId); // Assuming you have a method to get the current round
+    private void updateRoundWithAnswers(Long gameId, Long lobbyId) {
+        Round currentRound = roundService.getCurrentRound(gameId);
         try {
-            // Convert current list of answers to JSON string
-            String jsonAnswers = objectMapper.writeValueAsString(allPlayerAnswers);
+            // Assuming allPlayerAnswers is defined elsewhere and keyed by lobbyId
+            String jsonAnswers = objectMapper.writeValueAsString(Collections.emptyList()); // Placeholder
             currentRound.setPlayerAnswers(jsonAnswers);
             roundRepository.save(currentRound);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             System.out.println("Failed to update round with answers");
         }
+    }
+
+    @MessageMapping("/submit-votes")
+    public void handleVoteSubmission(@Payload Map<String, Object> payload) throws Exception {
+        Long lobbyId = Long.valueOf(payload.get("lobbyId").toString());
+        String username = payload.get("username").toString();
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        if (optionalLobby.isEmpty()) {
+            throw new RuntimeException("No current lobby for lobby ID: " + lobbyId);
+        }
+
+        Lobby lobby = optionalLobby.get();
+        Long gameId = lobby.getGame().getId();
+        HashMap<String, HashMap<String, HashMap<String, Object>>> votes = (HashMap<String, HashMap<String, HashMap<String, Object>>>) payload.get("votes");
+
+        // Process the incoming votes and update the server state
+        Map<String, Map<String, Map<String, Object>>> voteUpdates = roundService.prepareScoreAdjustments(gameId, votes);
+
+        // Check if all players have submitted their votes
+        if (roundService.areAllVotesSubmitted(gameId)) {
+            // All votes submitted, proceed to calculate final scores
+            Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(lobbyId);
+            messagingTemplate.convertAndSend("/topic/final-scores", finalScores);
+        } else {
+            // Not all votes are in, send an update to clients
+            messagingTemplate.convertAndSend("/topic/vote-updates", voteUpdates);
+        }
+    }
+
+    @MessageMapping("/leaderboard")
+    @SendTo("/topic/leaderboard")
+    public String getLeaderboard(@Payload Map<String, String> payload) {
+        Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        return String.format("{\"command\":\"Leaderboard\", \"lobbyId\":%d}", lobbyId);
     }
 }
