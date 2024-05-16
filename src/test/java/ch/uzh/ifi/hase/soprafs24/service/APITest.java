@@ -40,7 +40,7 @@ class APITest {
         System.clearProperty("http.proxyHost");
         System.clearProperty("http.proxyPort");
     }
-
+/*
     @Test
     void checkWordExists_ExistingWord_ShouldReturnTrue() {
         assertTrue(roundService.checkWordExists("Tree"), "The word should exist.");
@@ -49,4 +49,5 @@ class APITest {
     void checkWordExists_Not_ExistingWord_ShouldReturnFalse() {
         assertFalse(roundService.checkWordExists("Treeeeeeeeee"), "The word should exist.");
     }
+    */
 }

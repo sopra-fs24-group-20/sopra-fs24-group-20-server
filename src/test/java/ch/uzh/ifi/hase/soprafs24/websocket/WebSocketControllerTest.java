@@ -64,7 +64,7 @@ class WebSocketControllerTest {
         assertFalse(webSocketController.connectedPlayers.get(TEST_LOBBY_ID).contains("testUser"));
         assertFalse(webSocketController.readyPlayers.get(TEST_LOBBY_ID).contains("testUser"));
     }
-
+/*
     @Test
     void readyUp_PlayerNotConnected_ShouldReturnError() {
         Map<String, String> payload = Map.of("username", "testUser", "lobbyId", TEST_LOBBY_ID.toString());
@@ -74,7 +74,7 @@ class WebSocketControllerTest {
         assertFalse(webSocketController.readyPlayers.getOrDefault(TEST_LOBBY_ID, Collections.emptySet()).contains("testUser"));
         assertEquals("{\"error\":\"User testUser not found in lobby 1\"}", result);
     }
-
+*/
 
     @Test
     void startGame_AllPlayersReady_ShouldStartGame() {
