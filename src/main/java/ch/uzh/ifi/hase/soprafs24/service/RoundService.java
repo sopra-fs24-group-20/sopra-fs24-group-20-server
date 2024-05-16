@@ -170,6 +170,7 @@ public class RoundService {
                 double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
                 double roundedAverage = Math.round(average * 100) / 100.0;
                 player.setAveragePointsPerRound(roundedAverage);
+                player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
             } else {
                 player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
             }
