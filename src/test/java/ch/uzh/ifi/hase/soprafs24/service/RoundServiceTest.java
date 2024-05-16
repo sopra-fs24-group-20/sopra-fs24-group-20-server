@@ -201,16 +201,16 @@ class RoundServiceTest {
         Map<String, Map<String, Map<String, Object>>> expectedScores = new HashMap<>();
         Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
         Map<String, Object> user1ScoreAndAnswer = new HashMap<>();
-        user1ScoreAndAnswer.put("score", 10);
+        user1ScoreAndAnswer.put("score", 1);
         user1ScoreAndAnswer.put("answer", "apple");
         Map<String, Object> user2ScoreAndAnswer = new HashMap<>();
-        user2ScoreAndAnswer.put("score", 10);
+        user2ScoreAndAnswer.put("score", 1);
         user2ScoreAndAnswer.put("answer", "avocado");
         Map<String, Object> user3ScoreAndAnswer = new HashMap<>();
-        user3ScoreAndAnswer.put("score", 5);  // Score reduced due to duplication
+        user3ScoreAndAnswer.put("score", 1);
         user3ScoreAndAnswer.put("answer", "Axe");
         Map<String, Object> user4ScoreAndAnswer = new HashMap<>();
-        user4ScoreAndAnswer.put("score", 5);  // Score reduced due to duplication
+        user4ScoreAndAnswer.put("score", 1);
         user4ScoreAndAnswer.put("answer", "axe");
         Map<String, Object> user5ScoreAndAnswer = new HashMap<>();
         user5ScoreAndAnswer.put("score", 0);  // Wrong starting letter
@@ -225,13 +225,16 @@ class RoundServiceTest {
         // Assert the result matches the expected scores
         assertEquals(expectedScores, result);
     }
+
     @Test
     void testAdjustScores_NoCurrentRound_ThrowsException() {
         Long gameId = 1L;
         when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> roundService.adjustScores(gameId, new HashMap<>()));
+        assertThrows(RuntimeException.class, () -> roundService.prepareScoreAdjustments(gameId, new HashMap<>()));
     }
+
+
 
     @Test
     public void testCalculateLeaderboard() throws Exception {
@@ -293,37 +296,85 @@ class RoundServiceTest {
     }
 
     @Test
-    public void testAdjustScores() throws Exception {
+    public void testAreAllVotesSubmitted() {
         // Setup
         Long gameId = 1L;
         Round currentRound = new Round();
-        currentRound.setRoundPoints("{\"category1\":{\"player1\":{\"score\":10}, \"player2\":{\"score\":5}}}");
+        Lobby lobby = new Lobby();
+        List<Player> players = List.of(new Player(), new Player(), new Player()); // Assume three players
+        lobby.setPlayers(players);
+        currentRound.setGame(new Game());
+        currentRound.getGame().setLobby(lobby);
+        String roundPointsJson = "{\"category1\": {\"player1\": {\"submissionsCount\": 3}, \"player2\": {\"submissionsCount\": 3}, \"player3\": {\"submissionsCount\": 3}}, \"category2\": {\"player1\": {\"submissionsCount\": 3}, \"player2\": {\"submissionsCount\": 3}, \"player3\": {\"submissionsCount\": 3}}}";
 
-        // Mocking getCurrentRoundByGameId to return our round
-        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(currentRound));
+        currentRound.setRoundPoints(roundPointsJson);
 
-        // Creating adjustments
+        when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(currentRound));
+
+        // Act
+        boolean allVotesSubmitted = roundService.areAllVotesSubmitted(gameId);
+
+        // Assert
+        assertTrue(allVotesSubmitted, "All votes should be submitted since each player has submitted for each category.");
+
+        // Verify interactions
+        verify(roundRepository).findTopByGameIdOrderByIdDesc(gameId);
+    }
+
+    @Test
+    public void testPrepareScoreAdjustments() throws Exception {
+        // Setup
+        Long gameId = 1L;
+        Round currentRound = new Round();
+        String roundPointsJson = "{\"category1\":{\"player1\":{\"score\":1, \"vetoVotes\":0, \"bonusVotes\":0, \"submissionsCount\":0}, \"player2\":{\"score\":1, \"vetoVotes\":0, \"bonusVotes\":0, \"submissionsCount\":0}}}";
+        currentRound.setRoundPoints(roundPointsJson);
+
+        when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(currentRound));
+
+        // Prepare the expected data structure after reading the JSON
+        Map<String, Map<String, Map<String, Object>>> scoresMap = new HashMap<>();
+        Map<String, Map<String, Object>> categoryMap = new HashMap<>();
+        Map<String, Object> player1Scores = new HashMap<>();
+        player1Scores.put("score", 1);
+        player1Scores.put("vetoVotes", 0);
+        player1Scores.put("bonusVotes", 0);
+        player1Scores.put("submissionsCount", 0);
+        categoryMap.put("player1", player1Scores);
+        Map<String, Object> player2Scores = new HashMap<>();
+        player2Scores.put("score", 1);
+        player2Scores.put("vetoVotes", 0);
+        player2Scores.put("bonusVotes", 0);
+        player2Scores.put("submissionsCount", 0);
+        categoryMap.put("player2", player2Scores);
+        scoresMap.put("category1", categoryMap);
+
+        TypeReference<Map<String, Map<String, Map<String, Object>>>> typeRef = new TypeReference<>() {};
+
+        // Adjustment map simulating user votes
         HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments = new HashMap<>();
-        HashMap<String, HashMap<String, Object>> userAdjustments = new HashMap<>();
-        HashMap<String, Object> player1Adjustments = new HashMap<>();
-        player1Adjustments.put("veto", true); // This should flip the score
-        player1Adjustments.put("bonus", false);
-        HashMap<String, Object> player2Adjustments = new HashMap<>();
-        player2Adjustments.put("veto", false);
-        player2Adjustments.put("bonus", true); // This should add 3 points
-        userAdjustments.put("player1", player1Adjustments);
-        userAdjustments.put("player2", player2Adjustments);
-        adjustments.put("category1", userAdjustments);
+        adjustments.put("category1", new HashMap<String, HashMap<String, Object>>() {{
+            put("player1", new HashMap<String, Object>() {{
+                put("veto", true);
+                put("bonus", true);
+            }});
+            put("player2", new HashMap<String, Object>() {{
+                put("veto", false);
+                put("bonus", true);
+            }});
+        }});
 
         // Execute
-        Map<String, Map<String, Map<String, Object>>> adjustedScores = roundService.adjustScores(gameId, adjustments);
+        Map<String, Map<String, Map<String, Object>>> updatedScores = roundService.prepareScoreAdjustments(gameId, adjustments);
 
-        // Verify the changes
-        assertEquals(0, adjustedScores.get("category1").get("player1").get("score")); // Score should be flipped from 10 to 0
-        assertEquals(8, adjustedScores.get("category1").get("player2").get("score")); // Score should be increased by 3 from 5 to 8
+        // Verify the updates to the round points
+        assertNotNull(updatedScores);
+        assertEquals(1, (int) updatedScores.get("category1").get("player1").get("vetoVotes"));
+        assertEquals(1, (int) updatedScores.get("category1").get("player1").get("bonusVotes"));
+        assertEquals(1, (int) updatedScores.get("category1").get("player1").get("submissionsCount"));
+        assertEquals(0, (int) updatedScores.get("category1").get("player2").get("vetoVotes"));
+        assertEquals(1, (int) updatedScores.get("category1").get("player2").get("bonusVotes"));
+        assertEquals(1, (int) updatedScores.get("category1").get("player2").get("submissionsCount"));
 
-        // Verify that the round points are updated and saved
         verify(roundRepository).save(any(Round.class));
     }
 }
-

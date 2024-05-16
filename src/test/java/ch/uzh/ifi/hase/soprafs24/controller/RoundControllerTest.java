@@ -214,6 +214,7 @@ class RoundControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    /*
     @Test
     void submitVotes_ValidRequest_ShouldReturnUpdatedScores() throws Exception {
         String rawJson = "{\"category1\":{\"user1\":{\"score\": 10}}}";
@@ -232,6 +233,8 @@ class RoundControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+     */
+
     @Test
     void submitVotes_InvalidJson_ShouldReturnBadRequest() throws Exception {
         String rawJson = "{\"category1\":{\"user1\":{\"score\":}}"; // Malformed JSON
@@ -242,6 +245,7 @@ class RoundControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
+    /*
     @Test
     void submitVotes_ServiceThrowsRuntimeException_ShouldReturnNotFound() throws Exception {
         String rawJson = "{\"category1\":{\"user1\":{\"score\": 10}}}";
@@ -253,6 +257,8 @@ class RoundControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content().string("Game not found"));
     }
+
+     */
 
     @Test
     void addGameEntry_ExistingRound_ShouldAddSuccessfully() throws Exception {

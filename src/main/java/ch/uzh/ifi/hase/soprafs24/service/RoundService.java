@@ -228,7 +228,7 @@ public class RoundService {
                 int vetoVotes = (int) scoreDetails.get("vetoVotes");
                 int score = (int) scoreDetails.get("score");
 
-                // Check if vetoes exceed half of the submissions count and flip the score if needed
+                // Check if vetoes fulfill the majority vote threshold
                 if (vetoVotes > submissionsCount / 2) {
                     score = score == 1 ? 0 : 1; // Flip the score from 1 to 0 or vice versa
                 }
