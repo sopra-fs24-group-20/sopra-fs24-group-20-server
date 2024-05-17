@@ -121,88 +121,55 @@ public class RoundService {
     //sum up the scores from the function below
     @Transactional
     public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
-        Round currentRound = getCurrentRoundByGameId(gameId);
         Optional<Game> currentGameOptional = gameRepository.findById(gameId);
         if (currentGameOptional.isEmpty()) {
             throw new RuntimeException("No current game for game ID: " + gameId);
         }
 
-        Game currentGame = currentGameOptional.get();  // Get the Game object from Optional
-        Lobby lobby = currentGame.getLobby();
-        int totalRounds = lobby.getRounds();
+        Game currentGame = currentGameOptional.get();
 
+        // Assume no round found exception handling here
+        Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
 
-        // Reload the round to ensure it reflects the latest changes
+        // Deserialize game points
+        String existingGamePointsJson = currentGame.getGamePoints();
+        Map<String, Integer> gamePoints;
+        if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
+            gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {});
+        } else {
+            gamePoints = new HashMap<>();
+        }
 
-        // Now, fetch the scores
+        // Deserialize scores from the current round
         Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = objectMapper.readValue(currentRound.getRoundPoints(),
                 new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
 
-        Map<String, Integer> finalScores = new HashMap<>();
-        Map<String, Player> playersToUpdate = new HashMap<>();
-
-        // Aggregate scores
+        // Merge current round scores into game points
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
-                Integer score = (Integer) details.get("score");
-                finalScores.merge(username, score, Integer::sum);
-
-                // Fetch the player (mock method, replace with actual)
-                Player player = playerService.getPlayerByUsername(username);
-                if (player != null) {
-                    playersToUpdate.putIfAbsent(username, player);
-                    player.setTotalPoints(player.getTotalPoints() + score);
-
-                    // Note: We are not updating roundsPlayed or calculating the average here
-                }
+                Integer roundScore = (Integer) details.get("score");
+                gamePoints.merge(username, roundScore, Integer::sum);
             });
         });
 
+        // Serialize the updated game points and save back to the game entity
+        String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
+        currentGame.setGamePoints(updatedGamePointsJson);
+        gameRepository.save(currentGame);
 
-
-        // Now, update roundsPlayed and calculate the average points per round for each player
-        playersToUpdate.values().forEach(player -> {
-            player.setRoundsPlayed(player.getRoundsPlayed() + 1);  // Increment rounds first
-            if (player.getRoundsPlayed() > 0) {
-                double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
-                double roundedAverage = Math.round(average * 100) / 100.0;
-                player.setAveragePointsPerRound(roundedAverage);
-                player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
-            } else {
-                player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
-            }
-            savePlayer(player);  // Save the player with updated stats
-        });
-
-        // Check if this is the final round
-        if (currentGame.getRounds().size() == totalRounds) {
-            // This is the final round
-            final String winner = finalScores.entrySet().stream()
-                    .max(Map.Entry.comparingByValue())
-                    .map(Map.Entry::getKey)
-                    .orElse(null);
-
-            if (winner != null) {
-                Player winningPlayer = playerService.getPlayerByUsername(winner);
-                if (winningPlayer != null) {
-                    winningPlayer.setVictories(winningPlayer.getVictories() + 1);
-                    savePlayer(winningPlayer);  // Ensure victory is recorded
-                }
-            }
-        }
-        // Return sorted scores
-        return finalScores.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+        // Sort the gamePoints by value in descending order and return
+        return gamePoints.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        LinkedHashMap::new));
+                        (e1, e2) -> e1, // if there are duplicates, keep the existing
+                        LinkedHashMap::new
+                ));
     }
-
 
     @Transactional
     public Map<String, Map<String, Map<String, Object>>> calculateFinalScores(Long gameId) {
