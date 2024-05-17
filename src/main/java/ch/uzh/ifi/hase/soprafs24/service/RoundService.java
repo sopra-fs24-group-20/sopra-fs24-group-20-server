@@ -52,7 +52,12 @@ public class RoundService {
 
         Round newRound = new Round();
         newRound.setGame(game);
-        char roundLetter = generateRandomLetter(lobby.getExcludedChars());
+
+        // Collect all previously assigned letters plus the excluded chars
+        List<Character> allExcludedChars = new ArrayList<>(lobby.getExcludedChars());
+        game.getRounds().forEach(round -> allExcludedChars.add(round.getAssignedLetter()));
+
+        char roundLetter = generateRandomLetter(allExcludedChars);
         newRound.setAssignedLetter(roundLetter);
 
         // Set letter position based on lobby difficulty
@@ -62,6 +67,17 @@ public class RoundService {
         roundRepository.save(newRound);
         gameRepository.save(game);  // Save changes to the game
     }
+
+    private char generateRandomLetter(List<Character> excludedChars) {
+        Random random = new Random();
+        char randomLetter;
+        do {
+            // Generate a random uppercase letter between 'A' and 'Z'
+            randomLetter = (char) ('A' + random.nextInt(26));
+        } while (excludedChars.contains(randomLetter)); // Ensure it's not in the excluded list
+        return randomLetter;
+    }
+
 
     private int determineLetterPosition(String difficulty) {
         if (Objects.equals(difficulty, "0")) {
@@ -81,16 +97,6 @@ public class RoundService {
             return lastRound.getLetterPosition();
         }
         return -100; // Indicates that no valid round or game was found, distinct from -1 which is a valid position
-    }
-
-    private char generateRandomLetter(List<Character> excludedChars) {
-        Random random = new Random();
-        char randomLetter;
-        do {
-            // Generate a random uppercase letter between 'A' and 'Z'
-            randomLetter = (char) ('A' + random.nextInt(26));
-        } while (excludedChars.contains(randomLetter)); // Check against excluded characters
-        return randomLetter;
     }
 
     public char getCurrentRoundLetter(Long gameId) {
