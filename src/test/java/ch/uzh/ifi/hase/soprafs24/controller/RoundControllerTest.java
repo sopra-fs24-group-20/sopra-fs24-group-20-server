@@ -258,10 +258,8 @@ class RoundControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content().string("Game not found"));
     }
-     */
-
-
-    /*@Test
+     
+    @Test
     void addGameEntry_ExistingRound_ShouldAddSuccessfully() throws Exception {
         Long gameId = 1L;
         Map<String, String> gameEntry = Map.of("playerId", "123", "answer", "apple");
@@ -298,4 +296,3 @@ class RoundControllerTest {
 }
 
     // Additional tests for getLetter, getLeaderboard, getScoresByCategory should follow similar patterns
-
