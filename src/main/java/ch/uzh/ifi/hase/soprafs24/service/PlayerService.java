@@ -41,7 +41,7 @@ public class PlayerService {
         player.setLevel(1);
         player.setAveragePointsPerRound(0);
         player.setVictories(0);
-        player.setOnline(true);
+        player.setOnline(false);
         return playerRepository.save(player);
     }
 
