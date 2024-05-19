@@ -4,12 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.CannotAcquireLockException;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +15,6 @@ import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,52 +39,25 @@ public class RoundController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    private final BlockingQueue<Map<String, Object>> queue = new LinkedBlockingQueue<>();
-    @PostMapping("rounds/{gameId}/entries")
+
+    @PostMapping("/rounds/{gameId}/entries")
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
         try {
-            String entryJson = objectMapper.writeValueAsString(gameEntry);
-            queue.offer(Map.of("gameId", gameId, "entryJson", entryJson));  // Queue the request
-            processQueue();  // Trigger processing
-            return ResponseEntity.ok("Request received and will be processed.");
-        } catch (JsonProcessingException e) {
-            return ResponseEntity.internalServerError().body("Error serializing request: " + e.getMessage());
-        }
-    }
-
-    @Async("taskExecutor")
-    public void processQueue() {
-        Map<String, Object> request;
-        while ((request = queue.poll()) != null) {  // Non-blocking poll
-            Long gameId = (Long) request.get("gameId");
-            String entryJson = (String) request.get("entryJson");
-            handleGameEntry(gameId, entryJson);
-        }
-    }
-
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public void handleGameEntry(Long gameId, String entryJson) {
-        int maxRetries = 6;
-        for (int attempt = 0; attempt < maxRetries; attempt++) {
-            try {
-                processEntry(gameId, entryJson);
-                break; // Exit after successful processing
-            } catch (ConcurrencyFailureException e) {
-                if (attempt == maxRetries - 1) {
-                    System.err.println("Max retry limit reached.");
-                }
-                // Optionally add a brief pause or backoff here if continually retrying immediately
+            Round currentRound = roundService.getCurrentRoundByGameId(gameId);
+            if (currentRound != null) {
+                String entryJson = objectMapper.writeValueAsString(gameEntry);
+                String existingAnswers = currentRound.getPlayerAnswers();
+                String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
+                currentRound.setPlayerAnswers(updatedAnswers);
+                roundService.saveRound(currentRound);
+                return ResponseEntity.ok("{\"message\":\"Entry added successfully.\"}");
+            } else {
+                return ResponseEntity.notFound().build();
             }
-        }
-    }
-
-    private void processEntry(Long gameId, String entryJson) {
-        Round currentRound = roundService.getCurrentRoundByGameId(gameId);
-        if (currentRound != null) {
-            String existingAnswers = currentRound.getPlayerAnswers();
-            String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
-            currentRound.setPlayerAnswers(updatedAnswers);
-            roundService.saveRound(currentRound);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"Failed to serialize entry.\"}");
         }
     }
 
