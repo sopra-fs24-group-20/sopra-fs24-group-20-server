@@ -46,6 +46,8 @@ public class Player implements Serializable {
 
     @Column(nullable = false)
     private int victories;
+    @Column(nullable = false)
+    private Boolean online;
 
     // Getters and Setters
     public Boolean getReady() {
@@ -54,6 +56,13 @@ public class Player implements Serializable {
 
     public void setReady(Boolean ready) {
         this.ready = ready;
+    }
+    public Boolean getOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
     }
 
     public String getUsername() {

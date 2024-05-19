@@ -41,6 +41,7 @@ public class PlayerService {
         player.setLevel(1);
         player.setAveragePointsPerRound(0);
         player.setVictories(0);
+        player.setOnline(true);
         return playerRepository.save(player);
     }
 
@@ -66,21 +67,30 @@ public class PlayerService {
     }
 
     public Player LogInPlayer(String username, String password) {
-        return playerRepository.findByUsername(username)
-                .filter(player -> password.equals(player.getPassword()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password Incorrect"));
+        Player player = playerRepository.findByUsername(username)
+                .filter(p -> !p.getOnline())  // Ensure player is not already logged in
+                .filter(p -> password.equals(p.getPassword()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password Incorrect or Player already online"));
+
+        player.setOnline(true); // Set player as online
+        return playerRepository.save(player); // Save the player's new online status
     }
 
     public Player LogOutPlayer(String username) {
         Player player = playerRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Player not found with username: " + username));
 
+        if (!player.getOnline()) {
+            throw new IllegalStateException("Player is not currently logged in");
+        }
+
         if (username.startsWith("Guest:")) {
             // Delete the player from the database if the username starts with "Guest:"
             playerRepository.delete(player);
             return null;  // Return null to indicate that the player has been deleted
         } else {
-            return playerRepository.save(player);
+            player.setOnline(false); // Set player as offline
+            return playerRepository.save(player); // Save the player's new offline status
         }
     }
 
