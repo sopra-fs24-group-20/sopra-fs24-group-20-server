@@ -64,7 +64,12 @@ public class WebSocketController {
         Long lobbyId = Long.parseLong(payload.get("lobbyId"));
         connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
+        submittedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         sendOnlineAndReadyCount(lobbyId);
+        if (checkallAnswers(lobbyId)){
+            String startMSG = String.format("{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}");
+            messagingTemplate.convertAndSend("/topic/answers-count", startMSG);
+        }
         if (checkAndStartGame(lobbyId)) {
             try {
                 roundService.startNewRound(lobbyId);
