@@ -22,7 +22,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 @Service
 public class RoundService {
 
@@ -159,6 +162,22 @@ public class RoundService {
                 Integer roundScore = (Integer) details.get("score");
                 gamePoints.merge(username, roundScore, Integer::sum);
             });
+        });
+        gamePoints.keySet().forEach(username -> {
+            Player player = playerRepository.findByUsername(username) .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
+            int pointsToAdd = gamePoints.get(username);
+
+            player.setRoundsPlayed(player.getRoundsPlayed() + 1);  // Increment rounds first
+            if (player.getRoundsPlayed() > 0) {
+                player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
+                double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
+                double roundedAverage = Math.round(average * 100) / 100.0;
+                player.setAveragePointsPerRound(roundedAverage);
+                player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
+            } else {
+                player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
+            }
+            savePlayer(player);  // Save the player with updated stats
         });
 
         // Serialize the updated game points and save back to the game entity
