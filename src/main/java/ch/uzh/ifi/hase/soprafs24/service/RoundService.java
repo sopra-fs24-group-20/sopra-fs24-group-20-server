@@ -23,6 +23,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus.ONGOING;
+
 @Service
 public class RoundService {
 
@@ -49,7 +52,7 @@ public class RoundService {
             lobby.setGame(game);
             gameRepository.save(game);
         }
-
+        lobby.setLobbyStatus(ONGOING);
         Round newRound = new Round();
         newRound.setGame(game);
         char roundLetter = generateRandomLetter(lobby.getExcludedChars());
@@ -59,6 +62,7 @@ public class RoundService {
         newRound.setLetterPosition(determineLetterPosition(lobby.getGameMode()));
 
         game.getRounds().add(newRound);  // Add new round to the list of rounds in the game
+        lobbyRepository.save(lobby);
         roundRepository.save(newRound);
         gameRepository.save(game);  // Save changes to the game
     }
