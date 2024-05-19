@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import static ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus.ONGOING;
 
@@ -139,6 +140,8 @@ public class RoundService {
 
         Game currentGame = currentGameOptional.get();
 
+        Lobby lobby = currentGame.getLobby();
+
         // Assume no round found exception handling here
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
@@ -165,6 +168,36 @@ public class RoundService {
                 gamePoints.merge(username, roundScore, Integer::sum);
             });
         });
+        gamePoints.keySet().forEach(username -> {
+            Player player = playerRepository.findByUsername(username) .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
+            int pointsToAdd = gamePoints.get(username);
+
+            player.setRoundsPlayed(player.getRoundsPlayed() + 1);  // Increment rounds first
+            if (player.getRoundsPlayed() > 0) {
+                player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
+                double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
+                double roundedAverage = Math.round(average * 100) / 100.0;
+                player.setAveragePointsPerRound(roundedAverage);
+                player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
+            } else {
+                player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
+            }
+
+            savePlayer(player);  // Save the player with updated stats
+        });
+        if (lobby.getRounds() == currentGame.getRounds().size()) {
+            Optional<String> userWithHighestScore = gamePoints.entrySet()
+                    .stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey);
+
+            userWithHighestScore.ifPresent(username -> {
+                Player player = playerRepository.findByUsername(username) .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
+                player.setVictories(player.getVictories() + 1);
+                savePlayer(player);  // Save the player with updated stats
+            });
+        }
+
 
         // Serialize the updated game points and save back to the game entity
         String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
