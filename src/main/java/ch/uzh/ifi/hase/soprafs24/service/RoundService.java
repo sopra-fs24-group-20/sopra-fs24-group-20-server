@@ -133,23 +133,17 @@ public class RoundService {
     //sum up the scores from the function below
     @Transactional
     public Map<String, Integer> calculateLeaderboard(Long lobbyId) throws Exception {
-        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
-        if (optionalLobby.isEmpty()) {
-            throw new RuntimeException("No current lobby for lobby ID: " + lobbyId);
-        }
-
-        Lobby lobby = optionalLobby.get();
+        Lobby lobby = lobbyRepository.findById(lobbyId)
+                .orElseThrow(() -> new RuntimeException("No current lobby for lobby ID: " + lobbyId));
 
         Game currentGame = lobby.getGame();
         long gameId = currentGame.getId();
 
-        // Assume no round found exception handling here
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
 
-        // Deserialize game points
         String existingGamePointsJson = currentGame.getGamePoints();
         Map<String, Integer> gamePoints;
         if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
@@ -158,54 +152,62 @@ public class RoundService {
             gamePoints = new HashMap<>();
         }
 
-        // Deserialize scores from the current round
-        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = objectMapper.readValue(currentRound.getRoundPoints(),
+        String roundPointsJson = currentRound.getRoundPoints();
+        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = objectMapper.readValue(roundPointsJson,
                 new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
 
-        // Merge current round scores into game points
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
                 Integer roundScore = (Integer) details.get("score");
                 gamePoints.merge(username, roundScore, Integer::sum);
             });
         });
+
         if (lobby.getRounds() == currentGame.getRounds().size()) {
             gamePoints.keySet().forEach(username -> {
-                Player player = playerRepository.findByUsername(username) .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
-                int pointsToAdd = gamePoints.get(username);
+                try {
+                    Player player = playerRepository.findByUsername(username)
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
+                    int pointsToAdd = gamePoints.get(username);
 
-                player.setRoundsPlayed(player.getRoundsPlayed() + currentGame.getRounds().size());  // Increment rounds first
-                if (player.getRoundsPlayed() > 0) {
-                    player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
-                    double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
-                    double roundedAverage = Math.round(average * 100) / 100.0;
-                    player.setAveragePointsPerRound(roundedAverage);
-                    player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
-                } else {
-                    player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
+                    player.setRoundsPlayed(player.getRoundsPlayed() + currentGame.getRounds().size());
+                    if (player.getRoundsPlayed() > 0) {
+                        player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
+                        double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
+                        double roundedAverage = Math.round(average * 100) / 100.0;
+                        player.setAveragePointsPerRound(roundedAverage);
+                        player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
+                    } else {
+                        player.setAveragePointsPerRound(0.0);
+                    }
+
+                    savePlayer(player);
+                } catch (Exception e) {
+                    System.err.println("Failed to update player " + username + ": " + e.getMessage());
                 }
-
-                savePlayer(player);  // Save the player with updated stats
             });
+
             Optional<String> userWithHighestScore = gamePoints.entrySet()
                     .stream()
                     .max(Map.Entry.comparingByValue())
                     .map(Map.Entry::getKey);
 
             userWithHighestScore.ifPresent(username -> {
-                Player player = playerRepository.findByUsername(username) .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
-                player.setVictories(player.getVictories() + 1);
-                savePlayer(player);  // Save the player with updated stats
+                try {
+                    Player player = playerRepository.findByUsername(username)
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
+                    player.setVictories(player.getVictories() + 1);
+                    savePlayer(player);
+                } catch (Exception e) {
+                    System.err.println("Failed to update victories for player " + username + ": " + e.getMessage());
+                }
             });
         }
 
-
-        // Serialize the updated game points and save back to the game entity
         String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
         currentGame.setGamePoints(updatedGamePointsJson);
         gameRepository.save(currentGame);
 
-        // Sort the gamePoints by value in descending order and return
         return gamePoints.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .collect(Collectors.toMap(
