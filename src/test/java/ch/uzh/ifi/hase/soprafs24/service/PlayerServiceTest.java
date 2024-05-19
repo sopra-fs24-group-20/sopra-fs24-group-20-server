@@ -90,6 +90,7 @@ class PlayerServiceTest {
         String username = "Guest:12345";
         Player mockPlayer = new Player();
         mockPlayer.setUsername(username);
+        mockPlayer.setOnline(true);
 
         when(playerRepository.findByUsername(username)).thenReturn(Optional.of(mockPlayer));
         doNothing().when(playerRepository).delete(mockPlayer);
@@ -155,8 +156,10 @@ class PlayerServiceTest {
         Player validPlayer = new Player();
         validPlayer.setUsername(username);
         validPlayer.setPassword(password);
+        validPlayer.setOnline(false);  // Ensure player is not already online
 
         when(playerRepository.findByUsername(username)).thenReturn(Optional.of(validPlayer));
+        when(playerRepository.save(any(Player.class))).thenReturn(validPlayer);  // Mock the save operation
 
         // Act
         Player loggedInPlayer = playerService.LogInPlayer(username, password);
@@ -164,7 +167,9 @@ class PlayerServiceTest {
         // Assert
         assertNotNull(loggedInPlayer, "Logged in player should not be null");
         assertEquals(username, loggedInPlayer.getUsername(), "Logged in player should have the correct username");
+        assertTrue(loggedInPlayer.getOnline(), "Logged in player should be marked as online");
     }
+
 
     @Test
     void logInPlayer_ShouldThrowUnauthorizedExceptionWhenCredentialsDoNotMatch() {
