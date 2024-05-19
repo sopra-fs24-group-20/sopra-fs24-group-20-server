@@ -126,8 +126,7 @@ public class WebSocketController {
 
         answersSubmitted.add(username);
         if (checkallAnswers(lobbyId)) {
-            submittedPlayers.remove(lobbyId);
-            return String.format("{\"command\":\"done\", \"lobbyId\":%d}", lobbyId);
+            return "{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}";
         } else {
             return String.format("{\"error\":\"Not all connected players are ready\", \"lobbyId\":%d}", lobbyId);
         }
@@ -137,7 +136,11 @@ public class WebSocketController {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> answersSubmitted = submittedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         // Start the game if all connected players are ready, or if there is only one player who is ready.
-        return lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1);
+        if (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)){
+            submittedPlayers.remove(lobbyId);
+            return true;
+        }
+        return false;
     }
 
 
@@ -211,11 +214,17 @@ public class WebSocketController {
         }
     }
 
-    @MessageMapping("/submit-votes")
+    /*@MessageMapping("/submit-votes")
     @SendTo("/topic/final-scores")
-    public String handleVoteSubmission(@Payload Map<String, Object> payload) throws Exception {
-        Long lobbyId = Long.valueOf(payload.get("lobbyId").toString());
-        String username = payload.get("username").toString();
+    public String handleVoteSubmission(@Payload Map<String, String> payload) throws Exception {
+        String username = payload.get("username");
+        Long lobbyId;
+        try {
+            lobbyId = Long.parseLong(payload.get("lobbyId"));
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing lobby ID from: " + payload.get("lobbyId") + ", Error: " + e.getMessage());
+            return "{\"error\":\"Invalid lobby ID\"}";
+        }
         Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
         if (optionalLobby.isEmpty()) {
             throw new RuntimeException("No current lobby for lobby ID: " + lobbyId);
@@ -239,12 +248,12 @@ public class WebSocketController {
             //messagingTemplate.convertAndSend("/topic/vote-updates", voteUpdates);
             return String.format("{\"error\":\"Not all connected players have finished voting\", \"lobbyId\":%d}", lobbyId);
         }
-    }
+    }*/
 
-    @MessageMapping("/leaderboard")
+    /*@MessageMapping("/leaderboard")
     @SendTo("/topic/leaderboard")
     public String getLeaderboard(@Payload Map<String, String> payload) {
         Long lobbyId = Long.parseLong(payload.get("lobbyId"));
         return String.format("{\"command\":\"Leaderboard\", \"lobbyId\":%d}", lobbyId);
-    }
+    }*/
 }
