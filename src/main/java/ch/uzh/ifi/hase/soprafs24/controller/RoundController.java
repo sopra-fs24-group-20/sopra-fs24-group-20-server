@@ -41,7 +41,7 @@ public class RoundController {
     }
 
     @PostMapping("/rounds/{gameId}/entries")
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
         try {
             Round currentRound = roundService.getCurrentRoundByGameId(gameId);
