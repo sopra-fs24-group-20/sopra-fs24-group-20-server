@@ -133,70 +133,45 @@ public class RoundService {
 
     //sum up the scores from the function below
     @Transactional
-    public Map<String, Integer> calculateLeaderboard(Long lobbyId) throws Exception {
-        // Fetch the Lobby or throw a more informative exception if not found
-        Lobby lobby = lobbyRepository.findById(lobbyId).orElseThrow(() ->
-                new IllegalArgumentException("Lobby with ID " + lobbyId + " does not exist."));
-
-        Game currentGame = lobby.getGame();
-        if (currentGame == null) {
-            throw new IllegalStateException("Lobby with ID " + lobbyId + " has no associated game.");
+    public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
+        Optional<Game> currentGameOptional = gameRepository.findById(gameId);
+        if (currentGameOptional.isEmpty()) {
+            throw new RuntimeException("No current game for game ID: " + gameId);
         }
-        long gameId = currentGame.getId();
 
-        // Handle the possibility of no current round more gracefully
+        Game currentGame = currentGameOptional.get();
+
+        // Assume no round found exception handling here
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
-            throw new IllegalStateException("No current round found for game ID " + gameId);
+            throw new RuntimeException("No current round found for game ID: " + gameId);
         }
 
-        // Safely deserialize game points
+        // Deserialize game points
         String existingGamePointsJson = currentGame.getGamePoints();
-        Map<String, Integer> gamePoints = new HashMap<>();
+        Map<String, Integer> gamePoints;
         if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
-            try {
-                gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {});
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Error parsing game points JSON.", e);
-            }
+            gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {});
+        } else {
+            gamePoints = new HashMap<>();
         }
 
-        // Deserialize scores from the current round safely
-        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers;
-        try {
-            scoresAndAnswers = objectMapper.readValue(currentRound.getRoundPoints(),
-                    new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Error parsing round points JSON.", e);
-        }
+        // Deserialize scores from the current round
+        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = objectMapper.readValue(currentRound.getRoundPoints(),
+                new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
 
         // Merge current round scores into game points
-        Map<String, Integer> finalGamePoints = gamePoints;
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
                 Integer roundScore = (Integer) details.get("score");
-                finalGamePoints.merge(username, roundScore, Integer::sum);
+                gamePoints.merge(username, roundScore, Integer::sum);
             });
         });
 
-        // Updating player stats and handling not found scenario
-        if (lobby.getRounds() == currentGame.getRounds().size()) {
-            for (String username : gamePoints.keySet()) {
-                Player player = playerRepository.findByUsername(username).orElseThrow(() ->
-                        new IllegalArgumentException("Player with username " + username + " not found."));
-                int pointsToAdd = gamePoints.get(username);
-                updatePlayerStats(player, pointsToAdd, currentGame.getRounds().size());
-            }
-        }
-
         // Serialize the updated game points and save back to the game entity
-        try {
-            String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
-            currentGame.setGamePoints(updatedGamePointsJson);
-            gameRepository.save(currentGame);
-        } catch (IOException e) {
-            throw new IllegalStateException("Error serializing game points JSON.", e);
-        }
+        String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
+        currentGame.setGamePoints(updatedGamePointsJson);
+        gameRepository.save(currentGame);
 
         // Sort the gamePoints by value in descending order and return
         return gamePoints.entrySet().stream()
