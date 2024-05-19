@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
@@ -13,6 +14,8 @@ import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
@@ -35,18 +38,19 @@ public class RoundController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    private final ReentrantLock lock = new ReentrantLock();
+
     @PostMapping("/rounds/{gameId}/entries")
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
+        lock.lock();
         try {
             Round currentRound = roundService.getCurrentRoundByGameId(gameId);
             if (currentRound != null) {
-                synchronized (currentRound) {
-                    String entryJson = objectMapper.writeValueAsString(gameEntry);
-                    String existingAnswers = currentRound.getPlayerAnswers();
-                    String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
-                    currentRound.setPlayerAnswers(updatedAnswers);
-                    roundService.saveRound(currentRound);
-                }
+                String entryJson = objectMapper.writeValueAsString(gameEntry);
+                String existingAnswers = currentRound.getPlayerAnswers();
+                String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
+                currentRound.setPlayerAnswers(updatedAnswers);
+                roundService.saveRound(currentRound);
                 return ResponseEntity.ok("{\"message\":\"Entry added successfully.\"}");
             } else {
                 return ResponseEntity.notFound().build();
@@ -54,6 +58,8 @@ public class RoundController {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"Failed to serialize entry.\"}");
+        } finally {
+            lock.unlock();
         }
     }
 
