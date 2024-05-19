@@ -1,15 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
-import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.CannotAcquireLockException;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +24,6 @@ public class RoundController {
     private final RoundService roundService;
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private RoundRepository roundRepository;
     public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
@@ -47,16 +41,16 @@ public class RoundController {
     }
 
     @PostMapping("/rounds/{gameId}/entries")
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
         try {
-            Round currentRound = roundRepository.findAndLockById(gameId);
+            Round currentRound = roundService.getCurrentRoundByGameId(gameId);
             if (currentRound != null) {
                 String entryJson = objectMapper.writeValueAsString(gameEntry);
                 String existingAnswers = currentRound.getPlayerAnswers();
                 String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
                 currentRound.setPlayerAnswers(updatedAnswers);
-                roundRepository.save(currentRound);
+                roundService.saveRound(currentRound);
                 return ResponseEntity.ok("{\"message\":\"Entry added successfully.\"}");
             } else {
                 return ResponseEntity.notFound().build();
@@ -64,11 +58,9 @@ public class RoundController {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"Failed to serialize entry.\"}");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\":\"A concurrency error occurred, please retry.\"}");
         }
     }
+
     @GetMapping("/rounds/letters/{gameId}")
     public ResponseEntity<Character> getLetter(@PathVariable Long gameId) {
         char currentLetter = roundService.getCurrentRoundLetter(gameId);
