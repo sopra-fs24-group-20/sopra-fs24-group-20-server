@@ -168,24 +168,24 @@ public class RoundService {
                 gamePoints.merge(username, roundScore, Integer::sum);
             });
         });
-        gamePoints.keySet().forEach(username -> {
-            Player player = playerRepository.findByUsername(username) .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
-            int pointsToAdd = gamePoints.get(username);
-
-            player.setRoundsPlayed(player.getRoundsPlayed() + 1);  // Increment rounds first
-            if (player.getRoundsPlayed() > 0) {
-                player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
-                double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
-                double roundedAverage = Math.round(average * 100) / 100.0;
-                player.setAveragePointsPerRound(roundedAverage);
-                player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
-            } else {
-                player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
-            }
-
-            savePlayer(player);  // Save the player with updated stats
-        });
         if (lobby.getRounds() == currentGame.getRounds().size()) {
+            gamePoints.keySet().forEach(username -> {
+                Player player = playerRepository.findByUsername(username) .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
+                int pointsToAdd = gamePoints.get(username);
+
+                player.setRoundsPlayed(player.getRoundsPlayed() + currentGame.getRounds().size());  // Increment rounds first
+                if (player.getRoundsPlayed() > 0) {
+                    player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
+                    double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
+                    double roundedAverage = Math.round(average * 100) / 100.0;
+                    player.setAveragePointsPerRound(roundedAverage);
+                    player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
+                } else {
+                    player.setAveragePointsPerRound(0.0); // Just in case, but this case should logically not happen here
+                }
+
+                savePlayer(player);  // Save the player with updated stats
+            });
             Optional<String> userWithHighestScore = gamePoints.entrySet()
                     .stream()
                     .max(Map.Entry.comparingByValue())
