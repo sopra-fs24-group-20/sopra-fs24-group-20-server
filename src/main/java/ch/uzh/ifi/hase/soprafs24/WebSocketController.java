@@ -65,6 +65,19 @@ public class WebSocketController {
         connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         sendOnlineAndReadyCount(lobbyId);
+        if (checkAndStartGame(lobbyId)) {
+            try {
+                roundService.startNewRound(lobbyId);
+                String startMSG = String.format("{\"command\":\"start\", \"lobbyId\":" + lobbyId + "}");
+                messagingTemplate.convertAndSend("/topic/ready-count", startMSG);
+            } catch (Exception e) {
+                System.out.println("Failed to start new round for lobby " + lobbyId + ": " + e.getMessage());
+                String erroroMSG=String.format( "{\"error\":\"Failed to start game for lobby " + lobbyId + ": " + e.getMessage() + "\"}");
+                messagingTemplate.convertAndSend("/topic/ready-count", erroroMSG);
+            }
+        } else {
+            sendOnlineAndReadyCount(lobbyId);
+        }
     }
 
     @MessageMapping("/ready-up")
