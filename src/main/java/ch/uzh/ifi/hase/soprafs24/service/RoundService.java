@@ -172,7 +172,7 @@ public class RoundService {
         String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
         currentGame.setGamePoints(updatedGamePointsJson);
         gameRepository.save(currentGame);
-
+        updatePlayerStatsAndCheckVictories(gameId, gamePoints);
         // Sort the gamePoints by value in descending order and return
         return gamePoints.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
@@ -184,16 +184,22 @@ public class RoundService {
                 ));
     }
 
-    private void updatePlayerStats(Player player, int pointsToAdd, int roundsPlayed) {
-        player.setRoundsPlayed(player.getRoundsPlayed() + roundsPlayed);
-        player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
-        double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
-        double roundedAverage = Math.round(average * 100) / 100.0;
-        player.setAveragePointsPerRound(roundedAverage);
-        player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
-        playerRepository.save(player);
-    }
+    private void updatePlayerStatsAndCheckVictories(Long gameId, Map<String, Integer> gamePoints) throws Exception {
+        int highestScore = gamePoints.values().stream().max(Integer::compare).orElse(0);
 
+        gamePoints.forEach((username, points) -> {
+            Optional<Player> playerOpt = playerRepository.findByUsername(username);
+            playerOpt.ifPresent(player -> {
+                player.setTotalPoints(player.getTotalPoints() + points);
+                player.setRoundsPlayed(player.getRoundsPlayed() + 1);
+                player.setAveragePointsPerRound((double) player.getTotalPoints() / player.getRoundsPlayed());
+                if (points == highestScore) {
+                    player.setVictories(player.getVictories() + 1);
+                }
+                playerRepository.save(player);
+            });
+        });
+    }
 
     @Transactional
     public Map<String, Map<String, Map<String, Object>>> calculateFinalScores(Long gameId) {
