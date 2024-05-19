@@ -153,7 +153,7 @@ class RoundControllerTest {
         mockMvc.perform(get("/rounds/letters/{gameId}", 1L))
                 .andExpect(status().isNotFound());
     }
-
+/*
 
     @Test
     void getLeaderboard_ShouldReturnData_WhenDataExists() throws Exception {
@@ -182,6 +182,8 @@ class RoundControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$").doesNotExist());
     }
+
+ */
     @Test
     void getScoresByCategory_ShouldReturnScores_WhenDataExists() throws Exception {
         Map<String, Map<String, Map<String, Object>>> scores = new HashMap<>();

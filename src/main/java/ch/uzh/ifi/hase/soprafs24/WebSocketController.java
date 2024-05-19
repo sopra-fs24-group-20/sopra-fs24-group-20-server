@@ -65,7 +65,12 @@ public class WebSocketController {
         Long lobbyId = Long.parseLong(payload.get("lobbyId"));
         connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
+        submittedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         sendOnlineAndReadyCount(lobbyId);
+        if (checkallAnswers(lobbyId)){
+            String startMSG = String.format("{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}");
+            messagingTemplate.convertAndSend("/topic/answers-count", startMSG);
+        }
         if (checkAndStartGame(lobbyId)) {
             try {
                 roundService.startNewRound(lobbyId);
@@ -119,7 +124,7 @@ public class WebSocketController {
 
     @MessageMapping("/answers-submitted")
     @SendTo("/topic/answers-count")
-    public String answers(@Payload Map<String, String> payload) {
+    public String answers(@Payload Map<String, String> payload) throws Exception {
         String username = payload.get("username");
         Long lobbyId;
 
@@ -140,11 +145,14 @@ public class WebSocketController {
 
         answersSubmitted.add(username);
         if (checkallAnswers(lobbyId)) {
+            roundService.calculateLeaderboard(lobbyId);
+          
             Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
             if (lobbyOptional.isPresent()) {
                 Lobby lobby = lobbyOptional.get();
                 lobby.setLobbyStatus(LobbyStatus.SETUP);
                 lobbyRepository.save(lobby);}
+          
             return "{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}";
         } else {
             return String.format("{\"error\":\"Not all connected players have submitted\", \"lobbyId\":%d}", lobbyId);
