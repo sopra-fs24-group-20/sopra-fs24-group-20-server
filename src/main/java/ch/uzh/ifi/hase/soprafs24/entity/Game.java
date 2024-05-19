@@ -34,7 +34,16 @@ public class Game implements Serializable {
     @JsonIgnore
     private List<Round> rounds = new ArrayList<>();
 
+    @Column(columnDefinition = "text")
+    private String gamePoints;  // This will store the JSON string
 
+    public String getGamePoints() {
+        return gamePoints;
+    }
+
+    public void setGamePoints(String pointsJson) {
+        this.gamePoints = pointsJson;
+    }
 
     // Getters and Setters
 
