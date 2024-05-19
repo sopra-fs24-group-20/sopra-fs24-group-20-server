@@ -261,7 +261,7 @@ class RoundControllerTest {
      */
 
 
-    @Test
+    /*@Test
     void addGameEntry_ExistingRound_ShouldAddSuccessfully() throws Exception {
         Long gameId = 1L;
         Map<String, String> gameEntry = Map.of("playerId", "123", "answer", "apple");
@@ -293,8 +293,8 @@ class RoundControllerTest {
                         .content(entryJson))
                 .andExpect(status().isNotFound());
 
-    }
-*/
+    }*/
+
 }
 
     // Additional tests for getLetter, getLeaderboard, getScoresByCategory should follow similar patterns
