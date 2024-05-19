@@ -40,11 +40,13 @@ public class RoundController {
         try {
             Round currentRound = roundService.getCurrentRoundByGameId(gameId);
             if (currentRound != null) {
-                String entryJson = objectMapper.writeValueAsString(gameEntry);
-                String existingAnswers = currentRound.getPlayerAnswers();
-                String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
-                currentRound.setPlayerAnswers(updatedAnswers);
-                roundService.saveRound(currentRound);
+                synchronized (currentRound) {
+                    String entryJson = objectMapper.writeValueAsString(gameEntry);
+                    String existingAnswers = currentRound.getPlayerAnswers();
+                    String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
+                    currentRound.setPlayerAnswers(updatedAnswers);
+                    roundService.saveRound(currentRound);
+                }
                 return ResponseEntity.ok("{\"message\":\"Entry added successfully.\"}");
             } else {
                 return ResponseEntity.notFound().build();

@@ -87,8 +87,13 @@ public class LobbyService {
         // Check if the user trying to leave is the owner
         boolean isOwnerLeaving = lobby.getLobbyOwner().getUsername().equals(username);
 
-        lobby.getPlayers().forEach(player -> player.setLobby(null));
-        playerRepository.saveAll(lobby.getPlayers());
+        lobby.getPlayers().stream()
+                .filter(player -> player.getUsername().equals(username))
+                .findFirst()
+                .ifPresent(player -> {
+                    player.setLobby(null);
+                    playerRepository.save(player);
+                });
 
         // Remove the player from the lobby
         lobby.getPlayers().removeIf(player -> player.getUsername().equals(username));
