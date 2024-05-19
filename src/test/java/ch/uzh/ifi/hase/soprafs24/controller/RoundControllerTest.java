@@ -289,8 +289,7 @@ class RoundControllerTest {
                 .andExpect(status().isNotFound());
 
     }
-*/
+    */
 }
 
     // Additional tests for getLetter, getLeaderboard, getScoresByCategory should follow similar patterns
-
