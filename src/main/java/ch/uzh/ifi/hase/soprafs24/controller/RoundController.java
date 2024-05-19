@@ -4,8 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -43,22 +46,33 @@ public class RoundController {
     @PostMapping("/rounds/{gameId}/entries")
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
-        try {
-            Round currentRound = roundService.getCurrentRoundByGameId(gameId);
-            if (currentRound != null) {
-                String entryJson = objectMapper.writeValueAsString(gameEntry);
-                String existingAnswers = currentRound.getPlayerAnswers();
-                String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
-                currentRound.setPlayerAnswers(updatedAnswers);
-                roundService.saveRound(currentRound);
-                return ResponseEntity.ok("{\"message\":\"Entry added successfully.\"}");
-            } else {
-                return ResponseEntity.notFound().build();
+        int maxRetries = 6;
+        for (int attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                Round currentRound = roundService.getCurrentRoundByGameId(gameId);
+                if (currentRound != null) {
+                    String entryJson = objectMapper.writeValueAsString(gameEntry);
+                    String existingAnswers = currentRound.getPlayerAnswers();
+                    String updatedAnswers = existingAnswers == null ? entryJson : existingAnswers + "," + entryJson;
+                    currentRound.setPlayerAnswers(updatedAnswers);
+                    roundService.saveRound(currentRound);
+                    return ResponseEntity.ok("{\"message\":\"Entry added successfully.\"}");
+                } else {
+                    return ResponseEntity.notFound().build();
+                }
+            } catch (
+                     ConcurrencyFailureException e) {
+                if (attempt == maxRetries - 1) {
+                    e.printStackTrace();
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\":\"Concurrency error occurred, please retry.\"}");
+                }
+                // Optionally add a brief pause or backoff here if continually retrying immediately
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"Failed to serialize entry.\"}");
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"Failed to serialize entry.\"}");
         }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\":\"Unhandled error.\"}");
     }
 
     @GetMapping("/rounds/letters/{gameId}")
