@@ -148,7 +148,7 @@ public class WebSocketController {
             try {
                 roundService.calculateLeaderboard(lobbyId);
             } catch (Exception e) {
-                return ("Error calculating leaderboard for lobby " + lobbyId + ": " + e.getMessage());
+                System.out.println("Error calculating leaderboard for lobby " + lobbyId + ": " + e.getMessage());
             }
             Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
             if (lobbyOptional.isPresent()) {

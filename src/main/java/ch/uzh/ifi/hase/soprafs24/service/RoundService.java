@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -133,81 +134,71 @@ public class RoundService {
     //sum up the scores from the function below
     @Transactional
     public Map<String, Integer> calculateLeaderboard(Long lobbyId) throws Exception {
-        Lobby lobby = lobbyRepository.findById(lobbyId)
-                .orElseThrow(() -> new RuntimeException("No current lobby for lobby ID: " + lobbyId));
+        // Fetch the Lobby or throw a more informative exception if not found
+        Lobby lobby = lobbyRepository.findById(lobbyId).orElseThrow(() ->
+                new IllegalArgumentException("Lobby with ID " + lobbyId + " does not exist."));
 
         Game currentGame = lobby.getGame();
+        if (currentGame == null) {
+            throw new IllegalStateException("Lobby with ID " + lobbyId + " has no associated game.");
+        }
         long gameId = currentGame.getId();
 
+        // Handle the possibility of no current round more gracefully
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
-            throw new RuntimeException("No current round found for game ID: " + gameId);
+            throw new IllegalStateException("No current round found for game ID " + gameId);
         }
 
+        // Safely deserialize game points
         String existingGamePointsJson = currentGame.getGamePoints();
-        Map<String, Integer> gamePoints;
+        Map<String, Integer> gamePoints = new HashMap<>();
         if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
-            gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {});
-        } else {
-            gamePoints = new HashMap<>();
+            try {
+                gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {});
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Error parsing game points JSON.", e);
+            }
         }
 
-        String roundPointsJson = currentRound.getRoundPoints();
-        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers = objectMapper.readValue(roundPointsJson,
-                new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
+        // Deserialize scores from the current round safely
+        Map<String, Map<String, Map<String, Object>>> scoresAndAnswers;
+        try {
+            scoresAndAnswers = objectMapper.readValue(currentRound.getRoundPoints(),
+                    new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Error parsing round points JSON.", e);
+        }
 
+        // Merge current round scores into game points
+        Map<String, Integer> finalGamePoints = gamePoints;
         scoresAndAnswers.forEach((category, userScores) -> {
             userScores.forEach((username, details) -> {
                 Integer roundScore = (Integer) details.get("score");
-                gamePoints.merge(username, roundScore, Integer::sum);
+                finalGamePoints.merge(username, roundScore, Integer::sum);
             });
         });
 
+        // Updating player stats and handling not found scenario
         if (lobby.getRounds() == currentGame.getRounds().size()) {
-            gamePoints.keySet().forEach(username -> {
-                try {
-                    Player player = playerRepository.findByUsername(username)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
-                    int pointsToAdd = gamePoints.get(username);
-
-                    player.setRoundsPlayed(player.getRoundsPlayed() + currentGame.getRounds().size());
-                    if (player.getRoundsPlayed() > 0) {
-                        player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
-                        double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
-                        double roundedAverage = Math.round(average * 100) / 100.0;
-                        player.setAveragePointsPerRound(roundedAverage);
-                        player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
-                    } else {
-                        player.setAveragePointsPerRound(0.0);
-                    }
-
-                    savePlayer(player);
-                } catch (Exception e) {
-                    System.err.println("Failed to update player " + username + ": " + e.getMessage());
-                }
-            });
-
-            Optional<String> userWithHighestScore = gamePoints.entrySet()
-                    .stream()
-                    .max(Map.Entry.comparingByValue())
-                    .map(Map.Entry::getKey);
-
-            userWithHighestScore.ifPresent(username -> {
-                try {
-                    Player player = playerRepository.findByUsername(username)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found"));
-                    player.setVictories(player.getVictories() + 1);
-                    savePlayer(player);
-                } catch (Exception e) {
-                    System.err.println("Failed to update victories for player " + username + ": " + e.getMessage());
-                }
-            });
+            for (String username : gamePoints.keySet()) {
+                Player player = playerRepository.findByUsername(username).orElseThrow(() ->
+                        new IllegalArgumentException("Player with username " + username + " not found."));
+                int pointsToAdd = gamePoints.get(username);
+                updatePlayerStats(player, pointsToAdd, currentGame.getRounds().size());
+            }
         }
 
-        String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
-        currentGame.setGamePoints(updatedGamePointsJson);
-        gameRepository.save(currentGame);
+        // Serialize the updated game points and save back to the game entity
+        try {
+            String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
+            currentGame.setGamePoints(updatedGamePointsJson);
+            gameRepository.save(currentGame);
+        } catch (IOException e) {
+            throw new IllegalStateException("Error serializing game points JSON.", e);
+        }
 
+        // Sort the gamePoints by value in descending order and return
         return gamePoints.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .collect(Collectors.toMap(
@@ -217,6 +208,17 @@ public class RoundService {
                         LinkedHashMap::new
                 ));
     }
+
+    private void updatePlayerStats(Player player, int pointsToAdd, int roundsPlayed) {
+        player.setRoundsPlayed(player.getRoundsPlayed() + roundsPlayed);
+        player.setTotalPoints(player.getTotalPoints() + pointsToAdd);
+        double average = (double) player.getTotalPoints() / player.getRoundsPlayed();
+        double roundedAverage = Math.round(average * 100) / 100.0;
+        player.setAveragePointsPerRound(roundedAverage);
+        player.setLevel(playerService.calculateLevel(player.getTotalPoints()));
+        playerRepository.save(player);
+    }
+
 
     @Transactional
     public Map<String, Map<String, Map<String, Object>>> calculateFinalScores(Long gameId) {
