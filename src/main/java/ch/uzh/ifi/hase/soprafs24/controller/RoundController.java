@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
@@ -13,6 +15,8 @@ import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
@@ -35,7 +39,9 @@ public class RoundController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
     @PostMapping("/rounds/{gameId}/entries")
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ResponseEntity<String> addGameEntry(@PathVariable Long gameId, @RequestBody Map<String, String> gameEntry) {
         try {
             Round currentRound = roundService.getCurrentRoundByGameId(gameId);

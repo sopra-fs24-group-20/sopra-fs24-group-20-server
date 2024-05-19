@@ -12,6 +12,18 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
+@EnableAsync
+public class AsyncConfig {
+
+    @Bean(name = "taskExecutor")
+    public Executor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(6);
+        executor.setMaxPoolSize(6);
+        executor.setQueueCapacity(100);
+        executor.initialize();
+        return executor;
+    }
 @EnableJpaRepositories(
         basePackages = "ch.uzh.ifi.hase.soprafs24.repository", // Adjust to your actual repository package
         entityManagerFactoryRef = "entityManagerFactory",

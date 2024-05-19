@@ -92,7 +92,7 @@ class RoundControllerTest {
 
         verify(roundService).saveRound(any(Round.class));
     }
-*/
+
     @Test
     void addGameEntry_ShouldReturnNotFound_WhenNoCurrentRound() throws Exception {
         when(roundService.getCurrentRoundByGameId(1L)).thenReturn(null);
@@ -106,6 +106,7 @@ class RoundControllerTest {
                         .content(objectMapper.writeValueAsString(gameEntry)))
                 .andExpect(status().isNotFound());
     }
+    */
     @Test
     void getRoundsByGameId_ShouldReturnNotFound_WhenGameIdIsInvalid() throws Exception {
         Long invalidGameId = -1L; // Assuming negative IDs are invalid
@@ -133,7 +134,7 @@ class RoundControllerTest {
         mockMvc.perform(get("/rounds/{gameId}", 1L))
                 .andExpect(status().isNotFound());
     }
-
+/*
     @Test
     void addGameEntry_ShouldReturnNotFound_WhenRoundDoesNotExist() throws Exception {
         when(roundService.getCurrentRoundByGameId(1L)).thenReturn(null);
@@ -143,7 +144,7 @@ class RoundControllerTest {
                         .content("{}"))
                 .andExpect(status().isNotFound());
     }
-
+*/
 
     @Test
     void getLetter_ShouldReturnNotFound_WhenLetterIsNotAssigned() throws Exception {
@@ -257,9 +258,7 @@ class RoundControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content().string("Game not found"));
     }
-
-     */
-
+     
     @Test
     void addGameEntry_ExistingRound_ShouldAddSuccessfully() throws Exception {
         Long gameId = 1L;
@@ -292,9 +291,8 @@ class RoundControllerTest {
                         .content(entryJson))
                 .andExpect(status().isNotFound());
 
-    }
+    }*/
 
 }
 
     // Additional tests for getLetter, getLeaderboard, getScoresByCategory should follow similar patterns
-

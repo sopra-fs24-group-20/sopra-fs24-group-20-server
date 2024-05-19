@@ -23,6 +23,7 @@ public class WebSocketController {
 
     public final Map<Long, Set<String>> readyPlayers = new ConcurrentHashMap<>();
     public final Map<Long, Set<String>> connectedPlayers = new ConcurrentHashMap<>();
+    public final Map<Long, Set<String>> submittedPlayers = new ConcurrentHashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final RoundService roundService;
     private final RoundRepository roundRepository;
@@ -63,7 +64,25 @@ public class WebSocketController {
         Long lobbyId = Long.parseLong(payload.get("lobbyId"));
         connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
+        submittedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         sendOnlineAndReadyCount(lobbyId);
+        if (checkallAnswers(lobbyId)){
+            String startMSG = String.format("{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}");
+            messagingTemplate.convertAndSend("/topic/answers-count", startMSG);
+        }
+        if (checkAndStartGame(lobbyId)) {
+            try {
+                roundService.startNewRound(lobbyId);
+                String startMSG = String.format("{\"command\":\"start\", \"lobbyId\":" + lobbyId + "}");
+                messagingTemplate.convertAndSend("/topic/ready-count", startMSG);
+            } catch (Exception e) {
+                System.out.println("Failed to start new round for lobby " + lobbyId + ": " + e.getMessage());
+                String erroroMSG=String.format( "{\"error\":\"Failed to start game for lobby " + lobbyId + ": " + e.getMessage() + "\"}");
+                messagingTemplate.convertAndSend("/topic/ready-count", erroroMSG);
+            }
+        } else {
+            sendOnlineAndReadyCount(lobbyId);
+        }
     }
 
     @MessageMapping("/ready-up")
@@ -102,12 +121,54 @@ public class WebSocketController {
     }
 
 
+    @MessageMapping("/answers-submitted")
+    @SendTo("/topic/answers-count")
+    public String answers(@Payload Map<String, String> payload) {
+        String username = payload.get("username");
+        Long lobbyId;
+
+        try {
+            lobbyId = Long.parseLong(payload.get("lobbyId"));
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing lobby ID from: " + payload.get("lobbyId") + ", Error: " + e.getMessage());
+            return "{\"error\":\"Invalid lobby ID\"}";
+        }
+
+        Set<String> lobbyConnected = connectedPlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
+        Set<String> answersSubmitted = submittedPlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
+
+        if (!lobbyConnected.contains(username)) {
+            System.out.println("User " + username + " not found in lobby " + lobbyId);
+            return "{\"error\":\"User " + username + " not found in lobby " + lobbyId + "\"}";
+        }
+
+        answersSubmitted.add(username);
+        if (checkallAnswers(lobbyId)) {
+            return "{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}";
+        } else {
+            return String.format("{\"error\":\"Not all connected players are ready\", \"lobbyId\":%d}", lobbyId);
+        }
+    }
+
+    private Boolean checkallAnswers(Long lobbyId) {
+        Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
+        Set<String> answersSubmitted = submittedPlayers.getOrDefault(lobbyId, Collections.emptySet());
+        // Start the game if all connected players are ready, or if there is only one player who is ready.
+        if (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)){
+            submittedPlayers.remove(lobbyId);
+            return true;
+        }
+        return false;
+    }
+
+
     private Boolean checkAndStartGame(Long lobbyId) {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> lobbyReady = readyPlayers.getOrDefault(lobbyId, Collections.emptySet());
         // Start the game if all connected players are ready, or if there is only one player who is ready.
         return lobbyConnected.equals(lobbyReady) || (lobbyConnected.size() == 1 && lobbyReady.size() == 1);
     }
+
 
     private String sendOnlineAndReadyCount(Long lobbyId) {
         int onlineCount = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).size();
@@ -171,10 +232,17 @@ public class WebSocketController {
         }
     }
 
-    @MessageMapping("/submit-votes")
-    public void handleVoteSubmission(@Payload Map<String, Object> payload) throws Exception {
-        Long lobbyId = Long.valueOf(payload.get("lobbyId").toString());
-        String username = payload.get("username").toString();
+    /*@MessageMapping("/submit-votes")
+    @SendTo("/topic/final-scores")
+    public String handleVoteSubmission(@Payload Map<String, String> payload) throws Exception {
+        String username = payload.get("username");
+        Long lobbyId;
+        try {
+            lobbyId = Long.parseLong(payload.get("lobbyId"));
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing lobby ID from: " + payload.get("lobbyId") + ", Error: " + e.getMessage());
+            return "{\"error\":\"Invalid lobby ID\"}";
+        }
         Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
         if (optionalLobby.isEmpty()) {
             throw new RuntimeException("No current lobby for lobby ID: " + lobbyId);
@@ -190,18 +258,20 @@ public class WebSocketController {
         // Check if all players have submitted their votes
         if (roundService.areAllVotesSubmitted(gameId)) {
             // All votes submitted, proceed to calculate final scores
-            Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(lobbyId);
-            messagingTemplate.convertAndSend("/topic/final-scores", finalScores);
+            // Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(lobbyId);
+            // messagingTemplate.convertAndSend("/topic/final-scores", finalScores);
+            return String.format("{\"command\":\"final\", \"lobbyId\":%d}", lobbyId);
         } else {
             // Not all votes are in, send an update to clients
-            messagingTemplate.convertAndSend("/topic/vote-updates", voteUpdates);
+            //messagingTemplate.convertAndSend("/topic/vote-updates", voteUpdates);
+            return String.format("{\"error\":\"Not all connected players have finished voting\", \"lobbyId\":%d}", lobbyId);
         }
-    }
+    }*/
 
-    @MessageMapping("/leaderboard")
+    /*@MessageMapping("/leaderboard")
     @SendTo("/topic/leaderboard")
     public String getLeaderboard(@Payload Map<String, String> payload) {
         Long lobbyId = Long.parseLong(payload.get("lobbyId"));
         return String.format("{\"command\":\"Leaderboard\", \"lobbyId\":%d}", lobbyId);
-    }
+    }*/
 }
