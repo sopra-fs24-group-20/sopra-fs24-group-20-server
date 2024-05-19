@@ -123,7 +123,7 @@ public class WebSocketController {
 
     @MessageMapping("/answers-submitted")
     @SendTo("/topic/answers-count")
-    public String answers(@Payload Map<String, String> payload) {
+    public String answers(@Payload Map<String, String> payload) throws Exception {
         String username = payload.get("username");
         Long lobbyId;
 
@@ -144,6 +144,7 @@ public class WebSocketController {
 
         answersSubmitted.add(username);
         if (checkallAnswers(lobbyId)) {
+            roundService.calculateLeaderboard(lobbyId);
             return "{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}";
         } else {
             return String.format("{\"error\":\"Not all connected players are ready\", \"lobbyId\":%d}", lobbyId);

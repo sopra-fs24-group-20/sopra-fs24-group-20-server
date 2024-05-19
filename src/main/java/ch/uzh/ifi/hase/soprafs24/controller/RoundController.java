@@ -1,7 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,10 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -24,6 +27,8 @@ public class RoundController {
     private final RoundService roundService;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private GameRepository gameRepository;
     public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
@@ -81,15 +86,34 @@ public class RoundController {
     }
     @GetMapping("/rounds/leaderboard/{gameId}")
     public ResponseEntity<Map<String, Integer>> getLeaderboard(@PathVariable Long gameId) {
-        try {
-            Map<String, Integer> leaderboard = roundService.calculateLeaderboard(gameId);
-            return ResponseEntity.ok(leaderboard);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
+        if (optionalGame.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        Game game = optionalGame.get();
+        try {
+            String existingGamePointsJson = game.getGamePoints();
+            Map<String, Integer> gamePoints;
+            if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
+                gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {
+                });
+                return ResponseEntity.ok(gamePoints.entrySet().stream()
+                        .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                (e1, e2) -> e1, // if there are duplicates, keep the existing
+                                LinkedHashMap::new
+                        )));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
     @GetMapping("/rounds/scores/{gameId}")
     public ResponseEntity<?> getScoresByCategory(@PathVariable Long gameId) {
         try {

@@ -132,15 +132,16 @@ public class RoundService {
 
     //sum up the scores from the function below
     @Transactional
-    public Map<String, Integer> calculateLeaderboard(Long gameId) throws Exception {
-        Optional<Game> currentGameOptional = gameRepository.findById(gameId);
-        if (currentGameOptional.isEmpty()) {
-            throw new RuntimeException("No current game for game ID: " + gameId);
+    public Map<String, Integer> calculateLeaderboard(Long lobbyId) throws Exception {
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        if (optionalLobby.isEmpty()) {
+            throw new RuntimeException("No current lobby for lobby ID: " + lobbyId);
         }
 
-        Game currentGame = currentGameOptional.get();
+        Lobby lobby = optionalLobby.get();
 
-        Lobby lobby = currentGame.getLobby();
+        Game currentGame = lobby.getGame();
+        long gameId = currentGame.getId();
 
         // Assume no round found exception handling here
         Round currentRound = getCurrentRoundByGameId(gameId);
