@@ -226,7 +226,7 @@ This markdown file logs the individual contributions of each team member through
 
 ## Week 8
 ### Joshua Stebler
-- GitHub Issue Links: [Issue 135](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/135)[Issue 136](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/136),[Issue 137](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/137),[Issue 138](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/138),[Issue 139](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/139),[Issue 87](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/87)
+- GitHub Issue Links: [Issue 135](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/135),[Issue 136](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/136),[Issue 137](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/137),[Issue 138](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/138),[Issue 139](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/139),[Issue 87](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/87)
 - Task 1: Add online status so that noone can login into a used profile
 - Task 2: Add lobby status so that noone can login into a ongoing lobby
 - Task 3: Enable Websockets on Google cloud
