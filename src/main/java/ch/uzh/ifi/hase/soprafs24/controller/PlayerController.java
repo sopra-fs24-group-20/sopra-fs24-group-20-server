@@ -153,4 +153,5 @@ public class PlayerController {
         PlayerGetDTO playerGetDTO = DTOMapper.INSTANCE.convertEntityToPlayerGetDTO(player);
         return ResponseEntity.ok(playerGetDTO);
     }
+
 }
