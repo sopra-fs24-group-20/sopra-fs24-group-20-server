@@ -167,7 +167,11 @@ public class WebSocketController {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> answersSubmitted = submittedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         // Start the leaderboard if all connected players are ready, or if there is only one player who is ready.
-        if ((lobbyConnected.size() != 0 && (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)))){
+        if (lobbyConnected.size() == 0){
+            submittedPlayers.remove(lobbyId);
+            return false;
+        }
+        if ((lobbyConnected.size() != 0 && (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)))) {
             submittedPlayers.remove(lobbyId);
             return true;
         }
@@ -207,6 +211,10 @@ public class WebSocketController {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> gameSubmitted = gamePlayers.getOrDefault(lobbyId, Collections.emptySet());
         // Start the evaluation if all connected players are ready, or if there is only one player who is ready.
+        if (lobbyConnected.size() == 0){
+            gamePlayers.remove(lobbyId);
+            return false;
+        }
         if (lobbyConnected.equals(gameSubmitted) || (lobbyConnected.size() == 1 && gameSubmitted.size() == 1)){
             gamePlayers.remove(lobbyId);
             return true;
