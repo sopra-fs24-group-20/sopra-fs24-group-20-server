@@ -122,7 +122,7 @@ public class WebSocketController {
         }
     }
 
-
+    // after eval screen to get to leaderboard
     @MessageMapping("/answers-submitted")
     @SendTo("/topic/answers-count")
     public String answers(@Payload Map<String, String> payload) throws Exception {
@@ -178,6 +178,8 @@ public class WebSocketController {
         return false;
     }
 
+
+    // after game to get to eval screen
     @MessageMapping("/game-submitted")
     @SendTo("/topic/game-answers")
     public String game(@Payload Map<String, String> payload) {
