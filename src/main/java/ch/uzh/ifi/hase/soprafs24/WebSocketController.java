@@ -25,6 +25,7 @@ public class WebSocketController {
     public final Map<Long, Set<String>> readyPlayers = new ConcurrentHashMap<>();
     public final Map<Long, Set<String>> connectedPlayers = new ConcurrentHashMap<>();
     public final Map<Long, Set<String>> submittedPlayers = new ConcurrentHashMap<>();
+    public final Map<Long, Set<String>> gamePlayers = new ConcurrentHashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final RoundService roundService;
     private final RoundRepository roundRepository;
@@ -121,7 +122,7 @@ public class WebSocketController {
         }
     }
 
-
+    // after eval screen to get to leaderboard
     @MessageMapping("/answers-submitted")
     @SendTo("/topic/answers-count")
     public String answers(@Payload Map<String, String> payload) throws Exception {
@@ -165,9 +166,59 @@ public class WebSocketController {
     private Boolean checkallAnswers(Long lobbyId) {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> answersSubmitted = submittedPlayers.getOrDefault(lobbyId, Collections.emptySet());
-        // Start the game if all connected players are ready, or if there is only one player who is ready.
-        if (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)){
+        // Start the leaderboard if all connected players are ready, or if there is only one player who is ready.
+        if (lobbyConnected.size() == 0){
             submittedPlayers.remove(lobbyId);
+            return false;
+        }
+        if ((lobbyConnected.size() != 0 && (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)))) {
+            submittedPlayers.remove(lobbyId);
+            return true;
+        }
+        return false;
+    }
+
+
+    // after game to get to eval screen
+    @MessageMapping("/game-submitted")
+    @SendTo("/topic/game-answers")
+    public String game(@Payload Map<String, String> payload) {
+        String username = payload.get("username");
+        Long lobbyId;
+
+        try {
+            lobbyId = Long.parseLong(payload.get("lobbyId"));
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing lobby ID from: " + payload.get("lobbyId") + ", Error: " + e.getMessage());
+            return "{\"error\":\"Invalid lobby ID\"}";
+        }
+
+        Set<String> lobbyConnected = connectedPlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
+        Set<String> gameSubmitted = gamePlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
+
+        if (!lobbyConnected.contains(username)) {
+            System.out.println("User " + username + " not found in lobby " + lobbyId);
+            return "{\"error\":\"User " + username + " not found in lobby " + lobbyId + "\"}";
+        }
+
+        gameSubmitted.add(username);
+        if (checkgameAnswers(lobbyId)) {
+            return "{\"command\":\"game-done\", \"lobbyId\":" + lobbyId + "}";
+        } else {
+            return String.format("{\"error\":\"Not all connected players are ready\", \"lobbyId\":%d}", lobbyId);
+        }
+    }
+
+    private Boolean checkgameAnswers(Long lobbyId) {
+        Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
+        Set<String> gameSubmitted = gamePlayers.getOrDefault(lobbyId, Collections.emptySet());
+        // Start the evaluation if all connected players are ready, or if there is only one player who is ready.
+        if (lobbyConnected.size() == 0){
+            gamePlayers.remove(lobbyId);
+            return false;
+        }
+        if (lobbyConnected.equals(gameSubmitted) || (lobbyConnected.size() == 1 && gameSubmitted.size() == 1)){
+            gamePlayers.remove(lobbyId);
             return true;
         }
         return false;
