@@ -367,7 +367,7 @@ public class RoundService {
             // URL encode the word to handle spaces and special characters
             String encodedWord = URLEncoder.encode(word, StandardCharsets.UTF_8.toString());
 
-            URL url = new URL("https://en.wiktionary.org/w/api.php?action=query&format=json&titles=" + encodedWord);
+            URL url = new URL("https://en.wikipedia.org/w/api.php?action=query&format=json&titles=" + encodedWord);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.connect();
