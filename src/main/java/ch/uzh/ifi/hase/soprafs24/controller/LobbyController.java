@@ -98,6 +98,7 @@ public class LobbyController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Cannot join lobby because it is already full.");
         }
+
         Optional<Player> optionalPlayer=playerRepository.findByUsername(username);
         if(optionalPlayer.isEmpty()){return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Join Lobby failed user not found");
 
