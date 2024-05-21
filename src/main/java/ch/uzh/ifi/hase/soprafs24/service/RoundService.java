@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -359,12 +361,17 @@ public class RoundService {
         }
     }
 
+
     public boolean checkWordExists(String word) {
         try {
-            URL url = new URL("https://en.wiktionary.org/w/api.php?action=query&format=json&titles=" + word);
+            // URL encode the word to handle spaces and special characters
+            String encodedWord = URLEncoder.encode(word, StandardCharsets.UTF_8.toString());
+
+            URL url = new URL("https://en.wiktionary.org/w/api.php?action=query&format=json&titles=" + encodedWord);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.connect();
+
             int responseCode = conn.getResponseCode();
             if (responseCode != 200) {
                 throw new RuntimeException("HttpResponseCode: " + responseCode);
@@ -377,8 +384,8 @@ public class RoundService {
                 }
                 in.close();
 
-
-                Pattern pattern = Pattern.compile("\"missing\"\\s*:\\s*\"\"");
+                // Check if the response contains "missing" tag
+                Pattern pattern = Pattern.compile("\"missing\"");
                 Matcher matcher = pattern.matcher(response.toString());
                 return !matcher.find();
             }
@@ -387,6 +394,7 @@ public class RoundService {
             return false;
         }
     }
+
 
     @Transactional
     public boolean areAllVotesSubmitted(Long gameId) {
