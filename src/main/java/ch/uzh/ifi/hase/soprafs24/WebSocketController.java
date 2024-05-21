@@ -167,7 +167,7 @@ public class WebSocketController {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> answersSubmitted = submittedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         // Start the leaderboard if all connected players are ready, or if there is only one player who is ready.
-        if (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)){
+        if ((lobbyConnected.size() != 0 && (lobbyConnected.equals(answersSubmitted) || (lobbyConnected.size() == 1 && answersSubmitted.size() == 1)))){
             submittedPlayers.remove(lobbyId);
             return true;
         }
