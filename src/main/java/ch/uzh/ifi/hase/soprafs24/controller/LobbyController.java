@@ -94,7 +94,10 @@ public class LobbyController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Cannot join lobby as the game is not in SETUP mode.");
         }
-
+        if (lobby.getPlayers().size() >= 5) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Cannot join lobby because it is already full.");
+        }
         Optional<Player> optionalPlayer=playerRepository.findByUsername(username);
         if(optionalPlayer.isEmpty()){return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Join Lobby failed user not found");
 
