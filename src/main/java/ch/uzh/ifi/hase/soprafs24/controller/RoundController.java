@@ -157,7 +157,15 @@ public class RoundController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
+    @GetMapping("/rounds/score-difference/{gameId}")
+    public ResponseEntity<Map<String, Integer>> getScoreDifference(@PathVariable Long gameId) {
+        try {
+            Map<String, Integer> scoreDifference = roundService.calculateScoreDifference(gameId);
+            return new ResponseEntity<>(scoreDifference, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyMap());
+        }
+    }
 
 
 }

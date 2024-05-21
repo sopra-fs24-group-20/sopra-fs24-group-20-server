@@ -196,11 +196,19 @@ public class RoundService {
                 if (points == highestScore) {
                     player.setVictories(player.getVictories() + 1);
                 }
+                int newLevel = calculateLevel(player.getTotalPoints());
+                player.setLevel(newLevel);
                 playerRepository.save(player);
             });
         });
     }
-
+    public int calculateLevel(int totalPoints) {
+        int level = 1;
+        while (25 * Math.pow(level, 2) <= totalPoints) {
+            level++;
+        }
+        return level - 1;  // Subtract 1 because level increments once more after the last valid level
+    }
     @Transactional
     public Map<String, Map<String, Map<String, Object>>> calculateFinalScores(Long gameId) {
         Round currentRound = getCurrentRoundByGameId(gameId);
@@ -458,6 +466,42 @@ public class RoundService {
         roundRepository.save(currentRound);
 
         return currentScores;
+    }
+    @Transactional
+    public Map<String, Integer> calculateScoreDifference(Long gameId) {
+        Game game = gameRepository.findById(gameId).orElseThrow(() -> new RuntimeException("Game not found"));
+        List<Round> rounds = game.getRounds();
+        if (rounds.size() < 2) {
+            return rounds.isEmpty() ? Collections.emptyMap() : initializeZeroDifference(rounds.get(0));
+        }
+
+        Round lastRound = rounds.get(rounds.size() - 1);
+        Round previousRound = rounds.get(rounds.size() - 2);
+
+        Map<String, Integer> lastScores = parseRoundScores(lastRound.getRoundPoints());
+        Map<String, Integer> previousScores = parseRoundScores(previousRound.getRoundPoints());
+
+        Map<String, Integer> scoreDifferences = new HashMap<>();
+        lastScores.forEach((player, score) -> {
+            Integer previousScore = previousScores.getOrDefault(player, 0);
+            scoreDifferences.put(player, score - previousScore);
+        });
+
+        return scoreDifferences;
+    }
+
+    private Map<String, Integer> initializeZeroDifference(Round round) {
+        Map<String, Integer> scores = parseRoundScores(round.getRoundPoints());
+        scores.replaceAll((k, v) -> 0);
+        return scores;
+    }
+
+    private Map<String, Integer> parseRoundScores(String jsonScores) {
+        try {
+            return objectMapper.readValue(jsonScores, new TypeReference<Map<String, Integer>>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("Error parsing scores", e);
+        }
     }
 
 }
