@@ -35,13 +35,14 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
 class RoundControllerTest {
-
     private MockMvc mockMvc;
 
     @Mock
     private RoundService roundService;
+
     @MockBean
     private GameRepository gameRepository;
+
     @InjectMocks
     private RoundController roundController;
 
@@ -49,7 +50,7 @@ class RoundControllerTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this); // Initialize mocks
+        MockitoAnnotations.openMocks(this); // Initialize mocks
         this.objectMapper = new ObjectMapper(); // Create a new ObjectMapper
         roundController.setObjectMapper(objectMapper); // Manually inject ObjectMapper
         mockMvc = MockMvcBuilders.standaloneSetup(roundController).build();
@@ -210,6 +211,45 @@ class RoundControllerTest {
                 .andExpect(content().string("{}"));
     }
 
+
+    @Test
+    void getLeaderboard_ShouldReturnLeaderboard_WhenFound() throws Exception {
+        long gameId = 1L;
+        Game game = new Game();
+        game.setGamePoints("{\"player1\": 50, \"player2\": 30}");
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        mockMvc.perform(get("/rounds/leaderboard/{gameId}", gameId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.player1").value(50))
+                .andExpect(jsonPath("$.player2").value(30));
+
+        verify(gameRepository).findById(gameId);
+    }
+
+    @Test
+    void getLeaderboard_ShouldReturnNotFound_WhenGameNotFound() throws Exception {
+        long gameId = 1L;
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/rounds/leaderboard/{gameId}", gameId))
+                .andExpect(status().isNotFound());
+
+        verify(gameRepository).findById(gameId);
+    }
+
+    @Test
+    void getLeaderboard_ShouldReturnInternalServerError_WhenExceptionThrown() throws Exception {
+        long gameId = 1L;
+        Game game = new Game();
+        game.setGamePoints("{invalid json}");
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        mockMvc.perform(get("/rounds/leaderboard/{gameId}", gameId))
+                .andExpect(status().isInternalServerError());
+
+        verify(gameRepository).findById(gameId);
+    }
 }
 
     // Additional tests for getLetter, getLeaderboard, getScoresByCategory should follow similar patterns

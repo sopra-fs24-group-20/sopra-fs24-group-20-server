@@ -56,8 +56,10 @@ public class RoundService {
         if (game!=null && game.getStatus()== GameStatus.FINISHED){
             lobby.setGame(null);
             lobbyRepository.save(lobby);
+            for (Round round : game.getRounds()) {
+                roundRepository.delete(round);
+            }
             gameRepository.delete(game);
-            game=null;
         }
         if (game == null) {
             game = new Game();
