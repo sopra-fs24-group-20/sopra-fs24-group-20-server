@@ -241,7 +241,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 5: display current letter position in game regardless of game mode
 - Task 6: implement loading screen in game and lobby page
 - Task 7: fix websockets in lobbypage, intermediate leaderboard, game
-- Task 8: make back, exit, and logout buttons cuter
+- Task 8: make back, exit, and logout buttons cuter where applicable
 - Task 9: disconnect from websocket when exiting lobby from eval screen
 - Task 10: ws in game to signal all players have submitted their game answers 
 - Task 11: implement ws in eval screen to signal all players have submitted their votes
