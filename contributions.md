@@ -232,6 +232,12 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: Enable Websockets on Google cloud
 - Task 4: Fix several bugs in the game logic
 
+### Giuliano Bernasconi
+- GitHub Issue Links:[Issue 147](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/147), [Issue 41](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/41), [Issue 148](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/148)
+- Task 1 : Adjusting leaderboard to be called/calculated via WS
+- Task 2 : Updated letter generation to exclude those from previous rounds
+- Task 3 : Bugfixing of various issues
+
 ### Mirjam Weibel
 - Github Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/81), [Issue 84](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/84), [Issue 126](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/126), [Issue 92](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/92), [Issue 95](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/95), [Issue 111](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/111), [Issue 125](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/125), [Issue 114](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/114), [Issue 115](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/115), [Issue 120](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/120), [Issue 143](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/143), [Issue 97](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/97), [Issue 124](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/124)
 - Task 1: fixed bug game did not submit answers for everyone
