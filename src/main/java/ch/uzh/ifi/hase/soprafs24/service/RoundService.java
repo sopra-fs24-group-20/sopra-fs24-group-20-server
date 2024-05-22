@@ -489,37 +489,46 @@ public class RoundService {
     }
     @Transactional
     public Map<String, Integer> calculateScoreDifference(Long gameId) throws IOException {
-        // Retrieve the game entity by ID
         Game game = gameRepository.findById(gameId).orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
         List<Round> rounds = game.getRounds();
 
         if (rounds.size() < 2) {
-            // Not enough rounds to compare, return an empty map
             return new HashMap<>();
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Integer> scoreDifferences = new HashMap<>();
 
-        // Deserialize game points from the second last round
-        Map<String, Integer> secondLastRoundPoints = objectMapper.readValue(
-                rounds.get(rounds.size() - 2).getRoundPoints(),
-                new TypeReference<Map<String, Integer>>() {}
-        );
+        // Finding the last two rounds with non-null `scorePerRound`
+        Map<String, Integer> lastRoundScores = null;
+        Map<String, Integer> secondLastRoundScores = null;
 
-        // Deserialize game points from the last round
-        Map<String, Integer> lastRoundPoints = objectMapper.readValue(
-                rounds.get(rounds.size() - 1).getRoundPoints(),
-                new TypeReference<Map<String, Integer>>() {}
-        );
+        for (int i = rounds.size() - 1; i >= 0 && (lastRoundScores == null || secondLastRoundScores == null); i--) {
+            if (rounds.get(i).getScorePerRound() != null) {
+                if (lastRoundScores == null) {
+                    lastRoundScores = objectMapper.readValue(
+                            rounds.get(i).getScorePerRound(),
+                            new TypeReference<Map<String, Integer>>() {}
+                    );
+                } else if (secondLastRoundScores == null) {
+                    secondLastRoundScores = objectMapper.readValue(
+                            rounds.get(i).getScorePerRound(),
+                            new TypeReference<Map<String, Integer>>() {}
+                    );
+                }
+            }
+        }
 
-        // Calculate the point differences for each player
-        Map<String, Integer> pointDifferences = lastRoundPoints.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> e.getValue() - secondLastRoundPoints.getOrDefault(e.getKey(), 0)
-                ));
+        if (lastRoundScores != null && secondLastRoundScores != null) {
+            // Calculate the score differences
+            Map<String, Integer> finalSecondLastRoundScores = secondLastRoundScores;
+            lastRoundScores.forEach((player, score) -> {
+                Integer previousScore = finalSecondLastRoundScores.getOrDefault(player, 0);
+                scoreDifferences.put(player, score - previousScore);
+            });
+        }
 
-        return pointDifferences;
+        return scoreDifferences;
     }
 
 }
