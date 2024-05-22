@@ -15,6 +15,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,19 @@ public class GameController {
         Game game = optionalGame.get();
         Long gameId = game.getId();
         return ResponseEntity.ok(gameId);
+    }
+
+
+    @PostMapping("/game/done/{lobbyId}")
+    public ResponseEntity<String> finishGame(@PathVariable Long lobbyId) {
+        try {
+            Game game = gameService.getGameByLobbyId(lobbyId);
+            game.setStatus(GameStatus.FINISHED);
+            gameRepository.save(game);
+            return ResponseEntity.ok("Game status updated to FINISHED");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update game status: " + e.getMessage());
+        }
     }
 
 }

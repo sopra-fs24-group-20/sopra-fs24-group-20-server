@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
@@ -51,6 +52,12 @@ public class RoundService {
     public void startNewRound(Long lobbyId) {
         Lobby lobby = lobbyRepository.findById(lobbyId).orElseThrow(() -> new RuntimeException("Lobby not found"));
         Game game = lobby.getGame();
+        if (game!=null && game.getStatus()== GameStatus.FINISHED){
+            lobby.setGame(null);
+            lobbyRepository.save(lobby);
+            gameRepository.delete(game);
+            game=null;
+        }
         if (game == null) {
             game = new Game();
             game.setLobby(lobby);
