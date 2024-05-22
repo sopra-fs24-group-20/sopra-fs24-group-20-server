@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -164,6 +165,8 @@ public class RoundController {
             return new ResponseEntity<>(scoreDifference, HttpStatus.OK);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyMap());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
