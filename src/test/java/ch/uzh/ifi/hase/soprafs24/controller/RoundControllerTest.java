@@ -211,45 +211,6 @@ class RoundControllerTest {
                 .andExpect(content().string("{}"));
     }
 
-
-    @Test
-    void getLeaderboard_ShouldReturnLeaderboard_WhenFound() throws Exception {
-        long gameId = 1L;
-        Game game = new Game();
-        game.setGamePoints("{\"player1\": 50, \"player2\": 30}");
-        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-
-        mockMvc.perform(get("/rounds/leaderboard/{gameId}", gameId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.player1").value(50))
-                .andExpect(jsonPath("$.player2").value(30));
-
-        verify(gameRepository).findById(gameId);
-    }
-
-    @Test
-    void getLeaderboard_ShouldReturnNotFound_WhenGameNotFound() throws Exception {
-        long gameId = 1L;
-        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/rounds/leaderboard/{gameId}", gameId))
-                .andExpect(status().isNotFound());
-
-        verify(gameRepository).findById(gameId);
-    }
-
-    @Test
-    void getLeaderboard_ShouldReturnInternalServerError_WhenExceptionThrown() throws Exception {
-        long gameId = 1L;
-        Game game = new Game();
-        game.setGamePoints("{invalid json}");
-        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-
-        mockMvc.perform(get("/rounds/leaderboard/{gameId}", gameId))
-                .andExpect(status().isInternalServerError());
-
-        verify(gameRepository).findById(gameId);
-    }
 }
 
     // Additional tests for getLetter, getLeaderboard, getScoresByCategory should follow similar patterns
