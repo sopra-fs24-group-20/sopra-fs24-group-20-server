@@ -269,3 +269,4 @@ This markdown file logs the individual contributions of each team member through
 - Task 4: Added the ability for a player to move backwards on the evaluation screen. 
 - Task 5: Fixed a routing issue regarding the ability to play multiple rounds on the evaluation screen.
 - Task 6: Bugfixes and layout changes. 
+- Task 7: Limited the number of rounds and the round duration.
