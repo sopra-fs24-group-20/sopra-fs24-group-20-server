@@ -40,7 +40,16 @@ public class Round {
     @Column(columnDefinition = "text")
     private String roundPoints;  // This will store the JSON string
 
-    // Constructors, getters, and setters
+    @Column(columnDefinition = "text")
+    private String scorePerRound;
+
+    public String getScorePerRound() {
+        return scorePerRound;
+    }
+
+    public void setScorePerRound(String scorePerRound) {
+        this.scorePerRound = scorePerRound;
+    }
 
     public String getRoundPoints() {
         return roundPoints;

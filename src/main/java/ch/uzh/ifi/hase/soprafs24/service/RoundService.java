@@ -24,6 +24,7 @@ import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -183,6 +184,10 @@ public class RoundService {
         gameRepository.save(currentGame);
         updatePlayerStatsAndCheckVictories(gameId, gamePoints);
         // Sort the gamePoints by value in descending order and return
+        if (!currentGame.getRounds().isEmpty()) {
+            currentGame.getRounds().get(currentGame.getRounds().size() - 1).setScorePerRound(currentGame.getGamePoints());
+        }
+        roundRepository.save(currentRound);
         return gamePoints.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .collect(Collectors.toMap(
@@ -483,40 +488,38 @@ public class RoundService {
         return currentScores;
     }
     @Transactional
-    public Map<String, Integer> calculateScoreDifference(Long gameId) {
-        Game game = gameRepository.findById(gameId).orElseThrow(() -> new RuntimeException("Game not found"));
+    public Map<String, Integer> calculateScoreDifference(Long gameId) throws IOException {
+        // Retrieve the game entity by ID
+        Game game = gameRepository.findById(gameId).orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
         List<Round> rounds = game.getRounds();
+
         if (rounds.size() < 2) {
-            return rounds.isEmpty() ? Collections.emptyMap() : initializeZeroDifference(rounds.get(0));
+            // Not enough rounds to compare, return an empty map
+            return new HashMap<>();
         }
 
-        Round lastRound = rounds.get(rounds.size() - 1);
-        Round previousRound = rounds.get(rounds.size() - 2);
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        Map<String, Integer> lastScores = parseRoundScores(lastRound.getRoundPoints());
-        Map<String, Integer> previousScores = parseRoundScores(previousRound.getRoundPoints());
+        // Deserialize game points from the second last round
+        Map<String, Integer> secondLastRoundPoints = objectMapper.readValue(
+                rounds.get(rounds.size() - 2).getRoundPoints(),
+                new TypeReference<Map<String, Integer>>() {}
+        );
 
-        Map<String, Integer> scoreDifferences = new HashMap<>();
-        lastScores.forEach((player, score) -> {
-            Integer previousScore = previousScores.getOrDefault(player, 0);
-            scoreDifferences.put(player, score - previousScore);
-        });
+        // Deserialize game points from the last round
+        Map<String, Integer> lastRoundPoints = objectMapper.readValue(
+                rounds.get(rounds.size() - 1).getRoundPoints(),
+                new TypeReference<Map<String, Integer>>() {}
+        );
 
-        return scoreDifferences;
-    }
+        // Calculate the point differences for each player
+        Map<String, Integer> pointDifferences = lastRoundPoints.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue() - secondLastRoundPoints.getOrDefault(e.getKey(), 0)
+                ));
 
-    private Map<String, Integer> initializeZeroDifference(Round round) {
-        Map<String, Integer> scores = parseRoundScores(round.getRoundPoints());
-        scores.replaceAll((k, v) -> 0);
-        return scores;
-    }
-
-    private Map<String, Integer> parseRoundScores(String jsonScores) {
-        try {
-            return objectMapper.readValue(jsonScores, new TypeReference<Map<String, Integer>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException("Error parsing scores", e);
-        }
+        return pointDifferences;
     }
 
 }
