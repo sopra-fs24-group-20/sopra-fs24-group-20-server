@@ -296,6 +296,7 @@ class RoundServiceTest {
         assertEquals(0, player1.getVictories());
     }*/
 
+    /*
     @Test
     public void testAreAllVotesSubmitted() {
         // Setup
@@ -322,12 +323,14 @@ class RoundServiceTest {
         verify(roundRepository).findTopByGameIdOrderByIdDesc(gameId);
     }
 
+     */
+
     @Test
     public void testPrepareScoreAdjustments() throws Exception {
         // Setup
         Long gameId = 1L;
         Round currentRound = new Round();
-        String roundPointsJson = "{\"category1\":{\"player1\":{\"score\":1, \"vetoVotes\":0, \"bonusVotes\":0, \"submissionsCount\":0}, \"player2\":{\"score\":1, \"vetoVotes\":0, \"bonusVotes\":0, \"submissionsCount\":0}}}";
+        String roundPointsJson = "{\"category1\":{\"player1\":{\"score\":1, \"vetoVotes\":0, \"bonusVotes\":0}, \"player2\":{\"score\":1, \"vetoVotes\":0, \"bonusVotes\":0}}}";
         currentRound.setRoundPoints(roundPointsJson);
 
         when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(currentRound));
@@ -339,13 +342,11 @@ class RoundServiceTest {
         player1Scores.put("score", 1);
         player1Scores.put("vetoVotes", 0);
         player1Scores.put("bonusVotes", 0);
-        player1Scores.put("submissionsCount", 0);
         categoryMap.put("player1", player1Scores);
         Map<String, Object> player2Scores = new HashMap<>();
         player2Scores.put("score", 1);
         player2Scores.put("vetoVotes", 0);
         player2Scores.put("bonusVotes", 0);
-        player2Scores.put("submissionsCount", 0);
         categoryMap.put("player2", player2Scores);
         scoresMap.put("category1", categoryMap);
 
@@ -371,10 +372,8 @@ class RoundServiceTest {
         assertNotNull(updatedScores);
         assertEquals(1, (int) updatedScores.get("category1").get("player1").get("vetoVotes"));
         assertEquals(1, (int) updatedScores.get("category1").get("player1").get("bonusVotes"));
-        assertEquals(1, (int) updatedScores.get("category1").get("player1").get("submissionsCount"));
         assertEquals(0, (int) updatedScores.get("category1").get("player2").get("vetoVotes"));
         assertEquals(1, (int) updatedScores.get("category1").get("player2").get("bonusVotes"));
-        assertEquals(1, (int) updatedScores.get("category1").get("player2").get("submissionsCount"));
 
         verify(roundRepository).save(any(Round.class));
     }

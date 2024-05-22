@@ -154,7 +154,6 @@ public class WebSocketController {
             lobbyRepository.save(lobby);
 
             try {
-                roundService.calculateFinalScores(gameId);
                 roundService.calculateLeaderboard(lobbyId);
             } catch (Exception e) {
                 System.out.println("Error calculating leaderboard for lobby " + lobbyId + ": " + e.getMessage());

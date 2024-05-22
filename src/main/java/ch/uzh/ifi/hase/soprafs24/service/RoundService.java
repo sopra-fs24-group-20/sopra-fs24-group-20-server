@@ -231,6 +231,12 @@ public class RoundService {
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
+        if (optionalGame.isEmpty()) {
+            throw new RuntimeException("No Game found for game id: " + gameId);
+        }
+        Game game = optionalGame.get();
+        Lobby lobby = game.getLobby();
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Map<String, Map<String, Object>>> currentScores;
@@ -246,12 +252,11 @@ public class RoundService {
 
             // First pass: Apply vetoes and count valid answers
             users.forEach((username, scoreDetails) -> {
-                int submissionsCount = (int) scoreDetails.get("submissionsCount");
                 int vetoVotes = (int) scoreDetails.get("vetoVotes");
                 int score = (int) scoreDetails.get("score");
 
                 // Check if vetoes fulfill the majority vote threshold
-                if (vetoVotes >= submissionsCount / 2) {
+                if (vetoVotes >= (lobby.getPlayers().size()/2)) {
                     score = score == 1 ? 0 : 1; // Flip the score from 1 to 0 or vice versa
                 }
 
@@ -409,6 +414,7 @@ public class RoundService {
     }
 
 
+    /*
     @Transactional
     public boolean areAllVotesSubmitted(Long gameId) {
         Round currentRound = getCurrentRoundByGameId(gameId);
@@ -440,6 +446,8 @@ public class RoundService {
         }
     }
 
+     */
+
 
     public Map<String, Map<String, Map<String, Object>>> prepareScoreAdjustments(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
@@ -456,30 +464,25 @@ public class RoundService {
         currentScores.forEach((category, users) -> users.forEach((username, userScores) -> {
             userScores.putIfAbsent("vetoVotes", 0);
             userScores.putIfAbsent("bonusVotes", 0);
-            userScores.putIfAbsent("submissionsCount", 0);
         }));
 
         // Count vetoes and bonuses
-        adjustments.forEach((category, users) -> users.forEach((username, details) -> {
-            boolean veto = (boolean) details.get("veto");
-            boolean bonus = (boolean) details.get("bonus");
+        // Iterate over currentScores to ensure all players are considered
+        currentScores.forEach((category, users) -> {
+            users.forEach((username, userScores) -> {
+                // Retrieve adjustment details if present; otherwise, use default values
+                Map<String, Object> detail = adjustments.getOrDefault(category, new HashMap<>()).getOrDefault(username, new HashMap<>());
+                boolean veto = (boolean) detail.getOrDefault("veto", false);
+                boolean bonus = (boolean) detail.getOrDefault("bonus", false);
 
-            Map<String, Object> userScores = currentScores.get(category).get(username);
-            if (userScores != null) {
+                // Update the veto and bonus counts
                 int vetoVotes = (int) userScores.get("vetoVotes");
                 int bonusVotes = (int) userScores.get("bonusVotes");
-                int submissionsCount = (int) userScores.get("submissionsCount");
+                userScores.put("vetoVotes", veto ? vetoVotes + 1 : vetoVotes);
+                userScores.put("bonusVotes", bonus ? bonusVotes + 1 : bonusVotes);
+            });
+        });
 
-                // Update counts based on the current adjustments
-                if (veto) {
-                    userScores.put("vetoVotes", vetoVotes + 1);
-                }
-                if (bonus) {
-                    userScores.put("bonusVotes", bonusVotes + 1);
-                }
-                userScores.put("submissionsCount", submissionsCount + 1);
-            }
-        }));
 
         // Serialize and save the updated scores back to the round without applying scoring
         String scoresJson = objectMapper.writeValueAsString(currentScores);
