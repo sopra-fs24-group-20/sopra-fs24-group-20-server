@@ -239,7 +239,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 3: display current rounds of total rounds in intermediate leaderboard
 - Task 4: re implement websockets in lobbypage and game 
 - Task 5: display current letter position in game regardless of game mode
-- Task 6: implement loading screen in game
+- Task 6: implement loading screen in game and lobby page
 - Task 7: fix websockets in lobbypage, intermediate leaderboard, game
 - Task 8: make back, exit, and logout buttons cuter
 - Task 9: disconnect from websocket when exiting lobby from eval screen
