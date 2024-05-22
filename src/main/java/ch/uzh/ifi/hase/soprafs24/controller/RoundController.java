@@ -88,7 +88,7 @@ public class RoundController {
     @GetMapping("/rounds/leaderboard/{gameId}")
     public ResponseEntity<Map<String, Integer>> getLeaderboard(@PathVariable Long gameId) {
         Optional<Game> optionalGame = gameRepository.findById(gameId);
-        roundService.calculateFinalScores(gameId);
+        /*roundService.calculateFinalScores(gameId);*/
         if (optionalGame.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

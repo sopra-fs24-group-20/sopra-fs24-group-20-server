@@ -152,6 +152,7 @@ public class WebSocketController {
             Game game = lobby.getGame();
             Long gameId = game.getId();
             lobbyRepository.save(lobby);
+            roundService.calculateFinalScores(gameId);
 
             try {
                 roundService.calculateLeaderboard(lobbyId);
