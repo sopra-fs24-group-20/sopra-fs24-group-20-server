@@ -231,3 +231,6 @@ This markdown file logs the individual contributions of each team member through
 - Task 2: Add lobby status so that noone can login into a ongoing lobby
 - Task 3: Enable Websockets on Google cloud
 - Task 4: Fix several bugs in the game logic
+
+### Mirjam Weibel
+- Github Issue Links: [https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/84, ](https://github.com/orgs/sopra-fs24-group-20/projects/1/views/1?filterQuery=assignee%3Amirjamweibel+week%3A%22Week+8%22&pane=issue&itemId=62308101)
