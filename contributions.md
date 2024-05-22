@@ -245,4 +245,3 @@ This markdown file logs the individual contributions of each team member through
 - Task 9: disconnect from websocket when exiting lobby from eval screen
 - Task 10: ws in game to signal all players have submitted their game answers 
 - Task 11: implement ws in eval screen to signal all players have submitted their votes
-- 
