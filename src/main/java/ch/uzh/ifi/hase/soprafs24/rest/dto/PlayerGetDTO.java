@@ -63,7 +63,7 @@ public class PlayerGetDTO {
   }
 
   public double getAveragePointsPerRound() {
-    BigDecimal bd = new BigDecimal(averagePointsPerRound);
+    BigDecimal bd = BigDecimal.valueOf(averagePointsPerRound);
     bd = bd.setScale(2, RoundingMode.HALF_UP);
     return bd.doubleValue();
   }

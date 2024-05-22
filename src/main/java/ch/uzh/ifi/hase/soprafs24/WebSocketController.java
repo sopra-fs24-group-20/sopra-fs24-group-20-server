@@ -134,6 +134,11 @@ public class WebSocketController {
             return "{\"error\":\"Invalid lobby ID\"}";
         }
 
+        Optional<Lobby> optionalLobby = lobbyRepository.findById(lobbyId);
+        Lobby lobby = optionalLobby.get();
+        Game game = lobby.getGame();
+        Long gameId = game.getId();
+
         Set<String> lobbyConnected = connectedPlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
         Set<String> answersSubmitted = submittedPlayers.computeIfAbsent(lobbyId, k -> ConcurrentHashMap.newKeySet());
 
@@ -144,6 +149,7 @@ public class WebSocketController {
 
         answersSubmitted.add(username);
         if (checkallAnswers(lobbyId)) {
+            roundService.calculateFinalScores(gameId);
             roundService.calculateLeaderboard(lobbyId);
             return "{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}";
         } else {

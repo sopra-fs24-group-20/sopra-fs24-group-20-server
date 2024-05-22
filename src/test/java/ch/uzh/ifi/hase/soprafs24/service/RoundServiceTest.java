@@ -19,6 +19,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
@@ -62,6 +65,9 @@ class RoundServiceTest {
         lobby.setLobbyId(1L);
         Game game = new Game();
         lobby.setGame(game);
+        List<Character> excluded = new ArrayList<>();
+        excluded.add('A');
+        lobby.setExcludedChars(excluded);
 
         when(lobbyRepository.findById(1L)).thenReturn(Optional.of(lobby));
         when(gameRepository.save(any(Game.class))).thenReturn(game);
@@ -69,6 +75,8 @@ class RoundServiceTest {
 
         assertDoesNotThrow(() -> roundService.startNewRound(1L));
         verify(roundRepository).save(any(Round.class));
+        assertDoesNotThrow(() -> roundService.startNewRound(1L));
+        assertEquals(2, game.getRounds().size());
     }
 
     @Test
