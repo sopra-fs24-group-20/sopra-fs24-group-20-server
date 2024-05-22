@@ -256,3 +256,16 @@ This markdown file logs the individual contributions of each team member through
 - Task 1: preparing all documents for hand in (powerpoint, report, both readme's)
 - Task 2: on the final leaderboard: different confetti colors for different placements
 - Task 3: intermediate leaderboard gets handled with websockets
+
+### Joshua Weder
+- GitHub Issue Links: [Issue 79](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/79),
+  [Issue 101](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/101),
+  [Issue 124](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/124)
+  [Issue 128](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/128)
+  [Issue 129](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/129)
+- Task 1: Fixed a constant loading bug on the evaluation screen.
+- Task 2: Changed the points with symbols on the evaluation screen.
+- Task 3: Added the ability for a player to revoke their votes.
+- Task 4: Added the ability for a player to move backwards on the evaluation screen. 
+- Task 5: Fixed a routing issue regarding the ability to play multiple rounds on the evaluation screen.
+- Task 6: Bugfixes and layout changes. 
