@@ -246,3 +246,13 @@ This markdown file logs the individual contributions of each team member through
 - Task 10: ws in game to signal all players have submitted their game answers 
 - Task 11: implement ws in eval screen to signal all players have submitted their votes
 - Task 12: contributed to fix round redirection issue
+
+### Leonora Horvatic
+- GitHub Issue Links: [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/47),
+[Issue 131](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/131),
+  [Issue 110](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/110),
+[Issue 142](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/142)
+ 
+- Task 1: preparing all documents for hand in (powerpoint, report, both readme's)
+- Task 2: on the final leaderboard: different confetti colors for different placements
+- Task 3: intermediate leaderboard gets handled with websockets
