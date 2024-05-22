@@ -233,4 +233,16 @@ This markdown file logs the individual contributions of each team member through
 - Task 4: Fix several bugs in the game logic
 
 ### Mirjam Weibel
-- Github Issue Links: [https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/84, ](https://github.com/orgs/sopra-fs24-group-20/projects/1/views/1?filterQuery=assignee%3Amirjamweibel+week%3A%22Week+8%22&pane=issue&itemId=62308101)
+- Github Issue Links: [Issue 81](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/81), [Issue 84](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/84), [Issue 126](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/126), [Issue 92](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/92), [Issue 95](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/95), [Issue 111](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/111), [Issue 125](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/125), [Issue 114](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/114), [Issue 115](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/115), [Issue 120](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/120), [Issue 143](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/issues/143), [Issue 97](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/97)
+- Task 1: fixed bug game did not submit answers for everyone
+- Task 2: popup when game stopped
+- Task 3: display current rounds of total rounds in intermediate leaderboard
+- Task 4: re implement websockets in lobbypage and game 
+- Task 5: display current letter position in game regardless of game mode
+- Task 6: implement loading screen in game
+- Task 7: fix websockets in lobbypage, intermediate leaderboard, game
+- Task 8: make back, exit, and logout buttons cuter
+- Task 9: disconnect from websocket when exiting lobby from eval screen
+- Task 10: ws in game to signal all players have submitted their game answers 
+- Task 11: implement ws in eval screen to signal all players have submitted their votes
+- 
