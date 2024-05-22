@@ -99,11 +99,11 @@ public class PlayerController {
         return username;
     }
     public static String generateGuestUsername() {
-        // List of animal nouns
+        // List of things nouns
         List<String> nounList = Arrays.asList(
-                "Platypus", "Sasquatch", "Narwhal", "Penguin", "Koala", "Quokka",
-                "Squirrel", "Giraffe", "Cheetah", "Hedgehog", "Octopus", "Llama",
-                "Wombat", "Lemur", "Otter", "Gazelle", "Zebra"
+                "Stone", "Flame", "Wave", "Star", "Leaf", "Rain",
+                "Snow", "Wind", "Echo", "Tree", "Moon", "Rock",
+                "Dust", "Breeze", "Sky", "Mist", "Twig"
         );
 
         // List of adjectives
