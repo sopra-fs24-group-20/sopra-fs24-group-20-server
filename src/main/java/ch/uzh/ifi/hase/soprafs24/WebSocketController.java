@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24;
 
+import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
@@ -151,9 +152,16 @@ public class WebSocketController {
         if (checkallAnswers(lobbyId)) {
             roundService.calculateFinalScores(gameId);
             roundService.calculateLeaderboard(lobbyId);
+          
+            Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
+            if (lobbyOptional.isPresent()) {
+                Lobby lobby = lobbyOptional.get();
+                lobby.setLobbyStatus(LobbyStatus.SETUP);
+                lobbyRepository.save(lobby);}
+          
             return "{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}";
         } else {
-            return String.format("{\"error\":\"Not all connected players are ready\", \"lobbyId\":%d}", lobbyId);
+            return String.format("{\"error\":\"Not all connected players have submitted\", \"lobbyId\":%d}", lobbyId);
         }
     }
 
