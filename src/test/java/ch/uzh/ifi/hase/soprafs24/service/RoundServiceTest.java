@@ -378,4 +378,58 @@ class RoundServiceTest {
 
         verify(roundRepository).save(any(Round.class));
     }
+
+    @Test
+    void getCurrentRoundLetterPosition_withValidGameIdAndRounds_shouldReturnLetterPosition() {
+        Long gameId = 1L;
+        Game game = new Game();
+        Round round1 = new Round();
+        round1.setLetterPosition(2);
+        Round round2 = new Round();
+        round2.setLetterPosition(5);
+        List<Round> rounds = new ArrayList<>();
+        rounds.add(round1);
+        rounds.add(round2);
+        game.setRounds(rounds);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        int letterPosition = roundService.getCurrentRoundLetterPosition(gameId);
+        assertEquals(5, letterPosition);
+    }
+
+    @Test
+    void getCurrentRoundLetterPosition_withValidGameIdAndNoRounds_shouldReturnNegativeHundred() {
+        Long gameId = 1L;
+        Game game = new Game();
+        game.setRounds(new ArrayList<>());
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        int letterPosition = roundService.getCurrentRoundLetterPosition(gameId);
+        assertEquals(-100, letterPosition);
+    }
+
+    @Test
+    void getCurrentRoundLetterPosition_withInvalidGameId_shouldReturnNegativeHundred() {
+        Long gameId = 999L;
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        int letterPosition = roundService.getCurrentRoundLetterPosition(gameId);
+        assertEquals(-100, letterPosition);
+    }
+
+
+
+
+
+    @Test
+    void calculateLevel_shouldReturnCorrectLevel() {
+        assertEquals(0, roundService.calculateLevel(24)); // 24 is below the threshold for level 1
+        assertEquals(1, roundService.calculateLevel(50)); // 50 falls in level 1: 25 * 1^2 = 25 to 100 (exclusive)
+        assertEquals(2, roundService.calculateLevel(200)); // 200 falls in level 2: 25 * 2^2 = 100 to 225 (exclusive)
+        assertEquals(4, roundService.calculateLevel(400)); // 400 falls in level 3: 25 * 3^2 = 225 to 400 (exclusive)
+        assertEquals(5, roundService.calculateLevel(625)); // 625 falls in level 4: 25 * 4^2 = 400 to 625 (exclusive)
+    }
 }

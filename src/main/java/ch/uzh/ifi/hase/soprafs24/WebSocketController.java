@@ -163,7 +163,7 @@ public class WebSocketController {
         }
     }
 
-    private Boolean checkallAnswers(Long lobbyId) {
+    public Boolean checkallAnswers(Long lobbyId) {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> answersSubmitted = submittedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         // Start the leaderboard if all connected players are ready, or if there is only one player who is ready.
@@ -282,7 +282,7 @@ public class WebSocketController {
         return String.format("{\"command\":\"entities\", \"lobbyId\":%d}", lobbyId);
     }
 
-    private void updateRoundWithAnswers(Long gameId, Long lobbyId) {
+    public void updateRoundWithAnswers(Long gameId, Long lobbyId) {
         Round currentRound = roundService.getCurrentRound(gameId);
         try {
             // Assuming allPlayerAnswers is defined elsewhere and keyed by lobbyId

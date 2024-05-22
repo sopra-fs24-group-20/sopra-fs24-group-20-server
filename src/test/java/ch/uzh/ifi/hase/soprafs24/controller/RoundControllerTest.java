@@ -1,14 +1,18 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -28,6 +32,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
 class RoundControllerTest {
 
@@ -35,7 +40,8 @@ class RoundControllerTest {
 
     @Mock
     private RoundService roundService;
-
+    @MockBean
+    private GameRepository gameRepository;
     @InjectMocks
     private RoundController roundController;
 
@@ -71,42 +77,6 @@ class RoundControllerTest {
 
         verify(roundService).getRoundByGameId(1L);
     }
-/*
-    @Test
-    void addGameEntry_ShouldReturnOk_WhenEntryAdded() throws Exception {
-        Round currentRound = new Round();
-        currentRound.setPlayerAnswers("[]");
-
-        when(roundService.getCurrentRoundByGameId(1L)).thenReturn(currentRound);
-        doNothing().when(roundService).saveRound(any(Round.class));
-
-        HashMap<String, String> gameEntry = new HashMap<>();
-        gameEntry.put("username", "user");
-        gameEntry.put("answer", "apple");
-
-        mockMvc.perform(post("/rounds/{gameId}/entries", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(gameEntry)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("{\"message\":\"Entry added successfully.\"}"));
-
-        verify(roundService).saveRound(any(Round.class));
-    }
-
-    @Test
-    void addGameEntry_ShouldReturnNotFound_WhenNoCurrentRound() throws Exception {
-        when(roundService.getCurrentRoundByGameId(1L)).thenReturn(null);
-
-        HashMap<String, String> gameEntry = new HashMap<>();
-        gameEntry.put("username", "user");
-        gameEntry.put("answer", "apple");
-
-        mockMvc.perform(post("/rounds/{gameId}/entries", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(gameEntry)))
-                .andExpect(status().isNotFound());
-    }
-    */
     @Test
     void getRoundsByGameId_ShouldReturnNotFound_WhenGameIdIsInvalid() throws Exception {
         Long invalidGameId = -1L; // Assuming negative IDs are invalid
@@ -134,17 +104,6 @@ class RoundControllerTest {
         mockMvc.perform(get("/rounds/{gameId}", 1L))
                 .andExpect(status().isNotFound());
     }
-/*
-    @Test
-    void addGameEntry_ShouldReturnNotFound_WhenRoundDoesNotExist() throws Exception {
-        when(roundService.getCurrentRoundByGameId(1L)).thenReturn(null);
-
-        mockMvc.perform(post("/rounds/{gameId}/entries", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isNotFound());
-    }
-*/
 
     @Test
     void getLetter_ShouldReturnNotFound_WhenLetterIsNotAssigned() throws Exception {
@@ -153,37 +112,6 @@ class RoundControllerTest {
         mockMvc.perform(get("/rounds/letters/{gameId}", 1L))
                 .andExpect(status().isNotFound());
     }
-/*
-
-    @Test
-    void getLeaderboard_ShouldReturnData_WhenDataExists() throws Exception {
-        Map<String, Integer> leaderboard = new HashMap<>();
-        leaderboard.put("user1", 150);
-        when(roundService.calculateLeaderboard(1L)).thenReturn(leaderboard);
-
-        mockMvc.perform(get("/rounds/leaderboard/{gameId}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user1").value(150));
-    }
-    @Test
-    void getLeaderboard_ShouldReturnNotFound_WhenRuntimeExceptionThrown() throws Exception {
-        when(roundService.calculateLeaderboard(1L)).thenThrow(new RuntimeException());
-
-        mockMvc.perform(get("/rounds/leaderboard/{gameId}", 1L))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$").doesNotExist());
-    }
-
-    @Test
-    void getLeaderboard_ShouldReturnInternalServerError_WhenExceptionThrown() throws Exception {
-        when(roundService.calculateLeaderboard(1L)).thenThrow(new Exception());
-
-        mockMvc.perform(get("/rounds/leaderboard/{gameId}", 1L))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$").doesNotExist());
-    }
-
- */
     @Test
     void getScoresByCategory_ShouldReturnScores_WhenDataExists() throws Exception {
         Map<String, Map<String, Map<String, Object>>> scores = new HashMap<>();
@@ -217,27 +145,6 @@ class RoundControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
-    /*
-    @Test
-    void submitVotes_ValidRequest_ShouldReturnUpdatedScores() throws Exception {
-        String rawJson = "{\"category1\":{\"user1\":{\"score\": 10}}}";
-        HashMap<String, HashMap<String, HashMap<String, Object>>> votes = new HashMap<>();
-        HashMap<String, HashMap<String, Object>> userDetails = new HashMap<>();
-        HashMap<String, Object> scoreDetails = new HashMap<>();
-        scoreDetails.put("score", 10);
-        userDetails.put("user1", scoreDetails);
-        votes.put("category1", userDetails);
-
-        given(roundService.adjustScores(1L, votes)).willReturn(new HashMap<>());
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/1/submitVotes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(rawJson))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-    }
-
-     */
-
     @Test
     void submitVotes_InvalidJson_ShouldReturnBadRequest() throws Exception {
         String rawJson = "{\"category1\":{\"user1\":{\"score\":}}"; // Malformed JSON
@@ -248,52 +155,60 @@ class RoundControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
-    /*
     @Test
-    void submitVotes_ServiceThrowsRuntimeException_ShouldReturnNotFound() throws Exception {
-        String rawJson = "{\"category1\":{\"user1\":{\"score\": 10}}}";
-        given(roundService.adjustScores(anyLong(), any())).willThrow(new RuntimeException("Game not found"));
+    void addGameEntry_ShouldReturnOk_WhenEntryAdded() throws Exception {
+        Round currentRound = new Round();
+        currentRound.setPlayerAnswers("[]");
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/1/submitVotes")
+        when(roundService.getCurrentRoundByGameId(1L)).thenReturn(currentRound);
+        doNothing().when(roundService).saveRound(any(Round.class));
+
+        HashMap<String, String> gameEntry = new HashMap<>();
+        gameEntry.put("username", "user");
+        gameEntry.put("answer", "apple");
+
+        mockMvc.perform(post("/rounds/{gameId}/entries", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(rawJson))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.content().string("Game not found"));
-    }
-     
-    @Test
-    void addGameEntry_ExistingRound_ShouldAddSuccessfully() throws Exception {
-        Long gameId = 1L;
-        Map<String, String> gameEntry = Map.of("playerId", "123", "answer", "apple");
-        String entryJson = objectMapper.writeValueAsString(gameEntry);
-        Round mockRound = new Round();
-        mockRound.setPlayerAnswers(null);  // Simulating no existing answers
-
-        given(roundService.getCurrentRoundByGameId(gameId)).willReturn(mockRound);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/{gameId}/entries", gameId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(entryJson))
+                        .content(objectMapper.writeValueAsString(gameEntry)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("{\"message\":\"Entry added successfully.\"}"));
 
-        verify(roundService, times(1)).saveRound(any(Round.class));
+        verify(roundService).saveRound(any(Round.class));
     }
-
     @Test
-    void addGameEntry_RoundNotFound_ShouldReturnNotFound() throws Exception {
-        Long gameId = 1L;
-        Map<String, String> gameEntry = Map.of("playerId", "123", "answer", "apple");
-        String entryJson = objectMapper.writeValueAsString(gameEntry);
+    void addGameEntry_ShouldReturnNotFound_WhenNoCurrentRound() throws Exception {
+        when(roundService.getCurrentRoundByGameId(1L)).thenReturn(null);
 
-        given(roundService.getCurrentRoundByGameId(gameId)).willReturn(null);
+        HashMap<String, String> gameEntry = new HashMap<>();
+        gameEntry.put("username", "user");
+        gameEntry.put("answer", "apple");
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/rounds/{gameId}/entries", gameId)
+        mockMvc.perform(post("/rounds/{gameId}/entries", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(entryJson))
+                        .content(objectMapper.writeValueAsString(gameEntry)))
                 .andExpect(status().isNotFound());
+    }
+    @Test
+    void getScoreDifference_ReturnsScoreDifference_WhenValid() throws Exception {
+        Long gameId = 1L;
+        Map<String, Integer> scoreDifference = Map.of("player1", 10, "player2", -5);
 
-    }*/
+        when(roundService.calculateScoreDifference(gameId)).thenReturn(scoreDifference);
+
+        mockMvc.perform(get("/rounds/score-difference/{gameId}", gameId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.player1").value(10))
+                .andExpect(jsonPath("$.player2").value(-5));
+    }
+    @Test
+    void getScoreDifference_ReturnsNotFound_WhenRuntimeExceptionThrown() throws Exception {
+        Long gameId = 1L;
+        when(roundService.calculateScoreDifference(gameId)).thenThrow(new RuntimeException("Error processing request"));
+
+        mockMvc.perform(get("/rounds/score-difference/{gameId}", gameId))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("{}"));
+    }
 
 }
 
