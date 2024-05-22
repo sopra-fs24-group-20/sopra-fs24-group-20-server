@@ -146,17 +146,20 @@ public class WebSocketController {
 
         answersSubmitted.add(username);
         if (checkallAnswers(lobbyId)) {
+            Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
+            Lobby lobby = lobbyOptional.get();
+            lobby.setLobbyStatus(LobbyStatus.SETUP);
+            Game game = lobby.getGame();
+            Long gameId = game.getId();
+            lobbyRepository.save(lobby);
+
             try {
+                roundService.calculateFinalScores(gameId);
                 roundService.calculateLeaderboard(lobbyId);
             } catch (Exception e) {
                 System.out.println("Error calculating leaderboard for lobby " + lobbyId + ": " + e.getMessage());
             }
-            Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
-            if (lobbyOptional.isPresent()) {
-                Lobby lobby = lobbyOptional.get();
-                lobby.setLobbyStatus(LobbyStatus.SETUP);
-                lobbyRepository.save(lobby);}
-          
+
             return "{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}";
         } else {
             return String.format("{\"error\":\"Not all connected players have submitted\", \"lobbyId\":%d}", lobbyId);

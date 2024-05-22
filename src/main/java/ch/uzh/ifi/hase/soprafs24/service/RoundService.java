@@ -251,7 +251,7 @@ public class RoundService {
                 int score = (int) scoreDetails.get("score");
 
                 // Check if vetoes fulfill the majority vote threshold
-                if (vetoVotes > submissionsCount / 2) {
+                if (vetoVotes >= submissionsCount / 2) {
                     score = score == 1 ? 0 : 1; // Flip the score from 1 to 0 or vice versa
                 }
 
@@ -281,13 +281,12 @@ public class RoundService {
                     } else if (sameAnswerUsers.size() > 1) {
                         score = 5; // Other identical valid answers exist
                     }
-
-                    // Add bonuses
-                    int bonusVotes = (int) scoreDetails.get("bonusVotes");
-                    score += bonusVotes * 3; // Each bonus vote adds 3 points
-
-                    scoreDetails.put("score", score);
                 }
+                // Add bonuses
+                int bonusVotes = (int) scoreDetails.get("bonusVotes");
+                score += bonusVotes * 3; // Each bonus vote adds 3 points
+
+                scoreDetails.put("score", score);
             });
 
         });
