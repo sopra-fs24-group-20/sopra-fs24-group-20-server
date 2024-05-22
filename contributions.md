@@ -246,6 +246,7 @@ This markdown file logs the individual contributions of each team member through
 - Task 10: ws in game to signal all players have submitted their game answers 
 - Task 11: implement ws in eval screen to signal all players have submitted their votes
 - Task 12: contributed to fix round redirection issue
+- Task 13: adjust game instructions to include the round and timer restrictions
 
 ### Leonora Horvatic
 - GitHub Issue Links: [Issue 47](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-client/issues/47),
