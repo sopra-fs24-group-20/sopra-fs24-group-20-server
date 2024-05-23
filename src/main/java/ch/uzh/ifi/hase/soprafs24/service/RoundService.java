@@ -54,13 +54,11 @@ public class RoundService {
         Lobby lobby = lobbyRepository.findById(lobbyId).orElseThrow(() -> new RuntimeException("Lobby not found"));
         Game game = lobby.getGame();
         if (game!=null && game.getStatus()== GameStatus.FINISHED){
-            lobby.setGame(null);
-            lobbyRepository.save(lobby);
-            for (Round round : game.getRounds()) {
-                roundRepository.delete(round);
-            }
+            roundRepository.deleteAll(game.getRounds());
             gameRepository.delete(game);
             gameRepository.flush();
+            lobby.setGame(null);
+            lobbyRepository.save(lobby);
         }
         if (game == null) {
             game = new Game();
