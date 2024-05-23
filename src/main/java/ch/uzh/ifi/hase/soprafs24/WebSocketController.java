@@ -232,6 +232,9 @@ public class WebSocketController {
         Set<String> lobbyConnected = connectedPlayers.getOrDefault(lobbyId, Collections.emptySet());
         Set<String> lobbyReady = readyPlayers.getOrDefault(lobbyId, Collections.emptySet());
         // Start the game if all connected players are ready, or if there is only one player who is ready.
+        if (lobbyConnected.size() == 0){
+            return false;
+        }
         return lobbyConnected.equals(lobbyReady) || (lobbyConnected.size() == 1 && lobbyReady.size() == 1);
     }
 
