@@ -57,7 +57,7 @@ public class LobbyService {
         lobby.setCategories(new ArrayList<>());
         lobby.setCategories(Arrays.asList("country", "city", "profession", "celebrity"));
         lobby.setExcludedChars(new ArrayList<>()); // Empty list of excluded characters by default
-        lobby.setGameMode("1");
+        lobby.setGameMode("NORMAL");
         lobby.setLobbyStatus(LobbyStatus.SETUP);
         return lobbyRepository.save(lobby);
     }

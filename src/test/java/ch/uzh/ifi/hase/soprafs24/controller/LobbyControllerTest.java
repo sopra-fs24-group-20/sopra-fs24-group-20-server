@@ -113,7 +113,7 @@ class LobbyControllerTest {
         settings.setLobbyStatus(LobbyStatus.ONGOING);
         settings.setCategories(Arrays.asList("a","b"));
         settings.setAutoCorrectMode(Boolean.TRUE);
-        settings.setGameMode("1");
+        settings.setGameMode("NORMAL");
 
         // Initial setting
         Lobby lobby = new Lobby();
@@ -124,7 +124,7 @@ class LobbyControllerTest {
         lobby.setLobbyStatus(LobbyStatus.WAITING);
         lobby.setCategories(Arrays.asList("c","d"));
         lobby.setAutoCorrectMode(Boolean.FALSE);
-        lobby.setGameMode("2");
+        lobby.setGameMode("HARD");
 
         when(lobbyRepository.findById(lobbyId)).thenReturn(Optional.of(lobby));
 
@@ -138,7 +138,7 @@ class LobbyControllerTest {
         assertEquals(Arrays.asList('a', 'b'), lobby.getExcludedChars());
         assertEquals(Arrays.asList("a", "b"), lobby.getCategories());
         assertEquals(Boolean.TRUE, lobby.getAutoCorrectMode());
-        assertEquals("1", lobby.getGameMode());
+        assertEquals("NORMAL", lobby.getGameMode());
     }
     @Test
     void leaveLobby_ShouldReturnOkOnSuccess() {
