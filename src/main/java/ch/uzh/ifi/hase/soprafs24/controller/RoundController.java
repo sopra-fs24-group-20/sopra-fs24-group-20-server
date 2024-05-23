@@ -88,6 +88,7 @@ public class RoundController {
     @GetMapping("/rounds/leaderboard/{gameId}")
     public ResponseEntity<Map<String, Integer>> getLeaderboard(@PathVariable Long gameId) {
         Optional<Game> optionalGame = gameRepository.findById(gameId);
+        /*roundService.calculateFinalScores(gameId);*/
         if (optionalGame.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -137,16 +138,7 @@ public class RoundController {
 
             // Update the vote counts in the game's current round
             Map<String, Map<String, Map<String, Object>>> voteUpdates = roundService.prepareScoreAdjustments(gameId, votes);
-
-            // Check if all players have submitted their votes
-            if (roundService.areAllVotesSubmitted(gameId)) {
-                // All votes submitted, calculate final scores
-                Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(gameId);
-                return ResponseEntity.ok(finalScores);
-            } else {
-                // Not all votes are in, return the current state without final scoring
-                return ResponseEntity.ok(voteUpdates);
-            }
+            return ResponseEntity.ok(voteUpdates);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
