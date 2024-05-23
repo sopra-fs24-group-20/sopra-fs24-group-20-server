@@ -259,7 +259,7 @@ public class RoundService {
                 int score = (int) scoreDetails.get("score");
 
                 // Check if vetoes fulfill the majority vote threshold
-                if (vetoVotes > Math.ceil(lobby.getPlayers().size() / 2.0)) {
+                if (vetoVotes >= Math.ceil(lobby.getPlayers().size() / 2.0)) {
                     score = score == 1 ? 0 : 1; // Flip the score from 1 to 0 or vice versa
                 }
 

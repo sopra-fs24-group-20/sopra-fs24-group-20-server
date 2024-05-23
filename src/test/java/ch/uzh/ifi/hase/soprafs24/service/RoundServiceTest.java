@@ -254,7 +254,7 @@ class RoundServiceTest {
 
         // Verify the expected changes to the scores
         assertEquals(3, finalScores.get("sports").get("Alice").get("score")); // Checking Alice's score in sports
-        assertEquals(15, finalScores.get("sports").get("Bob").get("score")); // Checking Bob's score in sports
+        assertEquals(0, finalScores.get("sports").get("Bob").get("score")); // Checking Bob's score in sports
         assertEquals(18, finalScores.get("science").get("Alice").get("score"));
         assertEquals(6, finalScores.get("science").get("Bob").get("score"));
 
