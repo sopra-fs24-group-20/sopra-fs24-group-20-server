@@ -271,14 +271,11 @@ class RoundServiceTest {
         game.setId(1L);
         Lobby lobby = new Lobby();
         Player Alice = new Player();
-        Alice.setUsername("Alice");
-        Alice.setVictories(1);
         Alice.setTotalPoints(100);
         Alice.setAveragePointsPerRound(10);
         Alice.setRoundsPlayed(10);
         Player Bob = new Player();
         Bob.setUsername("Bob");
-        Bob.setVictories(0);
         Bob.setTotalPoints(0);
         Bob.setAveragePointsPerRound(1);
         Bob.setRoundsPlayed(1);
@@ -350,12 +347,10 @@ class RoundServiceTest {
         assertEquals(11, Alice.getRoundsPlayed());
         assertEquals(131, Alice.getTotalPoints());
         assertEquals(11.91, Alice.getAveragePointsPerRound());
-        assertEquals(2, Alice.getVictories());
 
         assertEquals(2, Bob.getRoundsPlayed());
         assertEquals(26, Bob.getTotalPoints());
         assertEquals(13, Bob.getAveragePointsPerRound());
-        assertEquals(0, Bob.getVictories());
 
         // Verify final JSON is saved
         verify(gameRepository).save(game);

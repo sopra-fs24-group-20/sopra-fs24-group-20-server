@@ -6,7 +6,10 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class GameController {
@@ -27,6 +29,10 @@ public class GameController {
     private GameService gameService;
     @Autowired
     private GameRepository gameRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private PlayerRepository playerRepository;
 
     @GetMapping("/game/{LobbyId}") //accept body (lobbyName) return only gameId
     public ResponseEntity<Long> getGameId(@PathVariable Long LobbyId) {
@@ -45,6 +51,21 @@ public class GameController {
         try {
             Game game = gameService.getGameByLobbyId(lobbyId);
             game.setStatus(GameStatus.FINISHED);
+            String existingGamePointsJson = game.getGamePoints();
+            Map<String, Integer> gamePoints;
+            if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
+                gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {});
+            } else {
+                gamePoints = new HashMap<>();
+            }
+            String winnerUsername = null;
+            if (!gamePoints.isEmpty()) {
+                winnerUsername = Collections.max(gamePoints.entrySet(), Map.Entry.comparingByValue()).getKey();
+                Optional<Player> optionalWinner = playerRepository.findByUsername(winnerUsername);
+                Player winner = optionalWinner.get();
+                winner.setVictories(winner.getVictories() + 1);
+            }
+
             gameRepository.save(game);
             return ResponseEntity.ok("Game status updated to FINISHED");
         } catch (Exception e) {

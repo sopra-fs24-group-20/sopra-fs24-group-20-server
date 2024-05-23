@@ -204,7 +204,6 @@ public class RoundService {
     }
 
     private void updatePlayerStatsAndCheckVictories(Long gameId, Map<String, Integer> gamePoints) throws Exception {
-        int highestScore = gamePoints.values().stream().max(Integer::compare).orElse(0);
 
         gamePoints.forEach((username, points) -> {
             Optional<Player> playerOpt = playerRepository.findByUsername(username);
@@ -217,9 +216,6 @@ public class RoundService {
                 BigDecimal averagePoints = totalPoints.divide(roundsPlayed, 2, RoundingMode.HALF_UP);
                 player.setAveragePointsPerRound(averagePoints.doubleValue());
 
-                if (points == highestScore) {
-                    player.setVictories(player.getVictories() + 1);
-                }
                 int newLevel = calculateLevel(player.getTotalPoints());
                 player.setLevel(newLevel);
                 playerRepository.save(player);
