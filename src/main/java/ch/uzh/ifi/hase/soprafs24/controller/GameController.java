@@ -7,7 +7,9 @@ import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PlayerRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.RoundRepository;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ public class GameController {
     private ObjectMapper objectMapper;
     @Autowired
     private PlayerRepository playerRepository;
+    @Autowired
+    private RoundService roundService;
 
     @GetMapping("/game/{LobbyId}") //accept body (lobbyName) return only gameId
     public ResponseEntity<Long> getGameId(@PathVariable Long LobbyId) {
@@ -51,6 +55,7 @@ public class GameController {
         try {
             Game game = gameService.getGameByLobbyId(lobbyId);
             game.setStatus(GameStatus.FINISHED);
+            long gameId = game.getId();
             gameRepository.save(game);
             String existingGamePointsJson = game.getGamePoints();
             Map<String, Integer> gamePoints;
@@ -61,10 +66,7 @@ public class GameController {
             }
             String winnerUsername = null;
             if (!gamePoints.isEmpty()) {
-                winnerUsername = Collections.max(gamePoints.entrySet(), Map.Entry.comparingByValue()).getKey();
-                Optional<Player> optionalWinner = playerRepository.findByUsername(winnerUsername);
-                Player winner = optionalWinner.get();
-                winner.setVictories(winner.getVictories() + 1);
+                roundService.updatePlayerStatsAndCheckVictories(gameId, gamePoints);
             }
 
             gameRepository.save(game);

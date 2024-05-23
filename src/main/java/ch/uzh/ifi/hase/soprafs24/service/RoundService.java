@@ -60,7 +60,7 @@ public class RoundService {
                 roundRepository.deleteAll(game.getRounds());
                 game.getRounds().clear(); // Clear the list after deleting the rounds
             }
-            game.setRoundCount(1);
+            game.setRoundCount(0);
             game.setGamePoints("");
             gameRepository.save(game);
             game.setStatus(GameStatus.ANSWER);
@@ -101,7 +101,7 @@ public class RoundService {
     }
 
     private int determineLetterPosition(String difficulty) {
-        if (Objects.equals(difficulty, "NORMAL")) {
+        if (Objects.equals(difficulty, "0")) {
             return 0; // Always the first position for easy mode
         }
         else {
@@ -186,7 +186,7 @@ public class RoundService {
         String updatedGamePointsJson = objectMapper.writeValueAsString(gamePoints);
         currentGame.setGamePoints(updatedGamePointsJson);
         gameRepository.save(currentGame);
-        updatePlayerStatsAndCheckVictories(gameId, gamePoints);
+
         // Sort the gamePoints by value in descending order and return
         if (!currentGame.getRounds().isEmpty()) {
             currentGame.getRounds().get(currentGame.getRounds().size() - 1).setScorePerRound(currentGame.getGamePoints());
@@ -202,13 +202,16 @@ public class RoundService {
                 ));
     }
 
-    private void updatePlayerStatsAndCheckVictories(Long gameId, Map<String, Integer> gamePoints) throws Exception {
-
+    public void updatePlayerStatsAndCheckVictories(Long gameId, Map<String, Integer> gamePoints) throws Exception {
+        String winnerUsername = Collections.max(gamePoints.entrySet(), Map.Entry.comparingByValue()).getKey();
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
+        Game game = optionalGame.get();
+        Lobby lobby = game.getLobby();
         gamePoints.forEach((username, points) -> {
             Optional<Player> playerOpt = playerRepository.findByUsername(username);
             playerOpt.ifPresent(player -> {
                 player.setTotalPoints(player.getTotalPoints() + points);
-                player.setRoundsPlayed(player.getRoundsPlayed() + 1);
+                player.setRoundsPlayed(player.getRoundsPlayed() + lobby.getRounds());
                 // Calculate the average points per round with rounding
                 BigDecimal totalPoints = new BigDecimal(player.getTotalPoints());
                 BigDecimal roundsPlayed = new BigDecimal(player.getRoundsPlayed());
@@ -217,8 +220,13 @@ public class RoundService {
 
                 int newLevel = calculateLevel(player.getTotalPoints());
                 player.setLevel(newLevel);
+                if (Objects.equals(player.getUsername(), winnerUsername)) {
+                    player.setVictories(player.getVictories() + 1);
+                }
                 playerRepository.save(player);
             });
+        game.setGamePoints("");
+        gameRepository.save(game);
         });
     }
     public int calculateLevel(int totalPoints) {
@@ -259,7 +267,7 @@ public class RoundService {
                 int score = (int) scoreDetails.get("score");
 
                 // Check if vetoes fulfill the majority vote threshold
-                if (vetoVotes >= Math.ceil(lobby.getPlayers().size() / 2.0)) {
+                if (vetoVotes >= (lobby.getPlayers().size()/2)) {
                     score = score == 1 ? 0 : 1; // Flip the score from 1 to 0 or vice versa
                 }
 
@@ -369,7 +377,7 @@ public class RoundService {
     }
 
     private boolean isLetterPositionValid(String word, char assignedLetter, int letterPosition, String difficulty) {
-        if (Objects.equals(difficulty, "NORMAL")) {  // Easy mode
+        if (Objects.equals(difficulty, "0")) {  // Easy mode
             return word.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter);
         }
         else {  // Normal mode

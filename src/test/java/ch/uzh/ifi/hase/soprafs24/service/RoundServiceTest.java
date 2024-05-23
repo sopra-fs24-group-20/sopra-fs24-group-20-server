@@ -262,6 +262,71 @@ class RoundServiceTest {
         // Verify final JSON is saved
         verify(roundRepository).save(currentRound);
     }
+    @Test
+    public void updatePlayerStats_WitValidInput_ShouldBeUpdated() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game();
+        game.setId(1L);
+        Lobby lobby = new Lobby();
+        lobby.setRounds(3);
+        Player Alice = new Player();
+        Alice.setUsername("Alice");
+        Alice.setTotalPoints(100);
+        Alice.setAveragePointsPerRound(10);
+        Alice.setRoundsPlayed(10);
+        Alice.setVictories(1);
+        Player Bob = new Player();
+        Bob.setUsername("Bob");
+        Bob.setTotalPoints(0);
+        Bob.setAveragePointsPerRound(1);
+        Bob.setRoundsPlayed(1);
+        Bob.setVictories(1);
+        lobby.setPlayers(Arrays.asList(Alice, Bob)); // Assuming 3 players for majority calculation
+        game.setLobby(lobby);
+        Round round = new Round();
+        round.setGame(game);
+        List<Round> rounds = new ArrayList<>();
+        rounds.add(round);
+        game.setRounds(rounds);
+        game.setGamePoints("{\"Alice\": 10, \"Bob\": 5}");
+        Map<String, Integer> gamePointsMap;
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(playerRepository.findByUsername(anyString())).thenAnswer(invocation -> {
+            String username = invocation.getArgument(0);
+            if (username.equals("Alice")) {
+                return Optional.of(Alice);
+            } else if (username.equals("Bob")) {
+                return Optional.of(Bob);
+            }
+            return Optional.empty();
+        });
+
+        when(playerRepository.save(any(Player.class))).thenAnswer(invocation -> {
+            Player player = invocation.getArgument(0);
+            return player; // Optionally modify the player object here if needed
+        });
+        when(objectMapper.readValue(any(String.class), any(TypeReference.class))).thenAnswer(invocation -> {
+            String json = invocation.getArgument(0);
+            TypeReference typeRef = invocation.getArgument(1);
+            if (typeRef.getType().equals(new TypeReference<Map<String, Integer>>() {}.getType())) {
+                return new HashMap<String, Integer>() {{ put("Alice", 10); put("Bob", 5); }};
+            }
+            throw new IllegalArgumentException("Unsupported type reference");
+        });
+
+        gamePointsMap = objectMapper.readValue(game.getGamePoints(), new TypeReference<Map<String, Integer>>() {});
+        roundService.updatePlayerStatsAndCheckVictories(gameId, gamePointsMap);
+
+        assertEquals(110, Alice.getTotalPoints());
+        assertEquals(13, Alice.getRoundsPlayed());
+        assertEquals(8.46, Alice.getAveragePointsPerRound());
+        assertEquals(2, Alice.getVictories());
+        assertEquals(5, Bob.getTotalPoints());
+        assertEquals(4, Bob.getRoundsPlayed());
+        assertEquals(1.25, Bob.getAveragePointsPerRound());
+        assertEquals(1, Bob.getVictories());
+    }
 
     @Test
     public void calculateLeaderboard_WithValidInput_ShouldUpdateLeaderboard() throws Exception {
@@ -271,6 +336,7 @@ class RoundServiceTest {
         game.setId(1L);
         Lobby lobby = new Lobby();
         Player Alice = new Player();
+        Alice.setUsername("Alice");
         Alice.setTotalPoints(100);
         Alice.setAveragePointsPerRound(10);
         Alice.setRoundsPlayed(10);
@@ -292,23 +358,6 @@ class RoundServiceTest {
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
         when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(round));
-
-        when(playerRepository.findByUsername(anyString())).thenAnswer(invocation -> {
-            String username = invocation.getArgument(0);
-            if (username.equals("Alice")) {
-                return Optional.of(Alice);
-            } else if (username.equals("Bob")) {
-                return Optional.of(Bob);
-            }
-            return Optional.empty();
-        });
-
-        when(playerRepository.save(any(Player.class))).thenAnswer(invocation -> {
-            Player player = invocation.getArgument(0);
-            return player; // Optionally modify the player object here if needed
-        });
-
-
 
         when(objectMapper.readValue(any(String.class), any(TypeReference.class))).thenAnswer(invocation -> {
             String json = invocation.getArgument(0);
@@ -343,14 +392,6 @@ class RoundServiceTest {
         assertTrue(iterator.next().getKey().equals("Alice"));
         assertTrue(iterator.next().getKey().equals("Bob"));
 
-        //Verify that the stats are updated
-        assertEquals(11, Alice.getRoundsPlayed());
-        assertEquals(131, Alice.getTotalPoints());
-        assertEquals(11.91, Alice.getAveragePointsPerRound());
-
-        assertEquals(2, Bob.getRoundsPlayed());
-        assertEquals(26, Bob.getTotalPoints());
-        assertEquals(13, Bob.getAveragePointsPerRound());
 
         // Verify final JSON is saved
         verify(gameRepository).save(game);
