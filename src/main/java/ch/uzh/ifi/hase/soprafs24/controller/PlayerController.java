@@ -103,7 +103,7 @@ public class PlayerController {
         List<String> nounList = Arrays.asList(
                 "Stone", "Flame", "Wave", "Star", "Leaf", "Rain",
                 "Snow", "Wind", "Echo", "Tree", "Moon", "Rock",
-                "Dust", "Breeze", "Sky", "Mist", "Twig"
+                "Dust", "Breeze", "Sky", "River", "Cloud"
         );
 
         // List of adjectives
