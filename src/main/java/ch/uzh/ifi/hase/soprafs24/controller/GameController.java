@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
@@ -37,6 +38,8 @@ public class GameController {
     private PlayerRepository playerRepository;
     @Autowired
     private RoundService roundService;
+    @Autowired
+    private LobbyRepository lobbyRepository;
 
     @GetMapping("/game/{LobbyId}") //accept body (lobbyName) return only gameId
     public ResponseEntity<Long> getGameId(@PathVariable Long LobbyId) {
@@ -56,7 +59,9 @@ public class GameController {
             Game game = gameService.getGameByLobbyId(lobbyId);
             game.setStatus(GameStatus.FINISHED);
             long gameId = game.getId();
+            game.getLobby().setLobbyStatus(LobbyStatus.SETUP);
             gameRepository.save(game);
+            lobbyRepository.save(game.getLobby());
             String existingGamePointsJson = game.getGamePoints();
             Map<String, Integer> gamePoints;
             if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
@@ -64,7 +69,6 @@ public class GameController {
             } else {
                 gamePoints = new HashMap<>();
             }
-            String winnerUsername = null;
             if (!gamePoints.isEmpty()) {
                 roundService.updatePlayerStatsAndCheckVictories(gameId, gamePoints);
             }

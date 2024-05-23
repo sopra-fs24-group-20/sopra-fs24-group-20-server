@@ -2,7 +2,9 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,8 @@ class GameControllerTest {
 
     @Mock
     private GameRepository gameRepository;
+    @Mock
+    private LobbyRepository lobbyRepository;
 
     @InjectMocks
     private GameController gameController;
@@ -65,11 +69,19 @@ class GameControllerTest {
         Long lobbyId = 1L;
         Game game = new Game();
         game.setId(lobbyId);
+        Lobby lobby = new Lobby();
+        game.setLobby(lobby);
 
+        // Mocking the service method to return the game instance
         when(gameService.getGameByLobbyId(lobbyId)).thenReturn(game);
+        // Mocking repository saves to simply return the passed objects, preventing actual DB operations
+        when(gameRepository.save(any(Game.class))).thenReturn(game);
+        when(lobbyRepository.save(any(Lobby.class))).thenReturn(lobby);
 
+        // Execute the controller method
         ResponseEntity<String> response = gameController.finishGame(lobbyId);
 
+        // Assertions to check the response
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Game status updated to FINISHED", response.getBody());
         assertEquals(GameStatus.FINISHED, game.getStatus());

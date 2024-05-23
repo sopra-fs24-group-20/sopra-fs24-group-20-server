@@ -389,8 +389,8 @@ class RoundServiceTest {
 
         // Verify that leaderboard is sorted correctly
         Iterator<Map.Entry<String, Integer>> iterator = leaderboard.entrySet().iterator();
-        assertTrue(iterator.next().getKey().equals("Alice"));
-        assertTrue(iterator.next().getKey().equals("Bob"));
+        assertEquals("Alice", iterator.next().getKey());
+        assertEquals("Bob", iterator.next().getKey());
 
 
         // Verify final JSON is saved
@@ -531,7 +531,7 @@ class RoundServiceTest {
         // Arrange
         Long gameId = 1L;
         Game game = new Game();
-        game.setRounds(Arrays.asList(new Round())); // Only one round
+        game.setRounds(List.of(new Round())); // Only one round
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
 
