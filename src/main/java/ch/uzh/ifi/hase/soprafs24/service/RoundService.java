@@ -37,7 +37,7 @@ import static ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus.ONGOING;
 
 @Service
 public class RoundService {
-
+    private static final Random random = new Random();
     @Autowired
     private RoundRepository roundRepository;
     @Autowired
@@ -63,7 +63,7 @@ public class RoundService {
             game.setRoundCount(0);
             game.setGamePoints("");
             gameRepository.save(game);
-            game.setStatus(GameStatus.VOTE);
+            game.setStatus(GameStatus.ANSWER);
         }
         if (game == null) {
             game = new Game();
@@ -92,7 +92,6 @@ public class RoundService {
     }
 
     private char generateRandomLetter(List<Character> excludedChars) {
-        Random random = new Random();
         char randomLetter;
         do {
             // Generate a random uppercase letter between 'A' and 'Z'
