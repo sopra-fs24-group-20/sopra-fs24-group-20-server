@@ -23,12 +23,10 @@ class GameControllerTest {
 
     @Mock
     private GameService gameService;
-
     @Mock
     private GameRepository gameRepository;
     @Mock
     private LobbyRepository lobbyRepository;
-
     @InjectMocks
     private GameController gameController;
 
