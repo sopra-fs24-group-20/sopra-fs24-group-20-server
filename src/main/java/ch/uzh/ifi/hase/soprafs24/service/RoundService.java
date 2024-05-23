@@ -56,13 +56,14 @@ public class RoundService {
         Lobby lobby = lobbyRepository.findById(lobbyId).orElseThrow(() -> new RuntimeException("Lobby not found"));
         Game game = lobby.getGame();
         if (game!=null && game.getStatus()== GameStatus.FINISHED){
-            lobby.setGame(null);
-            lobbyRepository.save(lobby);
-            for (Round round : game.getRounds()) {
-                roundRepository.delete(round);
+            if (!game.getRounds().isEmpty()) {
+                roundRepository.deleteAll(game.getRounds());
+                game.getRounds().clear(); // Clear the list after deleting the rounds
             }
-            gameRepository.delete(game);
-            gameRepository.flush();
+            game.setRoundCount(0);
+            game.setGamePoints("");
+            gameRepository.save(game);
+            game.setStatus(GameStatus.VOTE);
         }
         if (game == null) {
             game = new Game();
@@ -300,7 +301,6 @@ public class RoundService {
 
                 scoreDetails.put("score", score);
             });
-
         });
 
         // Serialize and save the updated scores back to the round
