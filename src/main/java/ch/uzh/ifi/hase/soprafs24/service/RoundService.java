@@ -60,6 +60,7 @@ public class RoundService {
                 roundRepository.delete(round);
             }
             gameRepository.delete(game);
+            gameRepository.flush();
         }
         if (game == null) {
             game = new Game();
