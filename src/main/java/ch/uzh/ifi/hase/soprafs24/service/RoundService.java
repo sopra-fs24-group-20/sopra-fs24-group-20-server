@@ -61,6 +61,7 @@ public class RoundService {
             game.setRoundCount(0);
             game.setGamePoints("");
             gameRepository.save(game);
+            game.setStatus(GameStatus.VOTE);
         }
         if (game == null) {
             game = new Game();
