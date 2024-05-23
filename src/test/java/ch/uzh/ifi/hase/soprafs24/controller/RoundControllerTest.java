@@ -116,6 +116,37 @@ class RoundControllerTest {
         mockMvc.perform(get("/rounds/letters/{gameId}", 1L))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void getLetter_ShouldReturnLetter_WhenLetterIsAssigned() throws Exception {
+        char expectedLetter = 'A';
+        when(roundService.getCurrentRoundLetter(1L)).thenReturn(expectedLetter);
+
+        mockMvc.perform(get("/rounds/letters/{gameId}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(content().string("\"" + expectedLetter + "\"")); // Note the quotes around the expected letter
+    }
+
+    @Test
+    void getLetterPosition_ShouldReturnPosition_WhenFound() throws Exception {
+        Long gameId = 1L;
+        int expectedPosition = 2;
+        when(roundService.getCurrentRoundLetterPosition(gameId)).thenReturn(expectedPosition);
+
+        mockMvc.perform(get("/rounds/letterPosition/{gameId}", gameId))
+                .andExpect(status().isOk())
+                .andExpect(content().string(String.valueOf(expectedPosition)));
+    }
+
+    @Test
+    void getLetterPosition_ShouldReturnNotFound_WhenPositionIsNegative100() throws Exception {
+        Long gameId = 1L;
+        when(roundService.getCurrentRoundLetterPosition(gameId)).thenReturn(-100);
+
+        mockMvc.perform(get("/rounds/letterPosition/{gameId}", gameId))
+                .andExpect(status().isNotFound());
+    }
+
     @Test
     void getScoresByCategory_ShouldReturnScores_WhenDataExists() throws Exception {
         Map<String, Map<String, Map<String, Object>>> scores = new HashMap<>();

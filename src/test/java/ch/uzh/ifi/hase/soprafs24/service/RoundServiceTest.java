@@ -160,15 +160,6 @@ class RoundServiceTest {
         verify(roundRepository).save(round);
     }
 
-/*
-    @Test
-    void calculateLeaderboard_withNoCurrentRound_shouldThrowException() {
-        when(roundService.getCurrentRoundByGameId(999L)).thenReturn(null);
-        assertThrows(RuntimeException.class, () -> roundService.calculateLeaderboard(999L));
-
-
-    }*/
-
     @Test
     void testCalculateScoresCategoryWithAutoCorrectDisabled() throws Exception {
         // Mocking the Round object and its dependencies
@@ -179,7 +170,7 @@ class RoundServiceTest {
         Round currentRound = new Round();
         currentRound.setAssignedLetter('A'); // Set the assigned letter
         // Multiple scenarios in player answers
-        currentRound.setPlayerAnswers("[{\"username\": \"user1\", \"category1\": \"apple\"}, {\"username\": \"user2\", \"category1\": \"avocado\"}, {\"username\": \"user3\", \"category1\": \"Axe\"}, {\"username\": \"user4\", \"category1\": \"axe\"}, {\"username\": \"user5\", \"category1\": \"banana\"}]");
+        currentRound.setPlayerAnswers("[{\"username\": \"user1\", \"category1\": \"a\"}, {\"username\": \"user2\", \"category1\": \"avocado\"}, {\"username\": \"user3\", \"category1\": \"Axe\"}, {\"username\": \"user4\", \"category1\": \"axe\"}, {\"username\": \"user5\", \"category1\": \"banana\"}]");
         currentRound.setGame(game);
 
         // Mocking findTopByGameIdOrderByIdDesc
@@ -188,7 +179,7 @@ class RoundServiceTest {
         //Mocking objectMapper.readValue to accommodate the extended player answers
         when(objectMapper.readValue(Mockito.anyString(), Mockito.<TypeReference<List<Map<String, String>>>>any()))
                 .thenReturn(Arrays.asList(
-                        Map.of("username", "user1", "category1", "apple"),
+                        Map.of("username", "user1", "category1", "a"),
                         Map.of("username", "user2", "category1", "avocado"),
                         Map.of("username", "user3", "category1", "Axe"),
                         Map.of("username", "user4", "category1", "axe"),
@@ -202,8 +193,8 @@ class RoundServiceTest {
         Map<String, Map<String, Map<String, Object>>> expectedScores = new HashMap<>();
         Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
         Map<String, Object> user1ScoreAndAnswer = new HashMap<>();
-        user1ScoreAndAnswer.put("score", 1);
-        user1ScoreAndAnswer.put("answer", "apple");
+        user1ScoreAndAnswer.put("score", 0);
+        user1ScoreAndAnswer.put("answer", "a");
         Map<String, Object> user2ScoreAndAnswer = new HashMap<>();
         user2ScoreAndAnswer.put("score", 1);
         user2ScoreAndAnswer.put("answer", "avocado");
@@ -235,95 +226,141 @@ class RoundServiceTest {
         assertThrows(RuntimeException.class, () -> roundService.prepareScoreAdjustments(gameId, new HashMap<>()));
     }
 
-
-
-    /*@Test
-    public void testCalculateLeaderboard() throws Exception {
+    @Test
+    public void calculateFinalScores_WithValidInput_ShouldUpdateScores() throws Exception {
         // Setup
+        Long gameId = 1L;
         Game game = new Game();
+        game.setId(1L);
         Lobby lobby = new Lobby();
-        Round round = new Round();
-        lobby.setRounds(1);  // Assuming this is the final round
+        lobby.setPlayers(Arrays.asList(new Player(), new Player(), new Player())); // Assuming 3 players for majority calculation
         game.setLobby(lobby);
+        Round currentRound = new Round();
+        currentRound.setGame(game);
+        List<Round> rounds = new ArrayList<>();
+        rounds.add(currentRound);
+        game.setRounds(rounds);
+
+        // Test input JSON
+        String roundPointsJson = "{\"sports\":{\"Alice\":{\"score\":1, \"vetoVotes\":2, \"bonusVotes\":1, \"answer\":\"soccer\"}, \"Bob\":{\"score\":0, \"vetoVotes\":1, \"bonusVotes\":0, \"answer\":\"soccer\"}}, \"science\":{\"Alice\":{\"score\":1, \"vetoVotes\":0, \"bonusVotes\":1, \"answer\":\"biology\"}, \"Bob\":{\"score\":1, \"vetoVotes\":2, \"bonusVotes\":2, \"answer\":\"chemistry\"}}}";
+        currentRound.setRoundPoints(roundPointsJson);
+
+        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(currentRound));
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(roundRepository.save(any(Round.class))).thenReturn(currentRound);
+
+        // Execution
+        Map<String, Map<String, Map<String, Object>>> finalScores = roundService.calculateFinalScores(gameId);
+
+        // Verify the expected changes to the scores
+        assertEquals(3, finalScores.get("sports").get("Alice").get("score")); // Checking Alice's score in sports
+        assertEquals(15, finalScores.get("sports").get("Bob").get("score")); // Checking Bob's score in sports
+        assertEquals(18, finalScores.get("science").get("Alice").get("score"));
+        assertEquals(6, finalScores.get("science").get("Bob").get("score"));
+
+
+        // Verify final JSON is saved
+        verify(roundRepository).save(currentRound);
+    }
+
+    @Test
+    public void calculateLeaderboard_WithValidInput_ShouldUpdateLeaderboard() throws Exception {
+        // Setup
+        Long gameId = 1L;
+        Game game = new Game();
+        game.setId(1L);
+        Lobby lobby = new Lobby();
+        Player Alice = new Player();
+        Alice.setUsername("Alice");
+        Alice.setVictories(1);
+        Alice.setTotalPoints(100);
+        Alice.setAveragePointsPerRound(10);
+        Alice.setRoundsPlayed(10);
+        Player Bob = new Player();
+        Bob.setUsername("Bob");
+        Bob.setVictories(0);
+        Bob.setTotalPoints(0);
+        Bob.setAveragePointsPerRound(1);
+        Bob.setRoundsPlayed(1);
+        lobby.setPlayers(Arrays.asList(Alice, Bob)); // Assuming 3 players for majority calculation
+        game.setLobby(lobby);
+        Round round = new Round();
+        round.setGame(game);
         List<Round> rounds = new ArrayList<>();
         rounds.add(round);
         game.setRounds(rounds);
-        round.setGame(game);
 
-        Player player1 = new Player();
-        player1.setUsername("player1");
-        player1.setRoundsPlayed(0);
-        player1.setLevel(1);
-        player1.setTotalPoints(20);
-        player1.setVictories(0);
-        Player player2 = new Player();
-        player2.setUsername("player2");
-        player2.setRoundsPlayed(0);
-        player2.setLevel(1);
-        player2.setTotalPoints(0);
-        player2.setVictories(0);
+        game.setGamePoints("{\"Alice\": 10, \"Bob\": 5}");
+        round.setRoundPoints("{\"sports\":{\"Alice\":{\"score\":3, \"vetoVotes\":2, \"bonusVotes\":1, \"answer\":\"soccer\"}, \"Bob\":{\"score\":15, \"vetoVotes\":1, \"bonusVotes\":0, \"answer\":\"soccer\"}}, \"science\":{\"Alice\":{\"score\":18, \"vetoVotes\":0, \"bonusVotes\":1, \"answer\":\"biology\"}, \"Bob\":{\"score\":6, \"vetoVotes\":2, \"bonusVotes\":2, \"answer\":\"chemistry\"}}}");
 
-        Long gameId = 1L;
-
-        round.setRoundPoints("{\"category1\":{\"player1\":{\"score\":100},\"player2\":{\"score\":150}}}");
-
-        when(roundRepository.findTopByGameIdOrderByIdDesc(1L)).thenReturn(Optional.of(round));
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(playerService.getPlayerByUsername("player1")).thenReturn(player1);
-        when(playerService.getPlayerByUsername("player2")).thenReturn(player2);
-        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
-                .thenReturn(Map.of(
-                        "category1", Map.of(
-                                "player1", Map.of("score", 100),
-                                "player2", Map.of("score", 150)
-                        )
-                ));
+        when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(round));
 
-        // Execute
+        when(playerRepository.findByUsername(anyString())).thenAnswer(invocation -> {
+            String username = invocation.getArgument(0);
+            if (username.equals("Alice")) {
+                return Optional.of(Alice);
+            } else if (username.equals("Bob")) {
+                return Optional.of(Bob);
+            }
+            return Optional.empty();
+        });
+
+        when(playerRepository.save(any(Player.class))).thenAnswer(invocation -> {
+            Player player = invocation.getArgument(0);
+            return player; // Optionally modify the player object here if needed
+        });
+
+
+
+        when(objectMapper.readValue(any(String.class), any(TypeReference.class))).thenAnswer(invocation -> {
+            String json = invocation.getArgument(0);
+            TypeReference typeRef = invocation.getArgument(1);
+            if (typeRef.getType().equals(new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {}.getType())) {
+                return new HashMap<String, Map<String, Map<String, Object>>>() {{
+                    put("sports", new HashMap<String, Map<String, Object>>() {{
+                        put("Alice", new HashMap<String, Object>() {{ put("score", 3); put("vetoVotes", 2); put("bonusVotes", 1); put("answer", "soccer"); }});
+                        put("Bob", new HashMap<String, Object>() {{ put("score", 15); put("vetoVotes", 1); put("bonusVotes", 0); put("answer", "soccer"); }});
+                    }});
+                    put("science", new HashMap<String, Map<String, Object>>() {{
+                        put("Alice", new HashMap<String, Object>() {{ put("score", 18); put("vetoVotes", 0); put("bonusVotes", 1); put("answer", "biology"); }});
+                        put("Bob", new HashMap<String, Object>() {{ put("score", 6); put("vetoVotes", 2); put("bonusVotes", 2); put("answer", "chemistry"); }});
+                    }});
+                }};
+            } else if (typeRef.getType().equals(new TypeReference<Map<String, Integer>>() {}.getType())) {
+                return new HashMap<String, Integer>() {{ put("Alice", 10); put("Bob", 5); }};
+            }
+            throw new IllegalArgumentException("Unsupported type reference");
+        });
+
+
+        // Execution
         Map<String, Integer> leaderboard = roundService.calculateLeaderboard(gameId);
 
-        // Verify
-        assertEquals(2, leaderboard.size());
-        assertTrue(leaderboard.containsKey("player1") && leaderboard.get("player1") == 100);
-        assertTrue(leaderboard.containsKey("player2") && leaderboard.get("player2") == 150);
-        assertEquals(Integer.valueOf(150), leaderboard.get("player2")); // Player 2 should be the highest scorer
+        // Verify the expected changes to the leaderboard
+        assertEquals(Integer.valueOf(31), leaderboard.get("Alice")); // Checking Alice's total score
+        assertEquals(Integer.valueOf(26), leaderboard.get("Bob"));   // Checking Bob's total score
 
+        // Verify that leaderboard is sorted correctly
+        Iterator<Map.Entry<String, Integer>> iterator = leaderboard.entrySet().iterator();
+        assertTrue(iterator.next().getKey().equals("Alice"));
+        assertTrue(iterator.next().getKey().equals("Bob"));
 
-        assertEquals(120, player1.getTotalPoints());
-        assertEquals(1, player2.getRoundsPlayed());
-        // Verify final round victory increment
-        assertEquals(1, player2.getVictories());
-        assertEquals(0, player1.getVictories());
-    }*/
+        //Verify that the stats are updated
+        assertEquals(11, Alice.getRoundsPlayed());
+        assertEquals(131, Alice.getTotalPoints());
+        assertEquals(11.91, Alice.getAveragePointsPerRound());
+        assertEquals(2, Alice.getVictories());
 
-    /*
-    @Test
-    public void testAreAllVotesSubmitted() {
-        // Setup
-        Long gameId = 1L;
-        Round currentRound = new Round();
-        Lobby lobby = new Lobby();
-        List<Player> players = List.of(new Player(), new Player(), new Player()); // Assume three players
-        lobby.setPlayers(players);
-        currentRound.setGame(new Game());
-        currentRound.getGame().setLobby(lobby);
-        String roundPointsJson = "{\"category1\": {\"player1\": {\"submissionsCount\": 3}, \"player2\": {\"submissionsCount\": 3}, \"player3\": {\"submissionsCount\": 3}}, \"category2\": {\"player1\": {\"submissionsCount\": 3}, \"player2\": {\"submissionsCount\": 3}, \"player3\": {\"submissionsCount\": 3}}}";
+        assertEquals(2, Bob.getRoundsPlayed());
+        assertEquals(26, Bob.getTotalPoints());
+        assertEquals(13, Bob.getAveragePointsPerRound());
+        assertEquals(0, Bob.getVictories());
 
-        currentRound.setRoundPoints(roundPointsJson);
-
-        when(roundRepository.findTopByGameIdOrderByIdDesc(gameId)).thenReturn(Optional.of(currentRound));
-
-        // Act
-        boolean allVotesSubmitted = roundService.areAllVotesSubmitted(gameId);
-
-        // Assert
-        assertTrue(allVotesSubmitted, "All votes should be submitted since each player has submitted for each category.");
-
-        // Verify interactions
-        verify(roundRepository).findTopByGameIdOrderByIdDesc(gameId);
+        // Verify final JSON is saved
+        verify(gameRepository).save(game);
     }
 
-     */
 
     @Test
     public void testPrepareScoreAdjustments() throws Exception {
@@ -421,8 +458,6 @@ class RoundServiceTest {
 
 
 
-
-
     @Test
     void calculateLevel_shouldReturnCorrectLevel() {
         assertEquals(0, roundService.calculateLevel(24)); // 24 is below the threshold for level 1
@@ -430,5 +465,44 @@ class RoundServiceTest {
         assertEquals(2, roundService.calculateLevel(200)); // 200 falls in level 2: 25 * 2^2 = 100 to 225 (exclusive)
         assertEquals(4, roundService.calculateLevel(400)); // 400 falls in level 3: 25 * 3^2 = 225 to 400 (exclusive)
         assertEquals(5, roundService.calculateLevel(625)); // 625 falls in level 4: 25 * 4^2 = 400 to 625 (exclusive)
+    }
+
+    @Test
+    public void testCalculateScoreDifference_WithValidInput_ShouldReturnDifferences() throws Exception {
+        // Arrange
+        Long gameId = 1L;
+        Game game = new Game();
+        Round round1 = new Round();
+        round1.setScorePerRound("{\"Alice\": 100, \"Bob\": 80}");
+        Round round2 = new Round();
+        round2.setScorePerRound("{\"Alice\": 150, \"Bob\": 130}");
+
+        game.setRounds(Arrays.asList(round1, round2));
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        // Act
+        Map<String, Integer> scoreDifferences = roundService.calculateScoreDifference(gameId);
+
+        // Assert
+        assertEquals(2, scoreDifferences.size());
+        assertEquals(Integer.valueOf(50), scoreDifferences.get("Alice"));
+        assertEquals(Integer.valueOf(50), scoreDifferences.get("Bob"));
+    }
+
+    @Test
+    public void testCalculateScoreDifference_WithInsufficientRounds_ShouldReturnEmptyMap() throws Exception {
+        // Arrange
+        Long gameId = 1L;
+        Game game = new Game();
+        game.setRounds(Arrays.asList(new Round())); // Only one round
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        // Act
+        Map<String, Integer> scoreDifferences = roundService.calculateScoreDifference(gameId);
+
+        // Assert
+        assertTrue(scoreDifferences.isEmpty());
     }
 }

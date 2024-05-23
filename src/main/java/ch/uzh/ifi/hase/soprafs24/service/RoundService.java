@@ -2,6 +2,8 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -61,7 +63,7 @@ public class RoundService {
             game.setRoundCount(0);
             game.setGamePoints("");
             gameRepository.save(game);
-            game.setStatus(GameStatus.VOTE);
+            game.setStatus(GameStatus.ANSWER);
         }
         if (game == null) {
             game = new Game();
@@ -97,7 +99,6 @@ public class RoundService {
         } while (excludedChars.contains(randomLetter)); // Ensure it's not in the excluded list
         return randomLetter;
     }
-
 
     private int determineLetterPosition(String difficulty) {
         if (Objects.equals(difficulty, "0")) {
@@ -209,7 +210,12 @@ public class RoundService {
             playerOpt.ifPresent(player -> {
                 player.setTotalPoints(player.getTotalPoints() + points);
                 player.setRoundsPlayed(player.getRoundsPlayed() + 1);
-                player.setAveragePointsPerRound((double) player.getTotalPoints() / player.getRoundsPlayed());
+                // Calculate the average points per round with rounding
+                BigDecimal totalPoints = new BigDecimal(player.getTotalPoints());
+                BigDecimal roundsPlayed = new BigDecimal(player.getRoundsPlayed());
+                BigDecimal averagePoints = totalPoints.divide(roundsPlayed, 2, RoundingMode.HALF_UP);
+                player.setAveragePointsPerRound(averagePoints.doubleValue());
+
                 if (points == highestScore) {
                     player.setVictories(player.getVictories() + 1);
                 }
@@ -232,6 +238,12 @@ public class RoundService {
         if (currentRound == null) {
             throw new RuntimeException("No current round found for game ID: " + gameId);
         }
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
+        if (optionalGame.isEmpty()) {
+            throw new RuntimeException("No Game found for game id: " + gameId);
+        }
+        Game game = optionalGame.get();
+        Lobby lobby = game.getLobby();
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Map<String, Map<String, Object>>> currentScores;
@@ -247,12 +259,11 @@ public class RoundService {
 
             // First pass: Apply vetoes and count valid answers
             users.forEach((username, scoreDetails) -> {
-                int submissionsCount = (int) scoreDetails.get("submissionsCount");
                 int vetoVotes = (int) scoreDetails.get("vetoVotes");
                 int score = (int) scoreDetails.get("score");
 
                 // Check if vetoes fulfill the majority vote threshold
-                if (vetoVotes > submissionsCount / 2) {
+                if (vetoVotes >= (lobby.getPlayers().size()/2)) {
                     score = score == 1 ? 0 : 1; // Flip the score from 1 to 0 or vice versa
                 }
 
@@ -282,15 +293,13 @@ public class RoundService {
                     } else if (sameAnswerUsers.size() > 1) {
                         score = 5; // Other identical valid answers exist
                     }
-
-                    // Add bonuses
-                    int bonusVotes = (int) scoreDetails.get("bonusVotes");
-                    score += bonusVotes * 3; // Each bonus vote adds 3 points
-
-                    scoreDetails.put("score", score);
                 }
-            });
+                // Add bonuses
+                int bonusVotes = (int) scoreDetails.get("bonusVotes");
+                score += bonusVotes * 3; // Each bonus vote adds 3 points
 
+                scoreDetails.put("score", score);
+            });
         });
 
         // Serialize and save the updated scores back to the round
@@ -339,7 +348,7 @@ public class RoundService {
             Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
             userAnswers.forEach((username, value) -> {
                 int points = 0;
-                if (!value.isEmpty() && isLetterPositionValid(value, assignedLetter, letterPosition, difficulty)) {
+                if (!value.isEmpty() && isLetterPositionValid(value, assignedLetter, letterPosition, difficulty) && value.length() > 1) {
                     if (!autoCorrectEnabled || checkWordExists(value)) {
                         points = 1;  // Word is valid
                     }
@@ -410,39 +419,6 @@ public class RoundService {
         }
     }
 
-
-    @Transactional
-    public boolean areAllVotesSubmitted(Long gameId) {
-        Round currentRound = getCurrentRoundByGameId(gameId);
-        if (currentRound == null) {
-            throw new RuntimeException("No current round found for game ID: " + gameId);
-        }
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String scoresJson = currentRound.getRoundPoints();
-            TypeReference<Map<String, Map<String, Map<String, Object>>>> typeRef = new TypeReference<>() {};
-            Map<String, Map<String, Map<String, Object>>> scores = objectMapper.readValue(scoresJson, typeRef);
-
-            // Calculate the total number of submissions across all categories and users
-            int totalSubmissions = scores.values().stream()
-                    .flatMap(categoryScores -> categoryScores.values().stream())
-                    .mapToInt(userScores -> (int) userScores.get("submissionsCount"))
-                    .sum();
-
-            // Fetch the lobby to know how many players should have submitted
-            Lobby lobby = currentRound.getGame().getLobby();
-            int numberOfPlayers = lobby.getPlayers().size(); // Assuming there's a method to get players in the lobby
-
-            // Check if the total submissions match the expected count (number of players * number of voting categories)
-            return totalSubmissions >= numberOfPlayers * scores.size();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
     public Map<String, Map<String, Map<String, Object>>> prepareScoreAdjustments(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
         if (currentRound == null) {
@@ -458,30 +434,25 @@ public class RoundService {
         currentScores.forEach((category, users) -> users.forEach((username, userScores) -> {
             userScores.putIfAbsent("vetoVotes", 0);
             userScores.putIfAbsent("bonusVotes", 0);
-            userScores.putIfAbsent("submissionsCount", 0);
         }));
 
         // Count vetoes and bonuses
-        adjustments.forEach((category, users) -> users.forEach((username, details) -> {
-            boolean veto = (boolean) details.get("veto");
-            boolean bonus = (boolean) details.get("bonus");
+        // Iterate over currentScores to ensure all players are considered
+        currentScores.forEach((category, users) -> {
+            users.forEach((username, userScores) -> {
+                // Retrieve adjustment details if present; otherwise, use default values
+                Map<String, Object> detail = adjustments.getOrDefault(category, new HashMap<>()).getOrDefault(username, new HashMap<>());
+                boolean veto = (boolean) detail.getOrDefault("veto", false);
+                boolean bonus = (boolean) detail.getOrDefault("bonus", false);
 
-            Map<String, Object> userScores = currentScores.get(category).get(username);
-            if (userScores != null) {
+                // Update the veto and bonus counts
                 int vetoVotes = (int) userScores.get("vetoVotes");
                 int bonusVotes = (int) userScores.get("bonusVotes");
-                int submissionsCount = (int) userScores.get("submissionsCount");
+                userScores.put("vetoVotes", veto ? vetoVotes + 1 : vetoVotes);
+                userScores.put("bonusVotes", bonus ? bonusVotes + 1 : bonusVotes);
+            });
+        });
 
-                // Update counts based on the current adjustments
-                if (veto) {
-                    userScores.put("vetoVotes", vetoVotes + 1);
-                }
-                if (bonus) {
-                    userScores.put("bonusVotes", bonusVotes + 1);
-                }
-                userScores.put("submissionsCount", submissionsCount + 1);
-            }
-        }));
 
         // Serialize and save the updated scores back to the round without applying scoring
         String scoresJson = objectMapper.writeValueAsString(currentScores);
