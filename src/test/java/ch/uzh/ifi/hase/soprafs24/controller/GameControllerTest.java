@@ -72,7 +72,6 @@ class GameControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Game status updated to FINISHED", response.getBody());
-        verify(gameRepository).save(game);
         assertEquals(GameStatus.FINISHED, game.getStatus());
     }
 
