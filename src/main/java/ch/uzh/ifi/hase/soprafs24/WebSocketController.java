@@ -148,7 +148,6 @@ public class WebSocketController {
         if (checkallAnswers(lobbyId)) {
             Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
             Lobby lobby = lobbyOptional.get();
-            lobby.setLobbyStatus(LobbyStatus.SETUP);
             Game game = lobby.getGame();
             Long gameId = game.getId();
             lobbyRepository.save(lobby);
