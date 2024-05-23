@@ -4,12 +4,14 @@ import ch.uzh.ifi.hase.soprafs24.constant.LobbyStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
+import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.RoundService;
 import ch.uzh.ifi.hase.soprafs24.entity.Round;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,20 +28,22 @@ public class WebSocketController {
     public final Map<Long, Set<String>> connectedPlayers = new ConcurrentHashMap<>();
     public final Map<Long, Set<String>> submittedPlayers = new ConcurrentHashMap<>();
     public final Map<Long, Set<String>> gamePlayers = new ConcurrentHashMap<>();
+    private final Map<Long, Set<String>> lastPongReceived = new ConcurrentHashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
     private final RoundService roundService;
     private final RoundRepository roundRepository;
     private final ObjectMapper objectMapper;
-
+    private final LobbyService lobbyService;
     private final LobbyRepository lobbyRepository;
 
     @Autowired
-    public WebSocketController(RoundService roundService, RoundRepository roundRepository, ObjectMapper objectMapper, LobbyRepository lobbyRepository,SimpMessagingTemplate messagingTemplate) {
+    public WebSocketController(RoundService roundService, RoundRepository roundRepository, ObjectMapper objectMapper, LobbyRepository lobbyRepository,SimpMessagingTemplate messagingTemplate, LobbyService lobbyService) {
         this.messagingTemplate = messagingTemplate;
         this.roundService = roundService;
         this.roundRepository = roundRepository;
         this.objectMapper = objectMapper;
         this.lobbyRepository = lobbyRepository;
+        this.lobbyService = lobbyService;
     }
 
     @MessageMapping("/connect")
@@ -64,14 +68,52 @@ public class WebSocketController {
     public void leaveLobby(@Payload Map<String, String> payload) {
         String username = payload.get("username");
         Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        handlePlayerLeave(username, lobbyId);
+    }
+    @Scheduled(fixedRate = 10000)
+    public void cleanupNonResponders() {
+        lastPongReceived.forEach((lobbyId, responders) -> {
+            Set<String> playersInLobby = connectedPlayers.get(lobbyId);
+            if (playersInLobby != null) {
+                Set<String> nonResponders = new HashSet<>(playersInLobby);
+                nonResponders.removeAll(responders);
+                nonResponders.forEach(nonResponder -> {
+                    handlePlayerLeave(nonResponder, lobbyId);
+                    try {
+                        lobbyService.leaveLobby(lobbyId, nonResponder);
+                    } catch (Exception e) {
+                        System.err.println("Error removing non-responder from lobby: " + nonResponder + " in lobby " + lobbyId);
+                    }
+                 });
+            }
+        });
+    }
+    @MessageMapping("/pong")
+    public void receivePong(@Payload Map<String, String> payload) {
+        String username = payload.get("username");
+        Long lobbyId = Long.parseLong(payload.get("lobbyId"));
+        lastPongReceived.getOrDefault(lobbyId, Collections.newSetFromMap(new ConcurrentHashMap<>())).add(username);
+    }
+    @Scheduled(fixedRate = 5000)
+    public void sendPingToAll() {
+        connectedPlayers.forEach((lobbyId, players) -> {
+            lastPongReceived.put(lobbyId, Collections.newSetFromMap(new ConcurrentHashMap<>()));
+            players.forEach(player -> {
+                messagingTemplate.convertAndSendToUser(player, "/queue/ping", "{\"ping\":\"1\"}");
+            });
+        });
+    }
+    public void handlePlayerLeave(String username, Long lobbyId) {
         connectedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         readyPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         submittedPlayers.getOrDefault(lobbyId, Collections.emptySet()).remove(username);
         sendOnlineAndReadyCount(lobbyId);
-        if (checkallAnswers(lobbyId)){
+
+        if (checkallAnswers(lobbyId)) {
             String startMSG = String.format("{\"command\":\"done\", \"lobbyId\":" + lobbyId + "}");
             messagingTemplate.convertAndSend("/topic/answers-count", startMSG);
         }
+
         if (checkAndStartGame(lobbyId)) {
             try {
                 roundService.startNewRound(lobbyId);
@@ -79,14 +121,13 @@ public class WebSocketController {
                 messagingTemplate.convertAndSend("/topic/ready-count", startMSG);
             } catch (Exception e) {
                 System.out.println("Failed to start new round for lobby " + lobbyId + ": " + e.getMessage());
-                String erroroMSG=String.format( "{\"error\":\"Failed to start game for lobby " + lobbyId + ": " + e.getMessage() + "\"}");
-                messagingTemplate.convertAndSend("/topic/ready-count", erroroMSG);
+                String errorMsg = String.format("{\"error\":\"Failed to start game for lobby %d: %s\"}", lobbyId, e.getMessage());
+                messagingTemplate.convertAndSend("/topic/ready-count", errorMsg);
             }
         } else {
             sendOnlineAndReadyCount(lobbyId);
         }
     }
-
     @MessageMapping("/ready-up")
     @SendTo("/topic/ready-count")
     public String readyUp(@Payload Map<String, String> payload) {
@@ -148,7 +189,6 @@ public class WebSocketController {
         if (checkallAnswers(lobbyId)) {
             Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
             Lobby lobby = lobbyOptional.get();
-            lobby.setLobbyStatus(LobbyStatus.SETUP);
             Game game = lobby.getGame();
             Long gameId = game.getId();
             lobbyRepository.save(lobby);
