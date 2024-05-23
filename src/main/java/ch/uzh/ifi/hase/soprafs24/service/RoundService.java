@@ -2,6 +2,8 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -97,7 +99,6 @@ public class RoundService {
         } while (excludedChars.contains(randomLetter)); // Ensure it's not in the excluded list
         return randomLetter;
     }
-
 
     private int determineLetterPosition(String difficulty) {
         if (Objects.equals(difficulty, "0")) {
@@ -209,7 +210,12 @@ public class RoundService {
             playerOpt.ifPresent(player -> {
                 player.setTotalPoints(player.getTotalPoints() + points);
                 player.setRoundsPlayed(player.getRoundsPlayed() + 1);
-                player.setAveragePointsPerRound((double) player.getTotalPoints() / player.getRoundsPlayed());
+                // Calculate the average points per round with rounding
+                BigDecimal totalPoints = new BigDecimal(player.getTotalPoints());
+                BigDecimal roundsPlayed = new BigDecimal(player.getRoundsPlayed());
+                BigDecimal averagePoints = totalPoints.divide(roundsPlayed, 2, RoundingMode.HALF_UP);
+                player.setAveragePointsPerRound(averagePoints.doubleValue());
+
                 if (points == highestScore) {
                     player.setVictories(player.getVictories() + 1);
                 }
@@ -343,7 +349,7 @@ public class RoundService {
             Map<String, Map<String, Object>> userScoresAndAnswers = new HashMap<>();
             userAnswers.forEach((username, value) -> {
                 int points = 0;
-                if (!value.isEmpty() && isLetterPositionValid(value, assignedLetter, letterPosition, difficulty)) {
+                if (!value.isEmpty() && isLetterPositionValid(value, assignedLetter, letterPosition, difficulty) && value.length() > 1) {
                     if (!autoCorrectEnabled || checkWordExists(value)) {
                         points = 1;  // Word is valid
                     }
@@ -413,42 +419,6 @@ public class RoundService {
             return false;
         }
     }
-
-
-    /*
-    @Transactional
-    public boolean areAllVotesSubmitted(Long gameId) {
-        Round currentRound = getCurrentRoundByGameId(gameId);
-        if (currentRound == null) {
-            throw new RuntimeException("No current round found for game ID: " + gameId);
-        }
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String scoresJson = currentRound.getRoundPoints();
-            TypeReference<Map<String, Map<String, Map<String, Object>>>> typeRef = new TypeReference<>() {};
-            Map<String, Map<String, Map<String, Object>>> scores = objectMapper.readValue(scoresJson, typeRef);
-
-            // Calculate the total number of submissions across all categories and users
-            int totalSubmissions = scores.values().stream()
-                    .flatMap(categoryScores -> categoryScores.values().stream())
-                    .mapToInt(userScores -> (int) userScores.get("submissionsCount"))
-                    .sum();
-
-            // Fetch the lobby to know how many players should have submitted
-            Lobby lobby = currentRound.getGame().getLobby();
-            int numberOfPlayers = lobby.getPlayers().size(); // Assuming there's a method to get players in the lobby
-
-            // Check if the total submissions match the expected count (number of players * number of voting categories)
-            return totalSubmissions >= numberOfPlayers * scores.size();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-     */
-
 
     public Map<String, Map<String, Map<String, Object>>> prepareScoreAdjustments(Long gameId, HashMap<String, HashMap<String, HashMap<String, Object>>> adjustments) throws Exception {
         Round currentRound = getCurrentRoundByGameId(gameId);
