@@ -59,6 +59,7 @@ public class RoundService {
             gameRepository.flush();
             lobby.setGame(null);
             lobbyRepository.save(lobby);
+            game=null;
         }
         if (game == null) {
             game = new Game();
