@@ -51,6 +51,7 @@ public class GameController {
         try {
             Game game = gameService.getGameByLobbyId(lobbyId);
             game.setStatus(GameStatus.FINISHED);
+            gameRepository.save(game);
             String existingGamePointsJson = game.getGamePoints();
             Map<String, Integer> gamePoints;
             if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
