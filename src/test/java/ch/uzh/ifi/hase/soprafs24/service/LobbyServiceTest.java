@@ -128,7 +128,7 @@ public class LobbyServiceTest {
         // Use a mutable list to prevent UnsupportedOperationException
         Lobby lobby = new Lobby();
         lobby.setLobbyOwner(owner);
-        lobby.setPlayers(new ArrayList<>(Arrays.asList(owner))); // Wrapping with ArrayList for mutability
+        lobby.setPlayers(new ArrayList<>(List.of(owner))); // Wrapping with ArrayList for mutability
         Game game = new Game(); // Ensure game is initialized
         game.setRounds(new ArrayList<>()); // Initialize rounds to avoid null
         lobby.setGame(game); // Set game to lobby

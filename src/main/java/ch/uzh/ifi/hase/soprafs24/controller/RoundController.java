@@ -33,8 +33,9 @@ public class RoundController {
     public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
-    public RoundController(RoundService roundService) {
+    public RoundController(RoundService roundService, GameRepository gameRepository) {
         this.roundService = roundService;
+        this.gameRepository = gameRepository;
     }
     @GetMapping("/rounds/{gameId}")
     public ResponseEntity<List<Round>> getRoundsByGameId(@PathVariable Long gameId) {
