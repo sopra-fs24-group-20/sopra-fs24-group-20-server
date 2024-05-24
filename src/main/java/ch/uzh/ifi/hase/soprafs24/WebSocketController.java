@@ -111,6 +111,7 @@ public class WebSocketController {
         lobbyReady.add(username);
         if (checkAndStartGame(lobbyId)) {
             try {
+                readyPlayers.remove(lobbyId);
                 roundService.startNewRound(lobbyId);
                 return "{\"command\":\"start\", \"lobbyId\":" + lobbyId + "}";
             } catch (Exception e) {
