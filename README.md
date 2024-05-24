@@ -41,7 +41,6 @@ The [PlayerService](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-s
 ### Prerequisites and Installation
 #### Step 1 Setup with your IDE of choice
 Download your IDE of choice (e.g., [IntelliJ](https://www.jetbrains.com/idea/download/), [Visual Studio Code](https://code.visualstudio.com/), or [Eclipse](http://www.eclipse.org/downloads/)). Make sure Java 17 is installed on your system (for Windows, please make sure your `JAVA_HOME` environment variable is set to the correct version of Java).
-### For local setup, please contact one of our team members to access the key needed to access the SQL database.
 ###### IntelliJ
 If you consider to use IntelliJ as your IDE of choice, you can make use of your free educational license [here](https://www.jetbrains.com/community/education/#students).
 1. File -> Open... -> SoPra server template
@@ -57,7 +56,11 @@ The following extensions can help you get started more easily:
 
 **Note:** You'll need to build the project first with Gradle, just click on the `build` command in the _Gradle Tasks_ extension. Then check the _Spring Boot Dashboard_ extension if it already shows `soprafs24` and hit the play button to start the server. If it doesn't show up, restart VS Code and check again.
 
-#### Step 2 Building with Gradle
+#### Step 2 Connect to Database
+Please contact one of our team members to access the key needed to access the SQL database.
+After receiving the file, save it and add it to your systemvaribales with the name GOOGLE_APPLICATION_CREDENTIALS.
+
+#### Step 3 Building with Gradle
 You can use the local Gradle Wrapper to build the application.
 -   macOS: `./gradlew`
 -   Linux: `./gradlew`
@@ -69,7 +72,7 @@ More Information about [Gradle Wrapper](https://docs.gradle.org/current/userguid
 ./gradlew build
 ```
 
-#### Step 3 Running with Gradle
+#### Step 4 Running with Gradle
 
 
 ```bash
@@ -78,7 +81,7 @@ More Information about [Gradle Wrapper](https://docs.gradle.org/current/userguid
 
 You can verify that the server is running by visiting `localhost:8080` in your browser.
 
-#### Step 4 Testing with Gradle
+#### Step 5 Testing with Gradle
 
 ```bash
 ./gradlew test
