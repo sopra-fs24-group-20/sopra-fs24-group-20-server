@@ -71,13 +71,10 @@ public class GameController {
             } else {
                 gamePoints = new HashMap<>();
             }
-            if (Objects.equals(username, owner)) {
-                if (!gamePoints.isEmpty()) {
+            if (!gamePoints.isEmpty()) {
                     roundService.updatePlayerStatsAndCheckVictories(gameId, gamePoints);
-                }
             }
 
-            gameRepository.save(game);
             return ResponseEntity.ok("Game status updated to FINISHED");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to update game status: " + e.getMessage());
