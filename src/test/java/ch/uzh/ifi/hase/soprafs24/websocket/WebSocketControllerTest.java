@@ -140,7 +140,9 @@ class WebSocketControllerTest {
     void readyUp_ShouldMarkPlayerReadyAndCheckGameStart() {
         // Setup initial conditions
         String username = "user1";
+        String username1 = "user2";
         webSocketController.connectedPlayers.computeIfAbsent(TEST_LOBBY_ID, k -> new HashSet<>()).add(username);
+        webSocketController.connectedPlayers.computeIfAbsent(TEST_LOBBY_ID, k -> new HashSet<>()).add(username1);
         Map<String, String> payload = Map.of("username", username, "lobbyId", TEST_LOBBY_ID.toString());
 
         // Invoke the method under test
