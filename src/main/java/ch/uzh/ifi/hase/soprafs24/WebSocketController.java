@@ -112,6 +112,7 @@ public class WebSocketController {
         if (checkAndStartGame(lobbyId)) {
             try {
                 roundService.startNewRound(lobbyId);
+                readyPlayers.remove(lobbyId);
                 return "{\"command\":\"start\", \"lobbyId\":" + lobbyId + "}";
             } catch (Exception e) {
                 System.out.println("Failed to start new round for lobby " + lobbyId + ": " + e.getMessage());

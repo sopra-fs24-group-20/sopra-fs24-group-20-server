@@ -22,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.*;
 
@@ -54,7 +55,7 @@ public class GameController {
 
 
     @PostMapping("/game/done/{lobbyId}")
-    public ResponseEntity<String> finishGame(@PathVariable Long lobbyId) {
+    public ResponseEntity<String> finishGame(@PathVariable Long lobbyId, @RequestBody String username) {
         try {
             Game game = gameService.getGameByLobbyId(lobbyId);
             game.setStatus(GameStatus.FINISHED);
@@ -64,16 +65,16 @@ public class GameController {
             lobbyRepository.save(game.getLobby());
             String existingGamePointsJson = game.getGamePoints();
             Map<String, Integer> gamePoints;
+            String owner = game.getLobby().getLobbyOwner().getUsername();
             if (existingGamePointsJson != null && !existingGamePointsJson.isEmpty()) {
                 gamePoints = objectMapper.readValue(existingGamePointsJson, new TypeReference<Map<String, Integer>>() {});
             } else {
                 gamePoints = new HashMap<>();
             }
             if (!gamePoints.isEmpty()) {
-                roundService.updatePlayerStatsAndCheckVictories(gameId, gamePoints);
+                    roundService.updatePlayerStatsAndCheckVictories(gameId, gamePoints);
             }
 
-            gameRepository.save(game);
             return ResponseEntity.ok("Game status updated to FINISHED");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to update game status: " + e.getMessage());

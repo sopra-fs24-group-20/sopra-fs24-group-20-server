@@ -42,6 +42,7 @@ public interface DTOMapper {
 
     @Mapping(source = "username", target = "username")
     @Mapping(source = "ready", target = "ready")
+    @Mapping(target = "password", ignore = true)
     @Mapping(source = "totalPoints", target = "totalPoints")
     @Mapping(source = "roundsPlayed", target = "roundsPlayed")
     @Mapping(source = "level", target = "level")

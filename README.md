@@ -24,6 +24,9 @@ You can compete with your friends by scoring lots of points and leveling up.
 - [Wikipedia API](https://de.wikipedia.org/wiki/Wikipedia:Technik/Datenbank/API#Dokumentation_der_Funktionalität) - Provides dictionary data
 
 ## High-level components
+### LobbyService
+The [LobbyService](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/LobbyService.java) is responsible for handling methods for the [Lobby entity](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/Lobby.java), such as creating or leaving the lobby. It further ensures that the created lobbies itself are not persistent.
+
 ### WebSocketController
 The [WebSocketController](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/WebSocketController.java) is an essential part of this project to enable quick data transfers, e.g. when joining or leaving a lobby, when players get ready for a round and to ensure that the game ends at the same time for all players when someone presses stop.
 

@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
@@ -69,6 +70,10 @@ class GameControllerTest {
         game.setId(lobbyId);
         Lobby lobby = new Lobby();
         game.setLobby(lobby);
+        Player player = new Player();
+        player.setUsername("Owner");
+        lobby.setLobbyOwner(player);
+
 
         // Mocking the service method to return the game instance
         when(gameService.getGameByLobbyId(lobbyId)).thenReturn(game);
@@ -77,7 +82,7 @@ class GameControllerTest {
         when(lobbyRepository.save(any(Lobby.class))).thenReturn(lobby);
 
         // Execute the controller method
-        ResponseEntity<String> response = gameController.finishGame(lobbyId);
+        ResponseEntity<String> response = gameController.finishGame(lobbyId, "Owner");
 
         // Assertions to check the response
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -88,10 +93,12 @@ class GameControllerTest {
     @Test
     void finishGame_GameDoesNotExist_ShouldReturnBadRequest() {
         Long lobbyId = 1L;
+        Player player = new Player();
+        player.setUsername("Owner");
 
         when(gameService.getGameByLobbyId(lobbyId)).thenThrow(new RuntimeException("Game not found"));
 
-        ResponseEntity<String> response = gameController.finishGame(lobbyId);
+        ResponseEntity<String> response = gameController.finishGame(lobbyId, "Owner");
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().contains("Failed to update game status: Game not found"));
