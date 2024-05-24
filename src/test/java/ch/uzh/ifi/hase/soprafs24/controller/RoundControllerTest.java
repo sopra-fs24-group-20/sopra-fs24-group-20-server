@@ -43,7 +43,7 @@ class RoundControllerTest {
     @Mock
     private RoundService roundService;
 
-    @MockBean
+    @Mock
     private GameRepository gameRepository;
 
     @InjectMocks
@@ -243,6 +243,19 @@ class RoundControllerTest {
         mockMvc.perform(get("/rounds/score-difference/{gameId}", gameId))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("{}"));
+    }
+    @Test
+    void getLeaderboard_SimplifiedTest() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game();
+
+        game.setGamePoints("{\"player1\":100,\"player2\":90}");
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        mockMvc.perform(get("/rounds/leaderboard/{gameId}", gameId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.player1").value(100))
+                .andExpect(jsonPath("$.player2").value(90));
     }
 
 }

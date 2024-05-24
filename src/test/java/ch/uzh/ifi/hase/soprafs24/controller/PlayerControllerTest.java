@@ -97,34 +97,37 @@ class PlayerControllerTest {
         assertEquals("newUser", result.getUsername());
         assertTrue(result.getReady());
     }
-    /*
     @Test
-    void createPlayer_WithoutUsername_ShouldCreatePlayerWithFunnyGuestUsername() {
-        PlayerPostDTO playerPostDTO = new PlayerPostDTO(); // No username set
-        playerPostDTO.setPassword("password123");
+    public void testGenerateGuestUsername() {
+        String username = PlayerController.generateGuestUsername();
 
-        Player player = new Player();
-        player.setPassword("password123");
-        player.setReady(true); // Initialize ready
+        assertNotNull(username, "The username should not be null");
+        assertTrue(username.startsWith("Guest: "), "Username should start with 'Guest: '");
 
-        when(playerService.createPlayer(anyString(), anyString())).thenAnswer(invocation -> {
-            String username = invocation.getArgument(0, String.class);
-            if (username.startsWith("Guest:")) {
-                player.setUsername(username);
-            }
-            return player;
-        });
+        // Remove the prefix and check the remaining part
+        String descriptor = username.substring(7); // Remove "Guest: "
+        assertNotNull(descriptor, "Descriptor part should not be null");
 
-        PlayerGetDTO result = playerController.createPlayer(playerPostDTO);
+        // Split the descriptor into words
+        String[] parts = descriptor.split(" ");
+        assertEquals(2, parts.length, "Descriptor should contain exactly two words");
 
-        assertNotNull(result);
-        assertTrue(result.getUsername().startsWith("Guest:"));
-        assertTrue(Arrays.asList("Curious Panda", "Sleepy Koala", "Happy Squirrel", "Wise Owl").stream()
-                .anyMatch(name -> result.getUsername().contains(name)));
-        assertTrue(result.getReady());
+        // Optionally, verify that the words are from the lists
+        List<String> validAdjectives = Arrays.asList(
+                "Cute", "Quirky", "Dramatic", "Chubby", "Fluffy", "Silly", "Dizzy",
+                "Big", "Small", "Smart", "Prickly", "Funky", "Sassy", "Happy", "Sad",
+                "Kind", "Criminal"
+        );
+        List<String> validNouns = Arrays.asList(
+                "Stone", "Flame", "Wave", "Star", "Leaf", "Rain",
+                "Snow", "Wind", "Echo", "Tree", "Moon", "Rock",
+                "Dust", "Breeze", "Sky", "River", "Cloud"
+        );
+
+        assertTrue(validAdjectives.contains(parts[0]), "The first word should be a valid adjective");
+        assertTrue(validNouns.contains(parts[1]), "The second word should be a valid noun");
     }
 
-     */
     @Test
     void createPlayer_WithProhibitedGuestPrefix_ShouldFail() {
         PlayerPostDTO playerPostDTO = new PlayerPostDTO();
@@ -138,7 +141,6 @@ class PlayerControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
         assertEquals("Usernames starting with 'Guest:' are reserved and cannot be manually set.", exception.getReason());
     }
-
 
     @Test
     void getPlayerByUsername_ShouldReturnPlayer() {
@@ -154,7 +156,6 @@ class PlayerControllerTest {
         assertEquals("existingUser", result.getUsername());
         assertTrue(result.getReady());
     }
-
 
     @Test
     void login_ShouldAuthenticateAndReturnPlayer() {
