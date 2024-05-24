@@ -21,7 +21,7 @@ You can compete with your friends by scoring lots of points and leveling up.
 - [RESTful](https://restfulapi.net/) - Web services for user control
 - [Websocket](https://spring.io/guides/gs/messaging-stomp-websocket/) -  Real-time bidirectional communication between client and server
 - [MySQL](https://cloud.google.com/sql/docs/mysql) - Cloud SQL for MySQL used for the database
-- [Wiktionary API](https://en.wiktionary.org/w/api.php) - Provides dictionary data
+- [Wikipedia API](https://de.wikipedia.org/wiki/Wikipedia:Technik/Datenbank/API#Dokumentation_der_Funktionalität) - Provides dictionary data
 
 ## High-level components
 ### WebSocketController
@@ -38,7 +38,7 @@ The [PlayerService](https://github.com/sopra-fs24-group-20/sopra-fs24-group-20-s
 ### Prerequisites and Installation
 #### Step 1 Setup with your IDE of choice
 Download your IDE of choice (e.g., [IntelliJ](https://www.jetbrains.com/idea/download/), [Visual Studio Code](https://code.visualstudio.com/), or [Eclipse](http://www.eclipse.org/downloads/)). Make sure Java 17 is installed on your system (for Windows, please make sure your `JAVA_HOME` environment variable is set to the correct version of Java).
-
+### For local setup, please contact one of our team members to access the key needed to access the SQL database.
 ###### IntelliJ
 If you consider to use IntelliJ as your IDE of choice, you can make use of your free educational license [here](https://www.jetbrains.com/community/education/#students).
 1. File -> Open... -> SoPra server template
