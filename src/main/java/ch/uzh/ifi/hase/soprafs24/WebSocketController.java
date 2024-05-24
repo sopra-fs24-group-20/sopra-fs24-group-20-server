@@ -147,6 +147,10 @@ public class WebSocketController {
         answersSubmitted.add(username);
         if (checkallAnswers(lobbyId)) {
             Optional<Lobby> lobbyOptional = lobbyRepository.findById(lobbyId);
+            if (lobbyOptional.isEmpty()) {
+                return "{\"error\":\"Invalid lobby ID\"}";
+            }
+
             Lobby lobby = lobbyOptional.get();
             Game game = lobby.getGame();
             Long gameId = game.getId();

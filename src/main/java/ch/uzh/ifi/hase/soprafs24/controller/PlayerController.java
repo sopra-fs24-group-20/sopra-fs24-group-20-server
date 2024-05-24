@@ -24,6 +24,7 @@ import java.util.*;
  */
 @RestController
 public class PlayerController {
+    private static final Random random = new Random();
 
     private final PlayerService PlayerService;
     @Autowired
@@ -112,9 +113,6 @@ public class PlayerController {
                 "Big", "Small", "Smart", "Prickly", "Funky", "Sassy", "Happy", "Sad",
                 "Kind", "Criminal"
         );
-
-        // Random generator
-        Random random = new Random();
 
         // Combine a random adjective and noun
         String descriptor = adjectiveList.get(random.nextInt(adjectiveList.size())) +

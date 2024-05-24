@@ -105,7 +105,6 @@ public class RoundService {
             return 0; // Always the first position for easy mode
         }
         else {
-            Random random = new Random();
             int[] possiblePositions = {0, 1, 2, -1}; // Last position is denoted by -1
             return possiblePositions[random.nextInt(possiblePositions.length)];
         }
@@ -205,6 +204,7 @@ public class RoundService {
     public void updatePlayerStatsAndCheckVictories(Long gameId, Map<String, Integer> gamePoints) throws Exception {
         String winnerUsername = Collections.max(gamePoints.entrySet(), Map.Entry.comparingByValue()).getKey();
         Optional<Game> optionalGame = gameRepository.findById(gameId);
+        if (optionalGame.isEmpty()) { throw new RuntimeException("No game found for ID" + gameId); }
         Game game = optionalGame.get();
         Lobby lobby = game.getLobby();
         gamePoints.forEach((username, points) -> {
