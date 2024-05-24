@@ -61,7 +61,7 @@ public class RoundService {
                 game.getRounds().clear(); // Clear the list after deleting the rounds
             }
             game.setRoundCount(0);
-            game.setGamePoints("");
+            //game.setGamePoints("");
             gameRepository.save(game);
             game.setStatus(GameStatus.ANSWER);
         }
