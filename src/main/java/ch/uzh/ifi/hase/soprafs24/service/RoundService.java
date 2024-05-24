@@ -101,7 +101,7 @@ public class RoundService {
     }
 
     private int determineLetterPosition(String difficulty) {
-        if (Objects.equals(difficulty, "0")) {
+        if (Objects.equals(difficulty, "NORMAL")) {
             return 0; // Always the first position for easy mode
         }
         else {
@@ -377,7 +377,7 @@ public class RoundService {
     }
 
     private boolean isLetterPositionValid(String word, char assignedLetter, int letterPosition, String difficulty) {
-        if (Objects.equals(difficulty, "0")) {  // Easy mode
+        if (Objects.equals(difficulty, "NORMAL")) {  // Easy mode
             return word.toLowerCase().charAt(0) == Character.toLowerCase(assignedLetter);
         }
         else {  // Normal mode
